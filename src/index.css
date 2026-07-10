@@ -1,0 +1,533 @@
+/* ─── Google Fonts ───────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Arabic:wght@400;500;600;700;800&display=swap');
+
+@import "tailwindcss";
+
+/* ─── Design Tokens — Dark (default) ───────────────────────── */
+:root {
+  /* Brand */
+  --color-primary:        #FFA048;
+  --color-primary-dark:   #D87D2E;
+  --color-primary-hover:  #FFB36B;
+
+  /* Backgrounds */
+  --color-bg:             #0A0705;
+  --color-surface:        #0F0E0C;
+  --color-card:           #13110E;
+  --color-card-hover:     #191613;
+
+  /* Borders */
+  --color-border:         #2D2319;
+  --color-border-subtle:  #231C13;
+
+  /* Text */
+  --color-text:           #F4E3D7;
+  --color-text-secondary: #9CA3AF;
+  --color-text-muted:     #6B7280;
+
+  /* Shadows */
+  --shadow-card:          0 4px 16px rgba(0,0,0,0.45);
+  --shadow-sm:            0 2px 8px  rgba(0,0,0,0.30);
+
+  /* Typography */
+  --font-en:  'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  --font-ar:  'Noto Sans Arabic', 'Plus Jakarta Sans', system-ui, sans-serif;
+
+  /* Radius */
+  --radius-card:  14px;
+  --radius-pill:  999px;
+}
+
+/* ─── Design Tokens — Light (premium override) ──────────────── */
+html.light {
+  /* Brand stays the same — orange on white pops beautifully */
+  --color-primary:        #F97316;
+  --color-primary-dark:   #EA580C;
+  --color-primary-hover:  #FB923C;
+
+  /* Backgrounds */
+  --color-bg:             #F4F5F7;
+  --color-surface:        #FFFFFF;
+  --color-card:           #FFFFFF;
+  --color-card-hover:     #F9FAFB;
+
+  /* Borders */
+  --color-border:         #E2E8F0;
+  --color-border-subtle:  #EEF2F6;
+
+  /* Text */
+  --color-text:           #0F172A;
+  --color-text-secondary: #475569;
+  --color-text-muted:     #94A3B8;
+
+  /* Shadows — very soft, Airbnb-style */
+  --shadow-card:          0 4px 12px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-sm:            0 2px 6px  rgba(0,0,0,0.04);
+}
+
+/* ─── Light-mode structural overrides ──────────────────────── */
+
+/* Page scaffold */
+html.light body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* Simulator chrome & nav bars that use hardcoded dark hex values */
+html.light #app-root {
+  background-color: #E8ECF0 !important;
+  color: var(--color-text) !important;
+}
+html.light header {
+  background-color: rgba(255,255,255,0.92) !important;
+  border-color: var(--color-border) !important;
+  backdrop-filter: blur(12px);
+}
+html.light footer {
+  background-color: #FFFFFF !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text-muted) !important;
+}
+
+/* Phone simulator bezel */
+html.light .rounded-\[52px\] {
+  background-color: #F1F3F5 !important;
+  border-color: #CBD5E1 !important;
+  box-shadow: 0 32px 80px -16px rgba(0,0,0,0.18) !important;
+}
+
+/* Inner scrollable app content area */
+html.light .bg-gradient-to-b {
+  background: linear-gradient(to bottom, #FFFFFF, #F4F5F7) !important;
+}
+
+/* Bottom nav bar inside simulator */
+html.light .backdrop-blur-xl {
+  background-color: rgba(255,255,255,0.88) !important;
+  border-color: var(--color-border) !important;
+}
+
+/* ── Cards, surfaces, panels ─────────────────────────────── */
+html.light .bg-\[\#0F0E0C\],
+html.light .bg-\[\#13110E\],
+html.light .bg-\[\#191613\],
+html.light .bg-\[\#1A1612\],
+html.light .bg-\[\#201B15\],
+html.light .bg-\[\#0A0705\]\/80 {
+  background-color: #FFFFFF !important;
+  box-shadow: var(--shadow-card) !important;
+}
+
+html.light .bg-\[\#191512\] {
+  background-color: #FAFAFA !important;
+}
+
+/* Right-side sandbox panel cards */
+html.light .rounded-3xl {
+  background-color: #FFFFFF;
+  box-shadow: var(--shadow-card);
+}
+
+/* ── Borders ─────────────────────────────────────────────── */
+html.light .border-\[\#2D2319\],
+html.light .border-\[\#3A2E22\],
+html.light .border-\[\#2E2419\],
+html.light .border-\[\#2D2319\]\/40,
+html.light .border-\[\#2D2319\]\/60,
+html.light .border-\[\#3A2E22\]\/60 {
+  border-color: var(--color-border) !important;
+}
+
+html.light .divide-\[\#2D2319\]\/40 > * + * {
+  border-color: var(--color-border-subtle) !important;
+}
+
+/* ── Typography overrides ────────────────────────────────── */
+html.light .text-\[\#F4E3D7\],
+html.light .text-white {
+  color: #0F172A !important;
+}
+
+html.light .text-gray-300,
+html.light .text-gray-400 {
+  color: #475569 !important;
+}
+
+html.light .text-gray-500,
+html.light .text-gray-600 {
+  color: #64748B !important;
+}
+
+/* Home-tab section headings */
+html.light #home-tab-container h1,
+html.light #home-tab-container h3 {
+  color: #0F172A !important;
+}
+
+/* Brand orange stays orange — reinforce on light bg */
+html.light .text-\[\#FFA048\] {
+  color: var(--color-primary) !important;
+}
+
+/* ── Search input ────────────────────────────────────────── */
+html.light #home-search-input,
+html.light input[type="text"],
+html.light input[type="tel"],
+html.light input[type="password"],
+html.light textarea,
+html.light select {
+  background-color: #FFFFFF !important;
+  border-color: var(--color-border) !important;
+  color: #0F172A !important;
+}
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: #94A3B8 !important;
+}
+
+/* ── Location badge in search bar ───────────────────────── */
+html.light .bg-\[\#201B15\] {
+  background-color: #FFF7ED !important;
+  border-color: #FED7AA !important;
+}
+
+/* ── City filter pills ───────────────────────────────────── */
+html.light .bg-\[\#13110E\].rounded-full,
+html.light button.rounded-full {
+  background-color: #F8FAFC !important;
+  border-color: var(--color-border) !important;
+  color: #475569 !important;
+}
+html.light button.rounded-full:hover {
+  border-color: var(--color-primary) !important;
+}
+
+/* ── Category cards ─────────────────────────────────────── */
+html.light #home-categories-scroll button {
+  background: linear-gradient(to bottom, #FFFFFF, #F9FAFB) !important;
+  border-color: var(--color-border) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+html.light #home-categories-scroll button:hover {
+  border-color: rgba(249,115,22,0.4) !important;
+  background: linear-gradient(to bottom, #FFF7ED, #FFFFFF) !important;
+}
+html.light #home-categories-scroll .bg-\[\#201B15\] {
+  background-color: #FFF7ED !important;
+  border-color: #FED7AA !important;
+}
+html.light #home-categories-scroll span {
+  color: #374151 !important;
+}
+
+/* ── Business list-item cards ────────────────────────────── */
+html.light #home-all-listings-list > div {
+  background-color: #FFFFFF !important;
+  border-color: var(--color-border) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+html.light #home-all-listings-list > div:hover {
+  border-color: rgba(249,115,22,0.3) !important;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.07) !important;
+  transform: translateY(-1px);
+}
+html.light #home-all-listings-list h4 {
+  color: #0F172A !important;
+}
+html.light #home-all-listings-list p,
+html.light #home-all-listings-list span {
+  color: #64748B !important;
+}
+
+/* Keep verified badge green & star orange in light mode */
+html.light .text-green-400 { color: #16A34A !important; }
+html.light .fill-green-400\/20 { fill: rgba(22,163,74,0.12) !important; }
+
+/* ── Account tab cards ───────────────────────────────────── */
+html.light #account-tab-container .rounded-3xl,
+html.light #account-tab-container .rounded-2xl {
+  background-color: #FFFFFF !important;
+  border-color: var(--color-border) !important;
+  box-shadow: var(--shadow-card) !important;
+}
+html.light #signedin-profile-card,
+html.light #guest-profile-card {
+  background-color: #FFFFFF !important;
+}
+
+/* ── Portal tab sections ─────────────────────────────────── */
+html.light #portal-tab-container .rounded-3xl {
+  background-color: #FFFFFF !important;
+  border-color: var(--color-border) !important;
+  box-shadow: var(--shadow-card) !important;
+}
+html.light #portal-tab-container .bg-\[\#0F0E0C\] {
+  background-color: #F8FAFC !important;
+}
+
+/* ── Bottom nav tab icon active state ────────────────────── */
+html.light nav .text-\[\#FFA048\] {
+  color: var(--color-primary) !important;
+}
+html.light nav .text-gray-500 {
+  color: #94A3B8 !important;
+}
+
+/* ── Mobile root ─────────────────────────────────────────── */
+html.light #app-root-mobile {
+  background: linear-gradient(to bottom, #F4F5F7, #FFFFFF) !important;
+}
+html.light #app-root-mobile > .flex-shrink-0 {
+  background-color: rgba(255,255,255,0.92) !important;
+  border-color: var(--color-border) !important;
+}
+
+/* ── Sandbox panel (right side) ─────────────────────────── */
+html.light #app-root > main .bg-\[\#0F0E0C\] {
+  background-color: #FFFFFF !important;
+  border-color: var(--color-border) !important;
+}
+html.light #app-root > main .bg-\[\#191613\] {
+  background-color: #F8FAFC !important;
+}
+html.light #app-root > main h1,
+html.light #app-root > main h2 {
+  color: #0F172A !important;
+}
+html.light #app-root > main p {
+  color: #475569 !important;
+}
+
+/* Sandbox login card active highlight */
+html.light .bg-\[\#FFA048\]\/10 {
+  background-color: rgba(249,115,22,0.08) !important;
+}
+html.light .border-\[\#FFA048\] {
+  border-color: var(--color-primary) !important;
+}
+
+/* ── Status bar text (simulator) ─────────────────────────── */
+html.light .bg-black.z-30 {
+  background-color: #1E293B !important;
+}
+html.light .bg-black.z-30 span,
+html.light .bg-black.z-30 div {
+  color: #CBD5E1 !important;
+}
+
+/* ─── Base Reset & Typography ────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-en);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior: none;
+}
+
+[dir="rtl"] body,
+[dir="rtl"] * {
+  font-family: var(--font-ar);
+}
+
+/* ─── Typographic scale ──────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-en);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+/* App-level display heading (e.g., "ABN") */
+.heading-display {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+/* Section headings (e.g., "CATEGORIES", "ALL BUSINESSES") */
+.heading-section {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Card labels */
+.label-card {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Body / descriptions */
+.body-text {
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+/* ─── Scrollbar Styles ───────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2D2319; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #FFA048; }
+html.light ::-webkit-scrollbar-thumb { background: #CBD5E1; }
+html.light ::-webkit-scrollbar-thumb:hover { background: var(--color-primary); }
+
+/* ─── Utility: hide scrollbar ───────────────────────────── */
+.scrollbar-none { scrollbar-width: none; -ms-overflow-style: none; }
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-thin { scrollbar-width: thin; }
+
+/* ─── Animations ─────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes scaleUp {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position:  200% 0; }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ─── Animation classes ─────────────────────────────────── */
+.animate-fade-in-up  { animation: fadeInUp  0.35s ease both; }
+.animate-fade-in     { animation: fadeIn    0.25s ease both; }
+.animate-scale-up    { animation: scaleUp   0.30s ease both; }
+.animate-slide-right { animation: slideInRight 0.3s ease both; }
+.animate-slide-left  { animation: slideInLeft  0.3s ease both; }
+.animate-pulse-soft  { animation: pulse-soft 2s ease-in-out infinite; }
+
+/* Staggered children */
+.stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.10s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.20s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.30s; }
+
+/* ─── Skeleton Loader ────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, #1A1612 25%, #2D2319 50%, #1A1612 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+html.light .skeleton {
+  background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
+  background-size: 200% 100%;
+}
+
+/* ─── Card Hover Glow ────────────────────────────────────── */
+.card-hover {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+.card-hover:hover {
+  border-color: rgba(255,160,72,0.35) !important;
+  box-shadow: 0 0 0 1px rgba(255,160,72,0.15);
+  transform: translateY(-1px);
+}
+html.light .card-hover:hover {
+  border-color: rgba(249,115,22,0.30) !important;
+  box-shadow: 0 6px 20px rgba(249,115,22,0.10), 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* ─── Open / Closed badge ────────────────────────────────── */
+.badge-open {
+  background: rgba(34,197,94,0.12);
+  border: 1px solid rgba(34,197,94,0.3);
+  color: #4ade80;
+}
+.badge-closed {
+  background: rgba(239,68,68,0.12);
+  border: 1px solid rgba(239,68,68,0.3);
+  color: #f87171;
+}
+html.light .badge-open  { background: #DCFCE7; border-color: #86EFAC; color: #15803D; }
+html.light .badge-closed { background: #FEE2E2; border-color: #FCA5A5; color: #DC2626; }
+
+/* ─── Button press feedback ──────────────────────────────── */
+button:active { transform: scale(0.97); }
+
+/* ─── Focus outline ──────────────────────────────────────── */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid #FFA048;
+  outline-offset: 2px;
+}
+html.light button:focus-visible,
+html.light input:focus-visible,
+html.light textarea:focus-visible,
+html.light select:focus-visible {
+  outline-color: var(--color-primary);
+}
+
+/* ─── Image lazy fade-in ─────────────────────────────────── */
+img { transition: opacity 0.3s ease; }
+img[loading="lazy"]        { opacity: 0; }
+img[loading="lazy"].loaded { opacity: 1; }
+
+/* ─── RTL tweaks ─────────────────────────────────────────── */
+[dir="rtl"] .rtl-flip { transform: scaleX(-1); }
+
+/* ─── Phone bezel notch ──────────────────────────────────── */
+.phone-notch {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 64px; height: 14px;
+  background: black; border-radius: 0 0 12px 12px; z-index: 40;
+}
+
+/* ─── Selection color ────────────────────────────────────── */
+::selection { background-color: #FFA048; color: black; }
+html.light ::selection { background-color: var(--color-primary); color: white; }
+
+/* ─── Tab transition wrapper ─────────────────────────────── */
+.tab-view { animation: fadeInUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* ─── Premium light-mode: refined radius & shadow system ─── */
+html.light .rounded-2xl { border-radius: 16px; }
+html.light .rounded-3xl { border-radius: 20px; }
+
+/* ─── Smooth theme transition ────────────────────────────── */
+body, body * {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.2s ease;
+}
+/* Exclude animated elements from inheriting transition delays */
+button, a, img, input, svg {
+  transition: none;
+}
+button { transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease, transform 0.1s ease; }

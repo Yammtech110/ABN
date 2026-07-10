@@ -1,0 +1,25 @@
+# Render.com — one-click backend deploy
+# Dashboard: New → Blueprint → connect repo → select this file
+# Or: New Web Service → Root Directory: backend → Start: npm start
+
+services:
+  - type: web
+    name: abn-community-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: STORAGE_MODE
+        value: supabase
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: PORT
+        value: 10000
+      # Set these in Render Dashboard → Environment (secrets):
+      # JWT_SECRET, SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
+      # FRONTEND_URL=https://your-frontend.vercel.app
+      # CORS_ORIGINS=capacitor://localhost,https://your-frontend.vercel.app

@@ -1,0 +1,261 @@
+/**
+ * routes/jobsBoard.js — Supabase-backed jobs board
+ */
+
+'use strict';
+
+const express = require('express');
+const { supabaseAdmin } = require('../supabase');
+const { isSupabaseStorage, directoryProfiles, jobsBoard, newId, today } = require('../db');
+const { mapJobFromDb, mapJobToDb } = require('../lib/supabaseMappers');
+const { authenticate, requireRole } = require('../middleware/authMiddleware');
+
+const router = express.Router();
+
+const VALID_CATEGORIES = ['IT', 'Graphic Designing', 'Developer', 'Chef', 'Maid', 'Others'];
+
+const mapJob = (row) => ({ ...row });
+
+async function fetchAllJobs() {
+  if (!isSupabaseStorage()) return jobsBoard.map(mapJob);
+
+  const { data, error } = await supabaseAdmin.from('jobs_board').select('*');
+  if (error) throw new Error(error.message);
+  return (data || []).map(mapJobFromDb);
+}
+
+async function findJobById(id) {
+  if (!isSupabaseStorage()) return jobsBoard.find((j) => j.id === id) || null;
+
+  const { data, error } = await supabaseAdmin
+    .from('jobs_board')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data ? mapJobFromDb(data) : null;
+}
+
+async function findProfileByEmail(email) {
+  if (!isSupabaseStorage()) return directoryProfiles.find((p) => p.email === email) || null;
+
+  const { data, error } = await supabaseAdmin
+    .from('profiles_directory')
+    .select('*')
+    .eq('email', email)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data ? require('../lib/supabaseMappers').mapProfileFromDb(data) : null;
+}
+
+const isBusinessHiring = async (businessId) => {
+  if (!isSupabaseStorage()) {
+    const profile = directoryProfiles.find((p) => p.id === businessId);
+    return Boolean(profile?.hiringActive && profile?.isActive !== false);
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from('profiles_directory')
+    .select('hiring_active, is_active')
+    .eq('id', businessId)
+    .maybeSingle();
+
+  if (error || !data) return false;
+  return Boolean(data.hiring_active && data.is_active !== false);
+};
+
+// ── GET /api/jobsboard ────────────────────────────────────────────────────
+router.get('/', async (req, res, next) => {
+  try {
+    const { category } = req.query;
+    const allJobs = await fetchAllJobs();
+
+    const hiringChecks = await Promise.all(
+      allJobs.map(async (j) => ({ job: j, hiring: await isBusinessHiring(j.businessId) })),
+    );
+
+    let results = hiringChecks
+      .filter(({ job, hiring }) => job.isActive && hiring)
+      .map(({ job }) => job);
+
+    if (category && VALID_CATEGORIES.includes(category)) {
+      results = results.filter((j) => j.category === category);
+    }
+
+    results.sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+    res.json(results.map(mapJob));
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── GET /api/jobsboard/mine ───────────────────────────────────────────────
+router.get('/mine', authenticate, requireRole('customer', 'admin'), async (req, res, next) => {
+  try {
+    const profile = await findProfileByEmail(req.user.email);
+    if (!profile) {
+      return res.status(404).json({ error: 'You do not have a directory profile yet.' });
+    }
+
+    const allJobs = await fetchAllJobs();
+    const mine = allJobs
+      .filter((j) => j.businessId === profile.id)
+      .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+
+    res.json(mine.map(mapJob));
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── GET /api/jobsboard/:id ────────────────────────────────────────────────
+router.get('/:id', async (req, res, next) => {
+  try {
+    const job = await findJobById(req.params.id);
+    if (!job) return res.status(404).json({ error: 'Job not found.' });
+    res.json(mapJob(job));
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── POST /api/jobsboard ───────────────────────────────────────────────────
+router.post('/', authenticate, requireRole('customer', 'admin'), async (req, res, next) => {
+  try {
+    const {
+      title, category, requirements = '',
+      salaryMin, salaryMax, hiringEmail,
+    } = req.body;
+
+    if (!title) return res.status(400).json({ error: 'title is required.' });
+    if (!hiringEmail) return res.status(400).json({ error: 'hiringEmail is required.' });
+    if (!VALID_CATEGORIES.includes(category)) {
+      return res.status(400).json({ error: `category must be one of: ${VALID_CATEGORIES.join(', ')}` });
+    }
+
+    const min = parseFloat(salaryMin);
+    const max = parseFloat(salaryMax);
+    if (isNaN(min) || isNaN(max) || min < 0 || max < min) {
+      return res.status(400).json({ error: 'salaryMin and salaryMax must be valid (min ≤ max).' });
+    }
+
+    const profile = await findProfileByEmail(req.user.email);
+    if (!profile) {
+      return res.status(404).json({ error: 'You must have a directory profile before posting jobs.' });
+    }
+    if (profile.listingType !== 'business' && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Jobs can only be posted from approved business listings.' });
+    }
+    if (!profile.hiringActive) {
+      return res.status(403).json({
+        error: 'Hiring is not active on your profile. Enable it first from the Account tab.',
+      });
+    }
+
+    const job = {
+      id:              newId('job'),
+      businessId:      profile.id,
+      businessName:    profile.businessName,
+      businessLogoUrl: profile.imageUrl || '',
+      title,
+      category,
+      requirements,
+      salaryMin:       min,
+      salaryMax:       max,
+      hiringEmail,
+      isActive:        true,
+      postedDate:      today(),
+      createdAt:       new Date().toISOString(),
+    };
+
+    if (!isSupabaseStorage()) {
+      jobsBoard.unshift(job);
+      return res.status(201).json(mapJob(job));
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('jobs_board')
+      .insert(mapJobToDb(job))
+      .select('*')
+      .single();
+
+    if (error) return res.status(500).json({ error: error.message });
+    res.status(201).json(mapJob(mapJobFromDb(data)));
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── PUT /api/jobsboard/:id ────────────────────────────────────────────────
+router.put('/:id', authenticate, requireRole('customer', 'admin'), async (req, res, next) => {
+  try {
+    const job = await findJobById(req.params.id);
+    if (!job) return res.status(404).json({ error: 'Job not found.' });
+
+    const profile = await findProfileByEmail(req.user.email);
+    if (req.user.role !== 'admin' && (!profile || profile.id !== job.businessId)) {
+      return res.status(403).json({ error: 'You can only edit your own job postings.' });
+    }
+
+    const { title, category, requirements, salaryMin, salaryMax, hiringEmail } = req.body;
+
+    if (category && !VALID_CATEGORIES.includes(category)) {
+      return res.status(400).json({ error: `category must be one of: ${VALID_CATEGORIES.join(', ')}` });
+    }
+
+    const updated = { ...job };
+    if (title        !== undefined) updated.title        = title;
+    if (category     !== undefined) updated.category     = category;
+    if (requirements !== undefined) updated.requirements = requirements;
+    if (hiringEmail  !== undefined) updated.hiringEmail  = hiringEmail;
+    if (salaryMin    !== undefined) updated.salaryMin    = parseFloat(salaryMin);
+    if (salaryMax    !== undefined) updated.salaryMax    = parseFloat(salaryMax);
+
+    if (!isSupabaseStorage()) {
+      const idx = jobsBoard.findIndex((j) => j.id === req.params.id);
+      jobsBoard[idx] = updated;
+      return res.json(mapJob(updated));
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('jobs_board')
+      .update(mapJobToDb(updated))
+      .eq('id', req.params.id)
+      .select('*')
+      .single();
+
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(mapJob(mapJobFromDb(data)));
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── DELETE /api/jobsboard/:id ─────────────────────────────────────────────
+router.delete('/:id', authenticate, requireRole('customer', 'admin'), async (req, res, next) => {
+  try {
+    const job = await findJobById(req.params.id);
+    if (!job) return res.status(404).json({ error: 'Job not found.' });
+
+    const profile = await findProfileByEmail(req.user.email);
+    if (req.user.role !== 'admin' && (!profile || profile.id !== job.businessId)) {
+      return res.status(403).json({ error: 'You can only delete your own job postings.' });
+    }
+
+    if (!isSupabaseStorage()) {
+      const idx = jobsBoard.findIndex((j) => j.id === req.params.id);
+      jobsBoard.splice(idx, 1);
+      return res.status(204).end();
+    }
+
+    const { error } = await supabaseAdmin.from('jobs_board').delete().eq('id', req.params.id);
+    if (error) return res.status(500).json({ error: error.message });
+    res.status(204).end();
+  } catch (err) {
+    next(err);
+  }
+});
+
+module.exports = router;
