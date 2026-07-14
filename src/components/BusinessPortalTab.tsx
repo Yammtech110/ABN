@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useDirectory } from '../context/DirectoryContext';
 import { apiFetch } from '../lib/api';
 import { TRANSLATIONS } from '../data/translations';
@@ -10,9 +10,8 @@ import {
   Clock,
   Briefcase,
   History,
-  TrendingUp,
-  Settings,
-  Plus,
+  Gift,
+  Star,
   RefreshCw,
   Mail,
   Phone,
@@ -25,18 +24,28 @@ import {
   ArrowRight,
   ArrowLeft,
   Zap,
+  Smartphone,
+  BadgeCheck,
 } from 'lucide-react';
 import { Business, PaymentRecord } from '../types';
 import { US_STATES } from '../data/usStates';
 import {
   formatUSPhoneInput,
   formatZipInput,
-  formatOtpInput,
   isValidUSPhone,
   normalizeUSPhone,
   validateDirectoryRegistration,
 } from '../utils/businessRegistrationValidation';
+import { bilingualEn, textEn } from '../utils/englishOnly';
 import { canManageListing, getUserListing, listingKind } from '../utils/listingAccess';
+import { filterNotificationsForUser } from '../utils/notifications';
+import {
+  IAP_PRODUCTS,
+  purchaseSubscription,
+  restorePurchases,
+  getTrialEndDate,
+  getDaysRemaining,
+} from '../hooks/useInAppPurchase';
 
 const DEFAULT_LOGO = 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=200&h=200';
 const DEFAULT_COVER = 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&q=80&w=1200&h=400';
@@ -66,10 +75,22 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
     payments,
     addBusiness,
     updateBusiness,
-    addPayment,
+    renewMembership,
     apiToken,
     refreshDirectory,
+    notifications,
+    refreshNotifications,
   } = useDirectory();
+
+  useEffect(() => {
+    refreshNotifications();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const portalNotifications = useMemo(
+    () => filterNotificationsForUser(notifications, currentUser).filter((n) => !n.isRead),
+    [notifications, currentUser],
+  );
+  const latestPortalAlert = portalNotifications[0];
 
   // Derive plan price by listing type
   const myBusiness = getUserListing(currentUser, businesses);
@@ -102,20 +123,8 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
   const [regSuccess, setRegSuccess] = useState('');
   const [regError, setRegError] = useState('');
   const [regPhotoError, setRegPhotoError] = useState('');
-  const [regOtp, setRegOtp] = useState('');
-  const [regOtpSent, setRegOtpSent] = useState(false);
-  const [regOtpNotice, setRegOtpNotice] = useState('');
-  const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isSubmittingReg, setIsSubmittingReg] = useState(false);
   const [showApprovalNotice, setShowApprovalNotice] = useState(false);
-
-  const isRegPhoneValid = React.useMemo(() => isValidUSPhone(regPhone), [regPhone]);
-
-  React.useEffect(() => {
-    setRegOtp('');
-    setRegOtpSent(false);
-    setRegOtpNotice('');
-  }, [regPhone]);
 
   React.useEffect(() => {
     if (!registrationType) return;
@@ -133,7 +142,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
     const listingKindValue = listingKind(myBusiness);
     setRegistrationType(listingKindValue);
     setRegName(myBusiness.name);
-    setRegDesc(myBusiness.description[language] || myBusiness.description.en);
+    setRegDesc(textEn(myBusiness.description));
     setRegState(myBusiness.subcategory.en || '');
     setRegCity(String(myBusiness.city || ''));
     setRegZipCode(myBusiness.area || '');
@@ -141,7 +150,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
     setRegPhone(myBusiness.phone || '');
     setRegWhatsapp(myBusiness.whatsapp || '');
     setRegWeb(myBusiness.website || '');
-    setRegHours(myBusiness.workingHours[language] || myBusiness.workingHours.en || '');
+    setRegHours(textEn(myBusiness.workingHours) || '');
     setRegImages(buildListingImages(myBusiness.gallery, myBusiness.logoUrl));
     if (listingKindValue === 'service') {
       const serviceCat = categories.find((c) => c.group === 'Services');
@@ -165,104 +174,97 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
   React.useEffect(() => {
     if (myBusiness) {
       setEditName(myBusiness.name);
-      setEditDesc(myBusiness.description[language] || myBusiness.description.en);
+      setEditDesc(textEn(myBusiness.description));
       setEditPhone(myBusiness.phone);
       setEditWhatsapp(myBusiness.whatsapp);
-      setEditHours(myBusiness.workingHours[language] || myBusiness.workingHours.en);
+      setEditHours(textEn(myBusiness.workingHours));
       setEditImages(buildListingImages(myBusiness.gallery, myBusiness.logoUrl));
       setEditCover(myBusiness.coverUrl);
     }
-  }, [myBusiness?.id, language]);
+  }, [myBusiness?.id]);
 
-  // Payment Form state
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardExpiry, setCardExpiry] = useState('');
-  const [cardCvc, setCardCvc] = useState('');
+  // IAP Payment state
   const [payError, setPayError] = useState('');
   const [paySuccess, setPaySuccess] = useState('');
   const [selectedReceipt, setSelectedReceipt] = useState<PaymentRecord | null>(null);
-
-  // Card brand detection + payment progress
-  const [payProgressSteps, setPayProgressSteps] = useState<string[]>([]);
   const [isProcessingPay, setIsProcessingPay] = useState(false);
-  const [detectedBrand, setDetectedBrand] = useState<'Visa' | 'Mastercard' | 'Amex' | 'Unknown'>('Unknown');
+  const [isRestoringPurchases, setIsRestoringPurchases] = useState(false);
 
-  // ── Card number formatter: groups of 4 digits with spaces ──
-  const handleCardNumberChange = (val: string) => {
-    const digits = val.replace(/\D/g, '').slice(0, 16);
-    const formatted = digits.replace(/(\d{4})(?=\d)/g, '$1 ');
-    setCardNumber(formatted);
-    // Detect brand from first digit
-    if (digits.startsWith('4')) setDetectedBrand('Visa');
-    else if (digits.startsWith('5')) setDetectedBrand('Mastercard');
-    else if (digits.startsWith('3')) setDetectedBrand('Amex');
-    else setDetectedBrand('Unknown');
-  };
+  // ── IAP Subscribe — native Google Play / Apple payment, then record on server ──
+  const handleIAPSubscribe = async () => {
+    if (!myBusiness) return;
+    setPayError('');
+    setPaySuccess('');
+    setIsProcessingPay(true);
 
-  // ── Card expiry formatter: auto-insert slash after MM ──
-  const handleExpiryChange = (val: string) => {
-    const digits = val.replace(/\D/g, '').slice(0, 4);
-    if (digits.length >= 3) {
-      setCardExpiry(`${digits.slice(0, 2)}/${digits.slice(2)}`);
-    } else {
-      setCardExpiry(digits);
+    const productId = kind === 'service'
+      ? IAP_PRODUCTS.SERVICE_MONTHLY
+      : IAP_PRODUCTS.BUSINESS_MONTHLY;
+
+    const result = await purchaseSubscription(productId);
+
+    if (!result.success) {
+      setPayError(result.error || (language === 'en' ? 'Payment was not completed.' : 'لم يكتمل الدفع.'));
+      setIsProcessingPay(false);
+      return;
     }
+
+    const renewal = await renewMembership(myBusiness.id, planAmount);
+    if (!renewal.success) {
+      setPayError(renewal.error || (language === 'en' ? 'Payment succeeded but activation failed. Contact support.' : 'تم الدفع لكن فشل التفعيل. تواصل مع الدعم.'));
+      setIsProcessingPay(false);
+      return;
+    }
+
+    setPaySuccess(language === 'en'
+      ? '✅ Subscription activated! Your listing is now live in the directory.'
+      : '✅ تم تفعيل الاشتراك! ظهر نشاطك في الدليل.');
+    setTimeout(() => { setPaySuccess(''); setActivePortalTab('dash'); }, 3000);
+    setIsProcessingPay(false);
   };
 
-  // ── Subscription expiry warning (within 7 days) ──
+  // ── Restore previous purchases (required by Apple guidelines) ──
+  const handleRestorePurchases = async () => {
+    if (!myBusiness) return;
+    setIsRestoringPurchases(true);
+    setPayError('');
+    const purchases = await restorePurchases();
+    if (purchases.length > 0) {
+      const renewal = await renewMembership(myBusiness.id, planAmount);
+      if (renewal.success) {
+        setPaySuccess(language === 'en' ? 'Purchases restored successfully!' : 'تم استعادة الاشتراك بنجاح!');
+      } else {
+        setPayError(renewal.error || (language === 'en' ? 'Could not activate restored subscription.' : 'تعذر تفعيل الاشتراك المستعاد.'));
+      }
+    } else {
+      setPayError(language === 'en' ? 'No previous purchases found to restore.' : 'لا توجد اشتراكات سابقة لاستعادتها.');
+    }
+    setIsRestoringPurchases(false);
+  };
+
+  // ── Free trial detection ──
+  const trialDaysRemaining = React.useMemo(() => {
+    if (!myBusiness?.membershipExpiryDate) return 0;
+    return getDaysRemaining(myBusiness.membershipExpiryDate);
+  }, [myBusiness?.membershipExpiryDate]);
+
+  const isOnFreeTrial = React.useMemo(() => {
+    if (!myBusiness) return false;
+    // If the expiry is > 45 days from now, it was set as a 60-day trial
+    return trialDaysRemaining > 45;
+  }, [myBusiness, trialDaysRemaining]);
+
+  // ── Subscription expiry warning (within 7 days, after trial) ──
   const expiryWarning = React.useMemo(() => {
     if (!myBusiness?.membershipExpiryDate) return null;
-    const expiry = new Date(myBusiness.membershipExpiryDate);
-    const today = new Date();
-    const diffDays = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    if (isOnFreeTrial) return null; // don't warn during trial
+    const diffDays = getDaysRemaining(myBusiness.membershipExpiryDate);
     if (diffDays <= 0) return { days: diffDays, type: 'expired' as const };
     if (diffDays <= 7) return { days: diffDays, type: 'warning' as const };
     return null;
-  }, [myBusiness?.membershipExpiryDate]);
+  }, [myBusiness?.membershipExpiryDate, isOnFreeTrial]);
 
   // Handle registration submission
-  const handleSendOtp = async () => {
-    if (!isRegPhoneValid) {
-      setRegError(t.phoneInvalid);
-      return;
-    }
-    if (!apiToken) {
-      setRegError(t.phoneVerificationRequired);
-      return;
-    }
-
-    setIsSendingOtp(true);
-    setRegError('');
-    setRegOtpNotice('');
-
-    try {
-      const res = await apiFetch('/api/verification/send-otp', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiToken}`,
-        },
-        body: JSON.stringify({ phone: `+${normalizeUSPhone(regPhone)}` }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setRegError(data.error || t.otpInvalid);
-        return;
-      }
-
-      setRegOtpSent(true);
-      setRegOtp('');
-      const demoHint = data.demoOtp
-        ? (language === 'en' ? ` Demo code: ${data.demoOtp}` : ` رمز تجريبي: ${data.demoOtp}`)
-        : '';
-      setRegOtpNotice(`${t.otpSent}${demoHint}`);
-    } catch {
-      setRegError(language === 'en' ? 'Could not reach verification service.' : 'تعذر الاتصال بخدمة التحقق.');
-    } finally {
-      setIsSendingOtp(false);
-    }
-  };
-
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!registrationType) return;
@@ -292,8 +294,6 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
         zipInvalid: t.zipInvalid,
         stateRequired: t.stateRequired,
         hoursRequired: t.hoursRequired,
-        otpRequired: t.otpRequired,
-        phoneVerificationRequired: t.phoneVerificationRequired,
       },
     );
 
@@ -303,13 +303,8 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
       return;
     }
 
-    if (!regOtp.trim()) {
-      setRegError(t.otpRequired);
-      return;
-    }
-
     if (!apiToken) {
-      setRegError(t.phoneVerificationRequired);
+      setRegError(t.emailVerificationRequired);
       return;
     }
 
@@ -326,20 +321,6 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
     const categoryLabel = cat?.name.en || 'General';
 
     try {
-      const verifyRes = await apiFetch('/api/verification/verify-otp', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiToken}`,
-        },
-        body: JSON.stringify({ phone: formattedPhone, code: regOtp.trim() }),
-      });
-      const verifyData = await verifyRes.json();
-      if (!verifyRes.ok) {
-        setRegError(verifyData.error || t.otpInvalid);
-        return;
-      }
-
       const res = await apiFetch('/api/directory', {
         method: 'POST',
         headers: {
@@ -389,7 +370,8 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
         whatsapp: regWhatsapp.trim() || formattedPhone,
         website: regWeb,
         workingHours: { en: regHours, ar: regHours },
-        membershipExpiryDate: String(data.membershipExpiry ?? new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0]),
+        // 2 MONTHS FREE TRIAL: Set expiry to 60 days from today for all new registrations
+      membershipExpiryDate: getTrialEndDate(),
         subscriptionTier: registrationType === 'service' ? 30 : 50,
         gallery,
         rating: 0,
@@ -436,8 +418,6 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
         zipInvalid: t.zipInvalid,
         stateRequired: t.stateRequired,
         hoursRequired: t.hoursRequired,
-        otpRequired: t.otpRequired,
-        phoneVerificationRequired: t.phoneVerificationRequired,
       },
     );
 
@@ -458,7 +438,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
     const updatedBiz: Business = {
       ...myBusiness,
       name: regName,
-      description: { en: regDesc, ar: language === 'ar' ? regDesc : myBusiness.description.ar },
+      description: bilingualEn(regDesc),
       subcategory: { en: regState, ar: regState },
       categoryId: regCatId,
       address: regAddress,
@@ -467,7 +447,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
       phone: formattedPhone,
       whatsapp: regWhatsapp.trim() || formattedPhone,
       website: regWeb,
-      workingHours: { en: regHours, ar: language === 'ar' ? regHours : myBusiness.workingHours.ar },
+      workingHours: bilingualEn(regHours),
       logoUrl: defaultLogo,
       coverUrl: regImages[0] || myBusiness.coverUrl,
       gallery: regImages.length > 0 ? regImages : myBusiness.gallery,
@@ -518,16 +498,10 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
     const updatedBiz: Business = {
       ...myBusiness,
       name: editName,
-      description: {
-        en: editDesc,
-        ar: language === 'ar' ? editDesc : myBusiness.description.ar
-      },
+      description: bilingualEn(editDesc),
       phone: editPhone,
       whatsapp: editWhatsapp,
-      workingHours: {
-        en: editHours,
-        ar: language === 'ar' ? editHours : myBusiness.workingHours.ar
-      },
+      workingHours: bilingualEn(editHours),
       logoUrl: editImages[0] || myBusiness.logoUrl,
       coverUrl: editImages[1] || editCover || myBusiness.coverUrl,
       gallery: editImages.length > 0 ? editImages : myBusiness.gallery,
@@ -562,165 +536,6 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
     setEditSuccess(language === 'en' ? 'Profile details updated successfully!' : 'تم تحديث بيانات الصفحة بنجاح!');
     setTimeout(() => setEditSuccess(''), 4000);
     setActivePortalTab('dash');
-  };
-
-  // Helper to detect card brand
-  const detectCardBrand = (numStr: string) => {
-    const cleaned = numStr.replace(/\D/g, '');
-    if (cleaned.startsWith('4')) return 'Visa';
-    if (/^(5[1-5]|2[2-7])/.test(cleaned)) return 'Mastercard';
-    if (/^(34|37)/.test(cleaned)) return 'Amex';
-    return 'Unknown';
-  };
-
-  // Luhn checksum algorithm validation
-  const validateLuhn = (numStr: string): boolean => {
-    let sum = 0;
-    let shouldDouble = false;
-    for (let i = numStr.length - 1; i >= 0; i--) {
-      let digit = parseInt(numStr.charAt(i), 10);
-      if (isNaN(digit)) return false;
-
-      if (shouldDouble) {
-        digit *= 2;
-        if (digit > 9) digit -= 9;
-      }
-      sum += digit;
-      shouldDouble = !shouldDouble;
-    }
-    return sum % 10 === 0;
-  };
-
-  // Expiry date checker
-  const validateExpiry = (expiryStr: string): { valid: boolean; errorMsg: string } => {
-    const trimmed = expiryStr.trim();
-    if (!/^\d{2}\/\d{2}$/.test(trimmed)) {
-      return { valid: false, errorMsg: language === 'en' ? 'Use MM/YY format (e.g. 12/28).' : 'الرجاء استخدام الصيغة MM/YY (بما في ذلك "/") مثل 12/28.' };
-    }
-    const [mStr, yStr] = trimmed.split('/');
-    const month = parseInt(mStr, 10);
-    const year = parseInt('20' + yStr, 10);
-
-    if (month < 1 || month > 12) {
-      return { valid: false, errorMsg: language === 'en' ? 'Expiry month must be between 01 and 12.' : 'يجب أن يكون شهر الصلاحية بين 01 و 12.' };
-    }
-
-    const today = new Date();
-    const currentMonth = today.getMonth() + 1; // 1-indexed
-    const currentYear = today.getFullYear();
-
-    if (year < currentYear || (year === currentYear && month < currentMonth)) {
-      return { valid: false, errorMsg: language === 'en' ? 'The card has expired.' : 'هذه البطاقة منتهية الصلاحية.' };
-    }
-
-    return { valid: true, errorMsg: '' };
-  };
-
-  // Payment renew simulation
-  const handlePaymentSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!myBusiness) return;
-    setPayError('');
-    setPaySuccess('');
-
-    const cleanedCard = cardNumber.replace(/\D/g, '');
-    if (cleanedCard.length < 13 || cleanedCard.length > 19) {
-      setPayError(language === 'en' ? 'Card number must be between 13 and 19 digits.' : 'رقم البطاقة غير مكتمل، يرجى ملء البيانات كاملة.');
-      return;
-    }
-
-    // 1. Math Luhn Check validation
-    const luhnPassed = validateLuhn(cleanedCard);
-    if (!luhnPassed) {
-      setPayError(language === 'en' 
-        ? 'Luhn Checksum Verification Failed. This card code is mathematically invalid or simulated incorrectly. Try standard testing credentials like 4242 4242 4242 4242.' 
-        : 'فشل فحص الحساب الرقمي (Luhn Checksum). رمز البطاقة غير صالح، يرجى استخدام بطاقة صحيحة أو تجريبية مثل 4242 4242 4242 4242.'
-      );
-      return;
-    }
-
-    // 2. Validate Expiry format
-    const expiryValidation = validateExpiry(cardExpiry);
-    if (!expiryValidation.valid) {
-      setPayError(expiryValidation.errorMsg);
-      return;
-    }
-
-    // 3. Validate CVV
-    if (cardCvc.length < 3 || cardCvc.length > 4) {
-      setPayError(language === 'en' ? 'CVC/CVV security code must be 3 or 4 digits.' : 'يجب أن يتكون رمز الأمان (CVC) من 3 أو 4 أرقام.');
-      return;
-    }
-
-    // Capture card brand dynamically
-    const brand = detectCardBrand(cleanedCard);
-    setDetectedBrand(brand);
-
-    // If validated, trigger live step simulation checking!
-    setIsProcessingPay(true);
-    setPayProgressSteps([]);
-
-    const steps = [
-      language === 'en' ? '🔍 Calculating Luhn algorithm checksum... [MATHEMATICALLY VALID]' : '🔍 يجري حساب الرقم الرياضي للبطاقة... [مُطابِق]',
-      language === 'en' ? `💳 Resolving card network brand... [${brand.toUpperCase()} Network Resolved]` : `💳 التعرف على شبكة البطاقة... [تم تحديد شبكة ${brand.toUpperCase()}]`,
-      language === 'en' ? '🌐 Handshaking with secure online gateway... [HTTPS PORT 443 CONNECTED]' : '🌐 الربط بالمنفذ البنكي الآمن... [اتصال HTTPS مشفر وجاري]',
-      language === 'en' ? '🔒 Running anti-fraud validation & 3D-Secure state... [ACCOUNTS COMMITTED & SUFFICIENT FUNDS]' : '🔒 تدقيق مكافحة الاحتيال وحالة الرصيد المالي... [البطاقة نشطة وبها رصيد كافي]',
-      language === 'en' ? '✅ Finalizing transaction auth token...' : `✅ يجري إصدار رقم التوثيق وتحويل الـ ${planAmount}$...`
-    ];
-
-    let currentStep = 0;
-    const interval = setInterval(() => {
-      // Create fresh step snapshot updating UI
-      setPayProgressSteps(prev => [...prev, steps[currentStep]]);
-      currentStep++;
-      if (currentStep >= steps.length) {
-        clearInterval(interval);
-        
-        // Finalize transaction writes!
-        const payRec: PaymentRecord = {
-          id: `pay-${Date.now()}`,
-          businessId: myBusiness.id,
-          amount: planAmount,
-          date: new Date().toISOString().split('T')[0],
-          status: 'success',
-          refNo: `TXN-${Math.floor(Math.random() * 9000000 + 1000000)}`
-        };
-
-        addPayment(payRec);
-        
-        // Mark business as active
-        const activatedBiz: Business = {
-          ...myBusiness,
-          status: 'active',
-          membershipExpiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-        };
-        updateBusiness(activatedBiz);
-
-        setPaySuccess(language === 'en' ? 'Registration fee paid successfully! Status set to ACTIVE.' : 'تم سداد الاشتراك لثلاثين يوماً بنجاح وتفعيل نشاطك التجاري!');
-        setCardNumber('');
-        setCardExpiry('');
-        setCardCvc('');
-        setIsProcessingPay(false);
-        setPayProgressSteps([]);
-
-        setTimeout(() => {
-          setPaySuccess('');
-          setActivePortalTab('dash');
-        }, 3000);
-      }
-    }, 600);
-  };
-
-  // Test toggle: simulate suspension to let them inspect suspended dashboards!
-  const simulateSuspension = () => {
-    if (!myBusiness) return;
-    const expiredBiz: Business = {
-      ...myBusiness,
-      status: 'suspended',
-      membershipExpiryDate: '2026-06-18' // set to yesterday
-    };
-    updateBusiness(expiredBiz);
-    alert(language === 'en' ? 'Subscription expired! Business profile locked and hidden from directory.' : 'تم تعليق الاشتراك بنجاح لأغراض الفحص! تم إخفاء العمل من الدليل ومنع تحديثه.');
   };
 
   // Filters payments matching current business
@@ -842,6 +657,16 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
       {approvalNoticeModal}
     <div className="space-y-6" id="portal-tab-container">
 
+      {latestPortalAlert && (
+        <div className="p-3.5 rounded-2xl bg-[#FFA048]/10 border border-[#FFA048]/30 flex gap-2.5 items-start">
+          <AlertTriangle className="w-4 h-4 text-[#FFA048] shrink-0 mt-0.5" />
+          <div className="min-w-0">
+            <p className="text-[10px] font-black text-[#FFA048] uppercase tracking-wider">{latestPortalAlert.title}</p>
+            <p className="text-[10px] text-gray-300 mt-1 leading-relaxed">{latestPortalAlert.message}</p>
+          </div>
+        </div>
+      )}
+
       {/* Back navigation header — only rendered when accessed as a sub-page */}
       {backHeader}
 
@@ -870,7 +695,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                     </div>
                     <div>
                       <h3 className="text-sm font-black text-white">{language === 'en' ? 'Register as a Business' : 'سجل كصاحب عمل'}</h3>
-                      <span className="text-[10px] font-bold text-[#FFA048] bg-[#FFA048]/10 px-2 py-0.5 rounded-md mt-1 inline-block border border-[#FFA048]/20">$50 / month</span>
+                      <span className="text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-md mt-1 inline-block border border-green-500/20">🎁 FREE 2 Months, then $50/mo</span>
                     </div>
                   </div>
                   <ArrowRight className="w-5 h-5 text-gray-600 group-hover:text-[#FFA048] transition-colors" />
@@ -891,7 +716,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                     </div>
                     <div>
                       <h3 className="text-sm font-black text-white">{language === 'en' ? 'Register as a Service Provider' : 'سجل كمقدم خدمة'}</h3>
-                      <span className="text-[10px] font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-md mt-1 inline-block border border-blue-500/20">$30 / month</span>
+                      <span className="text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-md mt-1 inline-block border border-green-500/20">🎁 FREE 2 Months, then $30/mo</span>
                     </div>
                   </div>
                   <ArrowRight className="w-5 h-5 text-gray-600 group-hover:text-blue-400 transition-colors" />
@@ -912,9 +737,6 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                 setRegError('');
                 setRegPhotoError('');
                 setRegSuccess('');
-                setRegOtp('');
-                setRegOtpSent(false);
-                setRegOtpNotice('');
               }}
               className="p-1.5 rounded-full bg-[#191613] hover:bg-[#2D251C] transition-colors border border-[#2D2319]"
             >
@@ -980,16 +802,16 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
 
               {registrationType === 'business' && (
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1">{t.selectCategory}*</label>
+                  <label className="block text-xs app-label mb-1">{t.selectCategory}*</label>
                   <select
                     value={regCatId}
                     onChange={(e) => setRegCatId(e.target.value)}
-                    className="w-full p-2.5 rounded-xl bg-[#0F0E0C] border border-[#2D2319] text-xs text-[#FFA048] outline-none"
+                    className="w-full p-2.5 rounded-xl border text-xs app-field outline-none focus:border-[#FFA048]"
                     required
                   >
                     {categories.map((c) => (
                       <option key={c.id} value={c.id}>
-                        {c.name[language] || c.name.en}
+                        {c.name.en}
                       </option>
                     ))}
                   </select>
@@ -1014,11 +836,11 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs text-gray-400 mb-1">{t.state}*</label>
+              <label className="block text-xs app-label mb-1">{t.state}*</label>
               <select
                 value={regState}
                 onChange={(e) => setRegState(e.target.value)}
-                className="w-full p-2.5 rounded-xl bg-[#0F0E0C] border border-[#2D2319] text-xs text-[#FFA048] outline-none focus:border-[#FFA048]"
+                className="w-full p-2.5 rounded-xl border text-xs app-field outline-none focus:border-[#FFA048]"
                 required
               >
                 <option value="">{language === 'en' ? 'Select state…' : 'اختر الولاية…'}</option>
@@ -1032,15 +854,22 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs text-gray-400 mb-1">{t.city}*</label>
-                <input
-                  type="text"
+                <label className="block text-xs app-label mb-1">{t.city}*</label>
+                <select
                   value={regCity}
                   onChange={(e) => setRegCity(e.target.value)}
-                  placeholder={language === 'en' ? 'e.g. Houston' : 'مثال: هيوستن'}
-                  className="w-full p-2.5 rounded-xl bg-[#0F0E0C] border border-[#2D2319] text-xs text-white placeholder-gray-600 outline-none focus:border-[#FFA048]"
+                  className="w-full p-2.5 rounded-xl border text-xs app-field outline-none focus:border-[#FFA048]"
                   required
-                />
+                >
+                  <option value="" disabled>{language === 'en' ? 'Select City' : 'اختر المدينة'}</option>
+                  <option value="New York">{t.newyork}</option>
+                  <option value="Los Angeles">{t.losangeles}</option>
+                  <option value="Chicago">{t.chicago}</option>
+                  <option value="Houston">{t.houston}</option>
+                  <option value="Miami">{t.miami}</option>
+                  <option value="Dearborn">{t.dearborn}</option>
+                  <option value="Dallas">{t.dallas}</option>
+                </select>
               </div>
               <div>
                 <label className="block text-xs text-gray-400 mb-1">{t.zipCode}*</label>
@@ -1108,29 +937,17 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                 </div>
               </div>
             ) : (
-            <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs text-gray-400 mb-1">{t.phone}*</label>
-                <div className="flex gap-2">
-                  <input
-                    type="tel"
-                    value={regPhone}
-                    placeholder={t.phoneHint}
-                    onChange={(e) => setRegPhone(formatUSPhoneInput(e.target.value))}
-                    className="flex-1 min-w-0 p-2.5 rounded-xl bg-[#0F0E0C] border border-[#2D2319] text-xs text-white placeholder-gray-600 outline-none focus:border-[#FFA048]"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={handleSendOtp}
-                    disabled={!isRegPhoneValid || isSendingOtp}
-                    className="shrink-0 px-3 py-2.5 rounded-xl bg-[#FFA048]/15 border border-[#FFA048]/40 text-[#FFA048] text-[10px] font-extrabold uppercase tracking-wide hover:bg-[#FFA048]/25 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-                    id="btn-send-otp"
-                  >
-                    {isSendingOtp ? t.sendingOtp : t.sendOtp}
-                  </button>
-                </div>
+                <input
+                  type="tel"
+                  value={regPhone}
+                  placeholder={t.phoneHint}
+                  onChange={(e) => setRegPhone(formatUSPhoneInput(e.target.value))}
+                  className="w-full p-2.5 rounded-xl bg-[#0F0E0C] border border-[#2D2319] text-xs text-white placeholder-gray-600 outline-none focus:border-[#FFA048]"
+                  required
+                />
                 <p className="mt-1 text-[9px] text-gray-600">{t.phoneHint}</p>
               </div>
               <div>
@@ -1144,48 +961,17 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                 />
               </div>
             </div>
-
-            {isRegPhoneValid && (
-              <div className="animate-fade-in-up space-y-1.5" id="reg-otp-section">
-                <label className="block text-xs text-gray-400 mb-1">{t.verificationOtp}*</label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  maxLength={6}
-                  value={regOtp}
-                  onChange={(e) => setRegOtp(formatOtpInput(e.target.value))}
-                  placeholder={language === 'en' ? 'Enter 6-digit code' : 'أدخل الرمز المكوّن من 6 أرقام'}
-                  disabled={!regOtpSent}
-                  className="w-full p-2.5 rounded-xl bg-[#0F0E0C] border border-[#2D2319] text-xs text-white placeholder-gray-600 outline-none focus:border-[#FFA048] disabled:opacity-50 disabled:cursor-not-allowed tracking-[0.35em] text-center font-bold"
-                  id="reg-otp-input"
-                />
-                {regOtpNotice && (
-                  <p className="text-[10px] text-green-400 font-medium">{regOtpNotice}</p>
-                )}
-                {!regOtpSent && (
-                  <p className="text-[9px] text-gray-500">
-                    {language === 'en' ? 'Tap Send OTP to receive your verification code.' : 'اضغط إرسال OTP لاستلام رمز التحقق.'}
-                  </p>
-                )}
-              </div>
-            )}
-            </>
             )}
 
             <button
               type="submit"
-              disabled={
-                isManageForm
-                  ? isSavingManage
-                  : isSubmittingReg || (isRegPhoneValid && !regOtp.trim())
-              }
+              disabled={isManageForm ? isSavingManage : isSubmittingReg}
               className="w-full py-3 mt-4 bg-[#FFA048] hover:bg-opacity-95 text-black font-extrabold rounded-2xl text-xs tracking-wider uppercase transition-all shadow-[0_0_15px_rgba(255,160,72,0.4)] hover:shadow-[0_0_20px_rgba(255,160,72,0.6)] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               id="btn-register-biz"
             >
               {isManageForm
                 ? (isSavingManage ? (language === 'en' ? 'Saving…' : 'جاري الحفظ…') : (language === 'en' ? 'Save Changes' : 'حفظ التغييرات'))
-                : (isSubmittingReg ? t.verifyingPhone : t.submitApplication)}
+                : (isSubmittingReg ? (language === 'en' ? 'Submitting…' : 'جارٍ الإرسال…') : t.submitApplication)}
             </button>
           </form>
         </div>
@@ -1216,10 +1002,10 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
               <button
                 onClick={() => {
                   setEditName(myBusiness.name);
-                  setEditDesc(myBusiness.description[language] || myBusiness.description.en);
+                  setEditDesc(textEn(myBusiness.description));
                   setEditPhone(myBusiness.phone);
                   setEditWhatsapp(myBusiness.whatsapp);
-                  setEditHours(myBusiness.workingHours[language] || myBusiness.workingHours.en);
+                  setEditHours(textEn(myBusiness.workingHours));
                   setEditImages(buildListingImages(myBusiness.gallery, myBusiness.logoUrl));
                   setEditCover(myBusiness.coverUrl);
                   setActivePortalTab('edit');
@@ -1248,7 +1034,28 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
             </div>
           </div>
 
-          {/* ── Subscription expiry warning banner (Bug #6 improvement) ── */}
+          {/* ── FREE TRIAL BANNER ── */}
+          {isOnFreeTrial && (
+            <div
+              className="flex items-center gap-3 p-4 rounded-2xl border text-xs font-semibold bg-gradient-to-r from-green-950/60 to-emerald-950/40 border-green-700/40 text-green-300"
+              id="dash-free-trial-banner"
+            >
+              <Gift className="w-5 h-5 text-green-400 flex-shrink-0" />
+              <div className="flex-1">
+                <p className="font-black text-green-300 text-xs">
+                  🎁 {language === 'en' ? 'FREE TRIAL ACTIVE' : 'الفترة التجريبية المجانية نشطة'}
+                </p>
+                <p className="text-[10px] text-green-400/80 mt-0.5">
+                  {language === 'en'
+                    ? `Your listing is completely FREE for ${trialDaysRemaining} more days. After your trial, subscribe to keep your listing visible.`
+                    : `إدراجك مجاني تماماً لـ ${trialDaysRemaining} يوماً أخرى. بعد انتهاء الفترة التجريبية، اشترك لإبقاء إدراجك ظاهراً.`}
+                </p>
+              </div>
+              <span className="text-green-400 font-black text-sm">{trialDaysRemaining}d</span>
+            </div>
+          )}
+
+          {/* ── Subscription expiry warning banner ── */}
           {expiryWarning && (
             <div
               className={`flex items-center gap-3 p-4 rounded-2xl border text-xs font-semibold ${
@@ -1317,43 +1124,18 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                   </div>
                 )}
               </div>
-
-              {/* Developer Test Trigger so reviewers can toggle the suspension check! */}
-              <div className="mt-4 pt-3.5 border-t border-[#2D2319]/40 flex justify-between items-center text-[10px] text-gray-500" id="dev-expiry-trigger">
-                <span>[Test Utility]: Toggle account suspension</span>
-                <button
-                  type="button"
-                  onClick={simulateSuspension}
-                  className="px-2.5 py-1 rounded bg-[#201B15] text-red-400 hover:text-red-300 border border-[#3A2E22]"
-                >
-                  Force Expire Subscription ⛈
-                </button>
-              </div>
             </div>
 
-            {/* Quick Metrics Dashboard box */}
-            <div className="p-4 rounded-3xl bg-[#13110E] border border-[#2D2319] space-y-4" id="dash-metrics">
-              <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest block">Monthly Performance Indicator</span>
-              <div className="space-y-3 pt-1">
-                <div>
-                  <div className="flex justify-between text-xs mb-1">
-                    <span className="font-medium text-gray-400">Directory Page Views</span>
-                    <span className="font-bold text-white">480 clicks</span>
-                  </div>
-                  <div className="w-full h-1 bg-[#191613] rounded-full overflow-hidden">
-                    <div className="w-[78%] h-full bg-[#FFA048] rounded-full"></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-xs mb-1">
-                    <span className="font-medium text-gray-400">Halat Referral Rate</span>
-                    <span className="font-bold text-green-400">92% satisfactory</span>
-                  </div>
-                  <div className="w-full h-1 bg-[#191613] rounded-full overflow-hidden">
-                    <div className="w-[92%] h-full bg-green-500 rounded-full"></div>
-                  </div>
-                </div>
-              </div>
+            {/* Analytics — shown when real tracking is wired up */}
+            <div className="p-4 rounded-3xl bg-[#13110E] border border-[#2D2319] space-y-3" id="dash-metrics">
+              <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest block">
+                {language === 'en' ? 'Listing Analytics' : 'إحصائيات الإدراج'}
+              </span>
+              <p className="text-[11px] text-gray-500 leading-relaxed">
+                {language === 'en'
+                  ? 'Page views and referral stats will appear here once analytics tracking is enabled.'
+                  : 'ستظهر مشاهدات الصفحة وإحصائيات الإحالة هنا عند تفعيل التتبع.'}
+              </p>
             </div>
 
           </div>
@@ -1464,7 +1246,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
             </div>
           )}
 
-          {/* DYNAMIC PORTAL SUBSECTION SWITCHER: RENEW SUBSCRIPTION FORM */}
+          {/* DYNAMIC PORTAL SUBSECTION SWITCHER: SUBSCRIBE / RENEW */}
           {activePortalTab === 'pay' && (
             <div className="p-5 rounded-3xl bg-[#13110E] border border-[#2D2319] space-y-4 animate-scale-up" id="subview-renew-payment">
               <div className="flex items-center gap-3 pb-2 border-b border-[#2D2319]/60">
@@ -1477,39 +1259,50 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                   <ArrowLeft className="w-4 h-4 text-[#FFA048]" />
                 </button>
                 <h3 className="text-xs font-bold uppercase tracking-wider text-[#FFA048]">
-                  {t.paymentGateway}
+                  {language === 'en' ? 'Subscribe to Keep Listing' : 'اشترك لإبقاء إدراجك'}
                 </h3>
               </div>
 
-              <div className="p-4 rounded-2xl bg-[#0F0E0C] border border-[#2D2319] space-y-2">
-                <h4 className="text-xs font-bold text-white">{t.renewMembership}</h4>
+              {/* Plan summary card */}
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-[#1a1510] to-[#0F0E0C] border border-[#FFA048]/20 space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-[#FFA048]/10 flex items-center justify-center border border-[#FFA048]/30">
+                    {kind === 'service' ? <Zap className="w-5 h-5 text-blue-400" /> : <Briefcase className="w-5 h-5 text-[#FFA048]" />}
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-white">
+                      {kind === 'service'
+                        ? (language === 'en' ? 'Service Provider Plan' : 'خطة مزود الخدمة')
+                        : (language === 'en' ? 'Business Directory Plan' : 'خطة دليل الأعمال')}
+                    </h4>
+                    <span className="text-sm font-black text-[#FFA048]">${planAmount}.00 / month</span>
+                  </div>
+                </div>
                 <p className="text-[11px] text-gray-400 leading-relaxed">
-                  {t.renewDescription}
+                  {language === 'en'
+                    ? `Your listing stays active and visible to all community members for 30 days. Auto-renews monthly.`
+                    : 'يبقى إدراجك نشطاً وظاهراً لجميع أفراد المجتمع لمدة 30 يوماً. يتجدد تلقائياً كل شهر.'}
                 </p>
-                <span className="block mt-2 text-sm font-black text-[#FFA048]">${planAmount}.00 / month</span>
               </div>
 
-              {/* ADMIN ACCOUNT & CARDS HELPER TIP */}
-              <div className="p-4 rounded-2xl bg-[#201B15] border border-[#FFA048]/15 space-y-2.5 text-xs text-[#F4E3D7]" id="payment-testing-tips">
-                <div className="flex items-center gap-2 text-xs font-black text-[#FFA048] uppercase tracking-wider">
-                  <ShieldCheck className="w-4 h-4 text-[#FFA048]" />
-                  <span>Sandbox Testing Helper Portal</span>
+              {/* HOW PAYMENT WORKS — clarity box */}
+              <div className="p-4 rounded-2xl bg-[#0F0E0C] border border-[#2D2319] space-y-2 text-[11px] text-gray-400 leading-relaxed">
+                <div className="flex items-center gap-2 text-xs font-black text-white mb-2">
+                  <Smartphone className="w-4 h-4 text-[#FFA048]" />
+                  <span>{language === 'en' ? 'How Payments Work' : 'كيف تعمل المدفوعات'}</span>
                 </div>
-                <div className="space-y-2 text-[11px] text-gray-300 leading-relaxed">
-                  <p>
-                    <strong>💳 Valid Visa Card Example:</strong> <code>4242 4242 4242 4242</code> (Expiry of future date, e.g. <code>12/28</code>, CVC: <code>345</code>) passes the live mathematical <strong>Luhn Checksum validation</strong>.
-                  </p>
-                  <p className="text-gray-400">
-                    *The payment checker dynamically verifies checksum mathematically to check if it represents a physical, correctly-encoded card issued by a real bank sequence.*
-                  </p>
-                  <div className="pt-2.5 border-t border-[#3A2E22]/60">
-                    <span className="font-bold text-[#FFA048] block mb-1">🔑 PLATFORM SYSTEM ADMIN ACCOUNT DETAILS:</span>
-                    <ul className="list-disc pl-4 space-y-1 text-gray-400">
-                      <li><strong>Email Account:</strong> <code className="text-white">admin@shiadirectory.com</code></li>
-                      <li><strong>Phone Number:</strong> <code className="text-white">+964 780 000 0000</code></li>
-                      <li><strong>Role Name:</strong> <code className="text-white">Abu Murtadha (Admin)</code></li>
-                      <li><strong>Permissions:</strong> Global category builder, priority manager & business suspension controls.</li>
-                    </ul>
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2">
+                    <BadgeCheck className="w-3.5 h-3.5 text-green-400 mt-0.5 flex-shrink-0" />
+                    <p>{language === 'en' ? 'Payment is processed securely by Google Play (Android) or Apple App Store (iOS) — not collected by this app.' : 'تتم معالجة الدفع بشكل آمن عبر Google Play أو App Store.'}</p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <BadgeCheck className="w-3.5 h-3.5 text-green-400 mt-0.5 flex-shrink-0" />
+                    <p>{language === 'en' ? 'Revenue is paid out to the app owner\'s linked bank account monthly by Google/Apple.' : 'تُحوَّل الإيرادات إلى الحساب البنكي للمطوّر شهرياً عبر Google/Apple.'}</p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <BadgeCheck className="w-3.5 h-3.5 text-green-400 mt-0.5 flex-shrink-0" />
+                    <p>{language === 'en' ? 'You can cancel anytime from your device\'s subscription settings.' : 'يمكنك الإلغاء في أي وقت من إعدادات الاشتراك في جهازك.'}</p>
                   </div>
                 </div>
               </div>
@@ -1517,114 +1310,39 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
               {payError && <p className="p-3 bg-red-950 text-red-300 text-xs rounded-xl">{payError}</p>}
               {paySuccess && <p className="p-3 bg-green-950 text-green-300 text-xs rounded-xl">{paySuccess}</p>}
 
-              {isProcessingPay ? (
-                <div className="p-5 rounded-2xl bg-[#0F0E0C] border border-[#2D2319] space-y-4" id="pay-progress-loading">
-                  <div className="flex items-center gap-3">
-                    <RefreshCw className="w-5 h-5 text-[#FFA048] animate-spin" />
-                    <div>
-                      <h4 className="text-xs font-bold text-white uppercase tracking-wider">
-                        Verifying Card Health with Network Gateway...
-                      </h4>
-                      <p className="text-[10px] text-gray-500">PCI-DSS Secure Tunnel Port 443 Active</p>
-                    </div>
-                  </div>
-                  <div className="space-y-2 pt-2 border-t border-[#2D2319]/50">
-                    {payProgressSteps.map((step, idx) => (
-                      <div key={idx} className="text-[10px] font-mono text-gray-300 animate-fade-in flex items-center gap-1.5">
-                        <span className="text-[#FFA048]">✔</span>
-                        <span>{step}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <form onSubmit={handlePaymentSubmit} className="space-y-4" id="form-pay-gateway">
-                  <div>
-                    <div className="flex justify-between items-center mb-1">
-                      <label className="block text-xs text-gray-450">{t.cardNumber}</label>
-                      {cardNumber.length >= 2 && (
-                        <span className="text-[9px] uppercase font-mono px-1.5 py-0.5 bg-[#FFA048]/10 text-[#FFA048] rounded border border-[#FFA048]/20">
-                          {detectCardBrand(cardNumber)} Network
-                        </span>
-                      )}
-                    </div>
-                    <div className="relative">
-                      <CreditCard className="absolute left-3 top-3 w-4 h-4 text-gray-500" />
-                      <input
-                        type="text"
-                        maxLength={19}
-                        placeholder="4242 4242 4242 4242"
-                        value={cardNumber}
-                        onChange={(e) => {
-                          // Format cleanly as they type
-                          const val = e.target.value.replace(/\s+/g, '').replace(/\D/g, '');
-                          const matches = val.match(/\d{4,19}/g);
-                          const match = (matches && matches[0]) || '';
-                          const parts = [];
+              {/* SUBSCRIBE BUTTON — triggers Google Play / Apple native payment sheet */}
+              <button
+                type="button"
+                id="btn-iap-subscribe"
+                onClick={handleIAPSubscribe}
+                disabled={isProcessingPay}
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#FFA048] to-[#FF8C00] hover:from-[#FF8C00] hover:to-[#FFA048] text-black font-extrabold text-sm uppercase tracking-wider shadow-[0_0_25px_rgba(255,160,72,0.5)] hover:shadow-[0_0_35px_rgba(255,160,72,0.7)] transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {isProcessingPay ? (
+                  <><RefreshCw className="w-4 h-4 animate-spin" /> {language === 'en' ? 'Processing...' : 'جاري المعالجة...'}</>
+                ) : (
+                  <><CreditCard className="w-4 h-4" /> {language === 'en' ? `Subscribe — $${planAmount}/month` : `اشترك — ${planAmount}$ شهرياً`}</>
+                )}
+              </button>
 
-                          for (let i = 0, len = match.length; i < len; i += 4) {
-                            parts.push(match.substring(i, i + 4));
-                          }
-
-                          if (parts.length > 0) {
-                            setCardNumber(parts.join(' '));
-                          } else {
-                            setCardNumber(val);
-                          }
-                        }}
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#0F0E0C] border border-[#2D2319] text-xs text-white"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs text-gray-450 mb-1">{t.cardExpiry}</label>
-                      <input
-                        type="text"
-                        maxLength={5}
-                        placeholder="MM/YY"
-                        value={cardExpiry}
-                        onChange={(e) => {
-                          const val = e.target.value.replace(/\s+/g, '').replace(/\D/g, '');
-                          if (val.length >= 3) {
-                            setCardExpiry(val.substring(0, 2) + '/' + val.substring(2, 4));
-                          } else {
-                            setCardExpiry(val);
-                          }
-                        }}
-                        className="w-full p-2.5 rounded-xl bg-[#0F0E0C] border border-[#2D2319] text-xs text-white text-center"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-gray-450 mb-1">{t.cardCVC}</label>
-                      <input
-                        type="password"
-                        maxLength={4}
-                        placeholder="•••"
-                        value={cardCvc}
-                        onChange={(e) => setCardCvc(e.target.value.replace(/\D/g, ''))}
-                        className="w-full p-2.5 rounded-xl bg-[#0F0E0C] border border-[#2D2319] text-xs text-white text-center"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full py-3 bg-green-600 hover:bg-green-500 transition-all text-black font-extrabold rounded-xl text-xs uppercase tracking-wider shadow-md"
-                    id="btn-process-pay"
-                  >
-                    {t.processPayment}
-                  </button>
-                </form>
-              )}
+              {/* Restore purchases — required by Apple App Store */}
+              <button
+                type="button"
+                id="btn-restore-purchases"
+                onClick={handleRestorePurchases}
+                disabled={isRestoringPurchases}
+                className="w-full py-2.5 rounded-xl border border-[#2D2319] text-gray-500 hover:text-gray-300 hover:border-[#3A2E22] text-[10px] font-semibold transition-colors flex items-center justify-center gap-1.5"
+              >
+                {isRestoringPurchases ? (
+                  <><RefreshCw className="w-3 h-3 animate-spin" /> {language === 'en' ? 'Restoring...' : 'جاري الاستعادة...'}</>
+                ) : (
+                  <>{language === 'en' ? '↩ Restore Previous Purchases' : '↩ استعادة الاشتراكات السابقة'}</>
+                )}
+              </button>
             </div>
           )}
 
-          {/* PAYMENT HISTORY LISTING LOG (Section 7) */}
+          {/* PAYMENT HISTORY LISTING LOG */}
           <div className="p-5 rounded-3xl bg-[#13110E] border border-[#2D2319] space-y-3" id="dash-payments-history">
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#FFA048] flex items-center gap-1.5">
               <History className="w-4 h-4" />
@@ -1671,7 +1389,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
             </div>
           </div>
 
-          {/* DYNAMIC REAL-TIME INVOICE / RECEIPT MODAL DETECTOR FEATURE */}
+          {/* RECEIPT MODAL */}
           {selectedReceipt && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm" id="receipt-modal-overlay">
               <div className="relative w-full max-w-sm rounded-3xl bg-[#0F0E0C] border border-[#2D2319] p-6 text-[#F4E3D7] shadow-2xl flex flex-col font-sans">
@@ -1729,19 +1447,14 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                     <span className="text-green-400 font-bold bg-[#142316]/30 px-2 py-0.5 rounded text-[10px]">30 Days Active Listing</span>
                   </div>
 
-                  {/* Flow breakdown block explaining where the money went in real-time */}
                   <div className="p-3.5 rounded-2xl bg-[#13110E] border border-[#2D2319] space-y-2 mt-4 text-[10px] text-gray-400 leading-relaxed font-sans">
                     <span className="font-bold text-[#FFA048] block text-[11px] uppercase tracking-wider">
-                      ℹ️ REAL-TIME PROCESSING LOOP
+                      {language === 'en' ? 'Payment recorded on server' : 'تم تسجيل الدفع على الخادم'}
                     </span>
                     <p>
-                      <strong>1. Secure Capture:</strong> The payment form detects input fields, registers the subscription dues trigger on the local client, and simulates secure PCI payment handshake.
-                    </p>
-                    <p>
-                      <strong>2. Real-Time Storage:</strong> The amount instantly updates state variables, modifying the global directory listings index state, which is cached immediately into <code>localStorage ('shia_dir_payments')</code>.
-                    </p>
-                    <p>
-                      <strong>3. Dynamic Re-indexing:</strong> The system automatically flags <strong>{myBusiness.name}</strong> as <code>status: 'active'</code>, matching it in subsequent searches so clients can immediately see your business!
+                      {language === 'en'
+                        ? 'This payment is stored in the ABN database and your listing membership was extended by 30 days.'
+                        : 'تم حفظ هذا الدفع في قاعدة بيانات ABN وتم تمديد اشتراك إدراجك لمدة 30 يوماً.'}
                     </p>
                   </div>
                 </div>

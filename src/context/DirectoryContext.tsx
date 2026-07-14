@@ -1,36 +1,53 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { getOAuthRedirectUrl, clearOAuthCallbackUrl, formatOAuthError } from '../lib/oauth';
 import { apiFetch } from '../lib/api';
 import {
   UserProfile, Business, BusinessStatus, Category, Review,
-  PaymentRecord, AppNotification, UserRole, Product, Order, Job, JobCategory,
+  PaymentRecord, AppNotification, UserRole, Job, JobCategory,
 } from '../types';
 import {
-  INITIAL_CATEGORIES, INITIAL_BUSINESSES, INITIAL_REVIEWS,
-  INITIAL_PAYMENTS, INITIAL_PRODUCTS, INITIAL_ORDERS, INITIAL_JOBS, INITIAL_HIRING_ACTIVE,
-  INITIAL_DEMO_NOTIFICATIONS,
+  INITIAL_BUSINESSES, INITIAL_REVIEWS,
+  INITIAL_PAYMENTS, INITIAL_JOBS, INITIAL_HIRING_ACTIVE,
 } from '../data/mockData';
+import { resolveListingCoverUrl, resolveListingLogoUrl } from '../utils/listingImages';
+
+// ── Safe storage helpers ────────────────────────────────────────────────────
+// localStorage can throw (private browsing, quota exceeded, storage disabled).
+// Never let a storage failure crash the app — degrade to in-memory state.
+
+const safeGetItem = (key: string): string | null => {
+  try { return localStorage.getItem(key); } catch { return null; }
+};
+
+const safeSetItem = (key: string, value: string): void => {
+  try { localStorage.setItem(key, value); } catch { /* storage unavailable — keep state in memory only */ }
+};
+
+const safeRemoveItem = (key: string): void => {
+  try { localStorage.removeItem(key); } catch { /* storage unavailable */ }
+};
 
 /** Bump to force-clear cached mock listings only (never user auth or notifications). */
 const DATA_STORE_VERSION = '5-clean-slate-v2';
 if (typeof window !== 'undefined') {
-  const stored = localStorage.getItem('shia_dir_data_version');
+  const stored = safeGetItem('shia_dir_data_version');
   if (stored !== DATA_STORE_VERSION) {
     [
       'shia_dir_businesses',
       'shia_dir_jobs',
       'shia_dir_reviews',
       'shia_dir_hiring_active',
-    ].forEach((key) => localStorage.removeItem(key));
-    localStorage.setItem('shia_dir_data_version', DATA_STORE_VERSION);
+    ].forEach((key) => safeRemoveItem(key));
+    safeSetItem('shia_dir_data_version', DATA_STORE_VERSION);
   }
 
-  /** Restore demo notification feed when upgrading (UI-only seed). */
-  const NOTIF_SEED_VERSION = 'demo-26-v1';
-  if (localStorage.getItem('shia_dir_notif_seed') !== NOTIF_SEED_VERSION) {
-    localStorage.removeItem('shia_dir_notifications');
-    localStorage.setItem('shia_dir_notif_seed', NOTIF_SEED_VERSION);
+  /** Clear legacy demo notification seed on upgrade. */
+  const NOTIF_SEED_VERSION = 'real-notifs-v2';
+  if (safeGetItem('shia_dir_notif_seed') !== NOTIF_SEED_VERSION) {
+    safeRemoveItem('shia_dir_notifications');
+    safeSetItem('shia_dir_notif_seed', NOTIF_SEED_VERSION);
   }
 }
 
@@ -42,8 +59,8 @@ const mapDirectoryProfile = (p: Record<string, unknown>): Business => ({
   // Use email as ownerId so it matches currentUser.email across auth systems
   ownerId:              String(p.email ?? ''),
   name:                 String(p.businessName ?? ''),
-  logoUrl:              String(p.imageUrl ?? ''),
-  coverUrl:             String(p.coverUrl ?? ''),
+  logoUrl:              resolveListingLogoUrl(String(p.imageUrl ?? ''), String(p.coverUrl ?? ''), String(p.id ?? '')),
+  coverUrl:             resolveListingCoverUrl(String(p.coverUrl ?? ''), String(p.imageUrl ?? ''), String(p.id ?? '')),
   description:          { en: String(p.description ?? ''), ar: '' },
   categoryId:           String(p.category ?? '').toLowerCase().replace(/ /g, '-'),
   subcategory:          { en: String(p.category ?? ''), ar: '' },
@@ -62,6 +79,7 @@ const mapDirectoryProfile = (p: Record<string, unknown>): Business => ({
   website:              String(p.website ?? ''),
   workingHours:         { en: String(p.workingHours ?? ''), ar: '' },
   membershipExpiryDate: String(p.membershipExpiry ?? ''),
+  registeredAt:         p.createdAt ? String(p.createdAt).slice(0, 10) : undefined,
   subscriptionTier:     p.subscriptionTier === 30 ? 30 : p.subscriptionTier === 50 ? 50 : undefined,
   gallery:              [],
   rating:               Number(p.rating ?? 0),
@@ -69,26 +87,47 @@ const mapDirectoryProfile = (p: Record<string, unknown>): Business => ({
 });
 
 /** Map a Supabase jobs_board row → Job shape the UI expects */
-const mapApiJob = (j: Record<string, unknown>): Job => ({
-  id:               String(j.id ?? ''),
-  businessId:       String(j.businessId ?? ''),
-  businessName:     String(j.businessName ?? ''),
-  businessLogoUrl:  String(j.businessLogoUrl ?? ''),
-  title:            String(j.title ?? ''),
-  category:         String(j.category ?? 'Others') as JobCategory,
-  requirements:     String(j.requirements ?? ''),
-  salaryMin:        Number(j.salaryMin ?? 0),
-  salaryMax:        Number(j.salaryMax ?? 0),
-  hiringEmail:      String(j.hiringEmail ?? ''),
-  postedDate:       String(j.postedDate ?? ''),
-  isActive:         Boolean(j.isActive ?? true),
-});
+const mapApiJob = (j: Record<string, unknown>): Job => {
+  const businessId = String(j.businessId ?? '');
+  const rawLogo = String(j.businessLogoUrl ?? '');
+  return {
+    id:               String(j.id ?? ''),
+    businessId,
+    businessName:     String(j.businessName ?? ''),
+    businessLogoUrl:  rawLogo.startsWith('/api/directory/')
+      ? rawLogo
+      : resolveListingLogoUrl(rawLogo, '', businessId),
+    title:            String(j.title ?? ''),
+    category:         String(j.category ?? 'Others') as JobCategory,
+    requirements:     String(j.requirements ?? ''),
+    salaryMin:        Number(j.salaryMin ?? 0),
+    salaryMax:        Number(j.salaryMax ?? 0),
+    hiringEmail:      String(j.hiringEmail ?? ''),
+    postedDate:       String(j.postedDate ?? j.createdAt ?? '').slice(0, 10) || new Date().toISOString().slice(0, 10),
+    isActive:         Boolean(j.isActive ?? true),
+  };
+};
 
 // Role name normaliser: backend may send 'business_owner'; frontend uses 'business'
 const normaliseRole = (r: string): UserRole => {
   if (r === 'business_owner') return 'business';
   if (['business', 'service_provider', 'customer', 'admin'].includes(r)) return r as UserRole;
   return 'customer';
+};
+
+const AUTH_SOURCE_KEY = 'shia_dir_auth_source';
+const BACKEND_AUTH_SOURCE = 'backend';
+
+const restoreBackendSessionFromStorage = (): { token: string; user: UserProfile } | null => {
+  if (safeGetItem(AUTH_SOURCE_KEY) !== BACKEND_AUTH_SOURCE) return null;
+  const token = safeGetItem('shia_dir_token');
+  const saved = safeGetItem('shia_dir_user');
+  if (!token || !saved) return null;
+  try {
+    return { token, user: JSON.parse(saved) as UserProfile };
+  } catch {
+    return null;
+  }
 };
 
 const profileFromSupabaseSession = (session: Session): UserProfile => {
@@ -101,7 +140,7 @@ const profileFromSupabaseSession = (session: Session): UserProfile => {
     phone:             String(meta.phone ?? ''),
     name:              String(meta.name ?? u.email?.split('@')[0] ?? 'User'),
     role:              normaliseRole(String(appMeta.role ?? meta.role ?? 'customer')),
-    preferredLanguage: (meta.preferredLanguage as 'en' | 'ar') ?? 'en',
+    preferredLanguage: (meta.preferredLanguage as 'en') ?? 'en',
   };
 };
 
@@ -114,20 +153,23 @@ interface DirectoryContextType {
   currentUser:      UserProfile | null;
   apiToken:         string | null;
   apiLogin:         (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  registerAccount:  (payload: { name: string; email: string; password: string; phone?: string }) => Promise<{ success: boolean; error?: string }>;
+  signInWithGoogle: () => Promise<{ success: boolean; error?: string }>;
+  signInWithApple:  () => Promise<{ success: boolean; error?: string }>;
+  oauthAvailable:   boolean;
+  registerAccount:  (payload: { name: string; email: string; password: string; phone: string }) => Promise<{ success: boolean; error?: string }>;
   signOut:          () => Promise<void>;
   updateUserProfile: (updates: Partial<Pick<UserProfile, 'name' | 'phone' | 'preferredLanguage'>>) => Promise<{ success: boolean; error?: string }>;
 
-  // i18n / theme
-  language:       'en' | 'ar' | 'fa';
-  setLanguage:    (lang: 'en' | 'ar' | 'fa') => void;
-  theme:          'light' | 'dark' | 'system';
-  setTheme:       (t: 'light' | 'dark' | 'system') => void;
+  // i18n / theme (English-only UI)
+  language:       'en';
+  theme:          'light' | 'dark';
+  setTheme:       (t: 'light' | 'dark') => void;
 
   // Directory data
   categories:     Category[];
-  addCategory:    (category: Category) => void;
-  removeCategory: (id: string) => void;
+  addCategory:    (category: Category) => Promise<{ success: boolean; error?: string }>;
+  removeCategory: (id: string) => Promise<{ success: boolean; error?: string }>;
+  refreshCategories: () => Promise<void>;
 
   businesses:     Business[];
   addBusiness:    (business: Business) => void;
@@ -141,26 +183,28 @@ interface DirectoryContextType {
   submitReview:   (businessId: string, rating: number, comment?: string) => Promise<{ success: boolean; error?: string }>;
 
   favorites:      string[];
-  toggleFavorite: (businessId: string) => void;
+  favoritesLoading: boolean;
+  favoritesError:   string;
+  refreshFavorites: (token?: string | null) => Promise<void>;
+  toggleFavorite: (businessId: string) => Promise<{ success: boolean; error?: string }>;
 
   payments:       PaymentRecord[];
-  addPayment:     (payment: PaymentRecord) => void;
-
-  products:       Product[];
-  addProduct:     (product: Product) => void;
-
-  orders:         Order[];
-  updateOrderStatus: (id: string, status: Order['status']) => void;
+  refreshPayments: (token?: string | null, role?: UserRole) => Promise<void>;
+  renewMembership: (businessId: string, amount: number) => Promise<{ success: boolean; error?: string; payment?: PaymentRecord }>;
 
   notifications:        AppNotification[];
-  addNotification:      (title: string, message: string, receiverRole: UserRole | 'all') => void;
-  markNotificationsAsRead: () => void;
-  clearNotifications:   () => void;
+  notificationsLoading: boolean;
+  notificationsError:   string;
+  refreshNotifications: (token?: string | null) => Promise<void>;
+  addNotification:      (title: string, message: string, receiverRole: UserRole | 'all', personal?: boolean, userId?: string) => Promise<void>;
+  markNotificationsAsRead: () => Promise<void>;
+  clearNotifications:   () => Promise<void>;
 
   jobs:           Job[];
-  addJob:         (jobData: Omit<Job, 'id' | 'postedDate'>) => void;
+  addJob:         (job: Job) => void;
   updateJob:      (job: Job) => void;
   deleteJob:      (id: string) => void;
+  refreshJobs:    (token?: string | null) => Promise<void>;
 
   hiringActive:   Record<string, boolean>;
   setHiringActive:(businessId: string, active: boolean) => Promise<void>;
@@ -174,96 +218,68 @@ const DirectoryContext = createContext<DirectoryContextType | undefined>(undefin
 export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   // ── Persisted preferences ────────────────────────────────────────────────
-  const [language, setLanguageState] = useState<'en' | 'ar' | 'fa'>(() =>
-    (localStorage.getItem('shia_dir_lang') as 'en' | 'ar' | 'fa') || 'en'
-  );
-  const [theme, setThemeState] = useState<'light' | 'dark' | 'system'>(() =>
-    (localStorage.getItem('shia_dir_theme') as 'light' | 'dark' | 'system') || 'system'
-  );
+  const language = 'en' as const;
+  const [theme, setThemeState] = useState<'light' | 'dark'>(() => {
+    const saved = safeGetItem('shia_dir_theme');
+    if (saved === 'light' || saved === 'dark') return saved;
+    return 'dark';
+  });
 
   // ── Auth ─────────────────────────────────────────────────────────────────
-  const [apiToken, setApiToken] = useState<string | null>(() =>
-    isSupabaseConfigured ? null : localStorage.getItem('shia_dir_token')
-  );
+  const [apiToken, setApiToken] = useState<string | null>(() => {
+    const backend = restoreBackendSessionFromStorage();
+    if (backend) return backend.token;
+    return isSupabaseConfigured ? null : safeGetItem('shia_dir_token');
+  });
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => {
+    const backend = restoreBackendSessionFromStorage();
+    if (backend) return backend.user;
     if (isSupabaseConfigured) return null;
     try {
-      const saved = localStorage.getItem('shia_dir_user');
+      const saved = safeGetItem('shia_dir_user');
       if (saved) return JSON.parse(saved);
-    } catch { localStorage.removeItem('shia_dir_user'); }
+    } catch { safeRemoveItem('shia_dir_user'); }
     return null;
   });
 
   const [authReady, setAuthReady] = useState(!isSupabaseConfigured);
+  const favoritesMergedRef = useRef(false);
 
   // ── Directory data (starts with mock; overwritten by API on mount) ────────
-  const [categories, setCategories] = useState<Category[]>(() => {
-    try { const s = localStorage.getItem('shia_dir_categories'); if (s) return JSON.parse(s); } catch { /**/ }
-    return INITIAL_CATEGORIES;
-  });
+  const [categories, setCategories] = useState<Category[]>([]);
 
   const [businesses, setBusinesses] = useState<Business[]>(INITIAL_BUSINESSES);
 
   const [reviews, setReviews] = useState<Review[]>(INITIAL_REVIEWS);
 
   const [favorites, setFavorites] = useState<string[]>(() => {
+    if (isSupabaseConfigured) return [];
     try { const s = localStorage.getItem('shia_dir_favorites'); if (s) return JSON.parse(s); } catch { /**/ }
     return [];
   });
+  const [favoritesLoading, setFavoritesLoading] = useState(false);
+  const [favoritesError, setFavoritesError] = useState('');
 
-  const [payments, setPayments] = useState<PaymentRecord[]>(() => {
-    try { const s = localStorage.getItem('shia_dir_payments'); if (s) return JSON.parse(s); } catch { /**/ }
-    return INITIAL_PAYMENTS;
-  });
-
-  const [products, setProducts] = useState<Product[]>(() => {
-    try { const s = localStorage.getItem('shia_dir_products'); if (s) return JSON.parse(s); } catch { /**/ }
-    return INITIAL_PRODUCTS;
-  });
-
-  const [orders, setOrders] = useState<Order[]>(() => {
-    try { const s = localStorage.getItem('shia_dir_orders'); if (s) return JSON.parse(s); } catch { /**/ }
-    return INITIAL_ORDERS;
-  });
+  const [payments, setPayments] = useState<PaymentRecord[]>(INITIAL_PAYMENTS);
 
   const [jobs, setJobs] = useState<Job[]>(INITIAL_JOBS);
 
   const [hiringActive, setHiringActiveState] = useState<Record<string, boolean>>(INITIAL_HIRING_ACTIVE);
 
-  const [notifications, setNotifications] = useState<AppNotification[]>(() => {
-    try {
-      const s = localStorage.getItem('shia_dir_notifications');
-      if (s) {
-        const parsed = JSON.parse(s);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch { /**/ }
-    return INITIAL_DEMO_NOTIFICATIONS;
-  });
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
+  const [notificationsError, setNotificationsError] = useState('');
 
-  // ── localStorage sync ────────────────────────────────────────────────────
-  useEffect(() => { localStorage.setItem('shia_dir_user', currentUser ? JSON.stringify(currentUser) : ''); }, [currentUser]);
-  useEffect(() => { localStorage.setItem('shia_dir_token', apiToken || ''); }, [apiToken]);
-  useEffect(() => { localStorage.setItem('shia_dir_lang',     language); }, [language]);
-  useEffect(() => { localStorage.setItem('shia_dir_theme',    theme); }, [theme]);
-  useEffect(() => { localStorage.setItem('shia_dir_categories', JSON.stringify(categories)); }, [categories]);
-  useEffect(() => { localStorage.setItem('shia_dir_businesses', JSON.stringify(businesses)); }, [businesses]);
-  useEffect(() => { localStorage.setItem('shia_dir_reviews',  JSON.stringify(reviews)); }, [reviews]);
-  useEffect(() => { localStorage.setItem('shia_dir_favorites',JSON.stringify(favorites)); }, [favorites]);
-  useEffect(() => { localStorage.setItem('shia_dir_payments', JSON.stringify(payments)); }, [payments]);
-  useEffect(() => { localStorage.setItem('shia_dir_notifications', JSON.stringify(notifications)); }, [notifications]);
-  useEffect(() => { localStorage.setItem('shia_dir_jobs',     JSON.stringify(jobs)); }, [jobs]);
-  useEffect(() => { localStorage.setItem('shia_dir_hiring_active', JSON.stringify(hiringActive)); }, [hiringActive]);
+  // ── localStorage sync (preferences only — data comes from API) ────────────
+  useEffect(() => { safeSetItem('shia_dir_user', currentUser ? JSON.stringify(currentUser) : ''); }, [currentUser]);
+  useEffect(() => { safeSetItem('shia_dir_token', apiToken || ''); }, [apiToken]);
+  useEffect(() => { safeSetItem('shia_dir_theme', theme); }, [theme]);
 
   // ── Theme effect ─────────────────────────────────────────────────────────
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove('light', 'dark');
-    if (theme === 'system') {
-      root.classList.add(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    } else {
-      root.classList.add(theme);
-    }
+    root.classList.add(theme);
   }, [theme]);
 
   // ── Live API fetch — source of truth (starts empty until you add listings) ──
@@ -294,20 +310,60 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }, []);
 
+  const refreshJobs = useCallback(async (token?: string | null): Promise<void> => {
+    const authToken = token ?? apiToken;
+    try {
+      const [publicRes, mineRes] = await Promise.all([
+        apiFetch('/api/jobsboard'),
+        authToken
+          ? apiFetch('/api/jobsboard/mine', { headers: { Authorization: `Bearer ${authToken}` } })
+          : Promise.resolve(null),
+      ]);
+
+      const byId = new Map<string, Job>();
+
+      if (publicRes.ok) {
+        const publicData: Record<string, unknown>[] = await publicRes.json();
+        if (Array.isArray(publicData)) {
+          publicData.forEach((row) => {
+            const job = mapApiJob(row);
+            byId.set(job.id, job);
+          });
+        }
+      }
+
+      if (mineRes?.ok) {
+        const mineData: Record<string, unknown>[] = await mineRes.json();
+        if (Array.isArray(mineData)) {
+          mineData.forEach((row) => {
+            const job = mapApiJob(row);
+            byId.set(job.id, job);
+          });
+        }
+      }
+
+      setJobs(Array.from(byId.values()));
+    } catch {
+      setJobs([]);
+      console.warn('[ABN Directory] Could not load jobs from API.');
+    }
+  }, [apiToken]);
+
   const refreshDirectory = async (actingUser?: UserProfile | null): Promise<void> => {
     try {
       const role = actingUser?.role ?? currentUser?.role;
       const token = apiToken ?? (typeof window !== 'undefined' ? localStorage.getItem('shia_dir_token') : null);
       const isAdminUser = role === 'admin';
       const shouldFetchMine = Boolean(apiToken && role);
-      const dirPath = isAdminUser && token ? '/api/directory/all' : '/api/directory';
+      // Admins must use the authenticated /all endpoint — public /directory hides pending listings
+      if (isAdminUser && !token) return;
+      const dirPath = isAdminUser ? '/api/directory/all' : '/api/directory';
       const authHeaders: HeadersInit = token
         ? { Authorization: `Bearer ${token}` }
         : {};
 
-      const [dirRes, jobsRes, mineRes] = await Promise.all([
+      const [dirRes, mineRes] = await Promise.all([
         apiFetch(dirPath, { headers: authHeaders }),
-        apiFetch('/api/jobsboard'),
         shouldFetchMine
           ? apiFetch('/api/directory/mine', { headers: authHeaders })
           : Promise.resolve(null),
@@ -344,12 +400,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       });
       setHiringActiveState(hiring);
 
-      if (jobsRes.ok) {
-        const jobsData: Record<string, unknown>[] = await jobsRes.json();
-        setJobs(Array.isArray(jobsData) ? jobsData.map(mapApiJob) : []);
-      } else {
-        setJobs([]);
-      }
+      await refreshJobs(token);
     } catch {
       setBusinesses([]);
       setJobs([]);
@@ -358,24 +409,166 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   };
 
+  const refreshCategories = async (): Promise<void> => {
+    const OTHER_CATEGORY = {
+      id: 'cat-other',
+      name: { en: 'Other', ar: 'Other' },
+      group: 'Services',
+      iconName: 'HelpCircle',
+    };
+
+    try {
+      const res = await apiFetch('/api/categories');
+      if (!res.ok) return;
+      const data = await res.json();
+      if (Array.isArray(data.categories)) {
+        let cats = data.categories.map((cat) => ({
+          ...cat,
+          name: { en: cat.name?.en || '', ar: cat.name?.en || '' },
+        }));
+        if (!cats.some((c) => c.id === OTHER_CATEGORY.id)) {
+          cats = [...cats, OTHER_CATEGORY];
+        }
+        cats.sort((a, b) => {
+          if (a.id === OTHER_CATEGORY.id) return 1;
+          if (b.id === OTHER_CATEGORY.id) return -1;
+          return (a.name.en || '').localeCompare(b.name.en || '');
+        });
+        setCategories(cats);
+      }
+    } catch {
+      console.warn('[ABN Directory] Could not load categories from API.');
+    }
+  };
+
+  const refreshNotifications = async (token?: string | null): Promise<void> => {
+    const authToken = token ?? apiToken;
+    if (!authToken) {
+      setNotifications([]);
+      setNotificationsError('');
+      return;
+    }
+
+    setNotificationsLoading(true);
+    setNotificationsError('');
+    try {
+      const res = await apiFetch('/api/notifications', {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setNotificationsError(data.error || 'Failed to load notifications.');
+        setNotifications([]);
+        return;
+      }
+      if (Array.isArray(data.notifications)) setNotifications(data.notifications);
+    } catch {
+      setNotificationsError('Cannot reach server. Make sure the backend is running.');
+      console.warn('[ABN Directory] Could not load notifications from API.');
+    } finally {
+      setNotificationsLoading(false);
+    }
+  };
+
+  const applyBackendSession = useCallback((
+    token: string,
+    user: { id: string; email: string; phone?: string; name: string; role: string; preferredLanguage?: string },
+  ): UserProfile => {
+    const profile: UserProfile = {
+      id:                user.id,
+      email:             user.email,
+      phone:             user.phone || '',
+      name:              user.name,
+      role:              normaliseRole(user.role),
+      preferredLanguage: (user.preferredLanguage as 'en') || 'en',
+    };
+    safeSetItem(AUTH_SOURCE_KEY, BACKEND_AUTH_SOURCE);
+    setApiToken(token);
+    setCurrentUser(profile);
+    return profile;
+  }, []);
+
   const clearAuthState = useCallback(() => {
     setCurrentUser(null);
     setApiToken(null);
-    localStorage.removeItem('shia_dir_token');
-    localStorage.removeItem('shia_dir_user');
+    safeRemoveItem('shia_dir_token');
+    safeRemoveItem('shia_dir_user');
+    safeRemoveItem(AUTH_SOURCE_KEY);
+    favoritesMergedRef.current = false;
+    try {
+      const s = safeGetItem('shia_dir_favorites');
+      setFavorites(s ? JSON.parse(s) : []);
+    } catch {
+      setFavorites([]);
+    }
   }, []);
 
   const applySupabaseSession = useCallback((session: Session | null): UserProfile | null => {
+    const backendSession = restoreBackendSessionFromStorage();
+    if (backendSession) {
+      setApiToken(backendSession.token);
+      setCurrentUser(backendSession.user);
+      return backendSession.user;
+    }
+
     if (!session) {
       clearAuthState();
       return null;
     }
+
+    safeRemoveItem(AUTH_SOURCE_KEY);
     const profile = profileFromSupabaseSession(session);
     setCurrentUser(profile);
     setApiToken(session.access_token);
-    localStorage.setItem('shia_dir_token', session.access_token);
+    safeSetItem('shia_dir_token', session.access_token);
+    clearOAuthCallbackUrl();
     return profile;
   }, [clearAuthState]);
+
+  const syncOAuthUser = useCallback(async (token: string): Promise<void> => {
+    try {
+      const res = await apiFetch('/api/auth/oauth-sync', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+      const data = await res.json() as { user: { id: string; email: string; phone: string; name: string; role: string; preferredLanguage?: string }; isNewUser?: boolean };
+      setCurrentUser((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          id:                data.user.id || prev.id,
+          name:              data.user.name || prev.name,
+          phone:             data.user.phone || prev.phone,
+          role:              normaliseRole(data.user.role),
+          preferredLanguage: 'en',
+        };
+      });
+      if (data.isNewUser) {
+        if (token) {
+          try {
+            await apiFetch('/api/notifications', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                title: 'Welcome to ABN',
+                message: 'Your account was created successfully.',
+                receiverRole: 'customer',
+              }),
+            });
+          } catch { /**/ }
+        }
+      }
+      await refreshDirectory();
+      await refreshPayments(token, normaliseRole(data.user.role));
+      await refreshFavorites(token);
+    } catch {
+      console.warn('[ABN Directory] OAuth user sync failed.');
+    }
+  }, [language]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Supabase session listener — auth gateway source of truth ───────────────
   useEffect(() => {
@@ -386,14 +579,39 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     let active = true;
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!active) return;
-      applySupabaseSession(session);
-      setAuthReady(true);
-    });
+    supabase.auth.getSession()
+      .then(async ({ data: { session } }) => {
+        if (!active) return;
+        const backendSession = restoreBackendSessionFromStorage();
+        if (backendSession) {
+          setApiToken(backendSession.token);
+          setCurrentUser(backendSession.user);
+          setAuthReady(true);
+          return;
+        }
+        applySupabaseSession(session);
+        if (session?.access_token) {
+          await syncOAuthUser(session.access_token);
+        }
+        setAuthReady(true);
+      })
+      .catch((err) => {
+        // Never leave the app stuck on the session-check screen
+        console.warn('[ABN Directory] Session check failed — continuing signed out.', err);
+        if (!active) return;
+        applySupabaseSession(null);
+        setAuthReady(true);
+      });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (safeGetItem(AUTH_SOURCE_KEY) === BACKEND_AUTH_SOURCE) {
+        setAuthReady(true);
+        return;
+      }
       applySupabaseSession(session);
+      if (session?.access_token && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+        await syncOAuthUser(session.access_token);
+      }
       setAuthReady(true);
     });
 
@@ -401,24 +619,38 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       active = false;
       subscription.unsubscribe();
     };
-  }, [applySupabaseSession]);
+  }, [applySupabaseSession, syncOAuthUser]);
 
   const isAuthenticated = isSupabaseConfigured
     ? Boolean(currentUser && apiToken)
     : Boolean(currentUser);
 
-  // Refresh directory when authenticated session is established
-  const authHydratedRef = useRef(false);
+  // Refresh directory when authenticated — re-fetch when role changes (e.g. admin login)
+  const lastHydratedKeyRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!authReady || !isAuthenticated || !currentUser) return;
-    if (authHydratedRef.current) return;
-    authHydratedRef.current = true;
+    if (!authReady) return;
+    refreshCategories();
+    if (!isAuthenticated || !currentUser) return;
+    const hydrateKey = `${currentUser.id}:${currentUser.role}:${apiToken ? 'auth' : 'guest'}`;
+    if (lastHydratedKeyRef.current === hydrateKey) return;
+    lastHydratedKeyRef.current = hydrateKey;
     refreshDirectory(currentUser);
-  }, [authReady, isAuthenticated, currentUser?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+    refreshPayments(apiToken, currentUser.role);
+    refreshFavorites(apiToken);
+    refreshNotifications(apiToken);
+  }, [authReady, isAuthenticated, currentUser?.id, currentUser?.role]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (!isAuthenticated) authHydratedRef.current = false;
+    if (!isAuthenticated) {
+      lastHydratedKeyRef.current = null;
+      favoritesMergedRef.current = false;
+    }
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (isAuthenticated) return;
+    safeSetItem('shia_dir_favorites', JSON.stringify(favorites));
+  }, [favorites, isAuthenticated]);
 
   useEffect(() => {
     if (apiToken) {
@@ -426,89 +658,64 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }, [apiToken, currentUser?.email, currentUser?.role, syncMyDirectoryProfile]);
 
-  // ── Subscription expiry check ─────────────────────────────────────────────
-  const expiryCheckDone = useRef(false);
-  useEffect(() => {
-    if (expiryCheckDone.current) return;
-    expiryCheckDone.current = true;
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const sevenDaysAhead = new Date(today);
-    sevenDaysAhead.setDate(today.getDate() + 7);
-
-    setBusinesses((prev) => prev.map((biz) => {
-      if (!biz.membershipExpiryDate) return biz;
-      const expiry = new Date(biz.membershipExpiryDate);
-      expiry.setHours(0, 0, 0, 0);
-
-      if (expiry < today && biz.status === 'active') {
-        setNotifications((pn) => [{
-          id: `notif-exp-${biz.id}-${Date.now()}`,
-          title: 'Subscription Expired',
-          message: `${biz.name} membership has expired and has been suspended.`,
-          date: today.toISOString().split('T')[0],
-          isRead: false,
-          receiverRole: 'business' as const,
-        }, ...pn]);
-        return { ...biz, status: 'suspended' as const };
-      }
-      if (expiry >= today && expiry <= sevenDaysAhead && biz.status === 'active') {
-        setNotifications((pn) => {
-          if (pn.some((n) => n.title === 'Subscription Expiring Soon' && n.message.includes(biz.name))) return pn;
-          return [{
-            id: `notif-warn-${biz.id}-${Date.now()}`,
-            title: 'Subscription Expiring Soon',
-            message: `${biz.name} expires on ${biz.membershipExpiryDate}. Please renew.`,
-            date: today.toISOString().split('T')[0],
-            isRead: false,
-            receiverRole: 'business' as const,
-          }, ...pn];
-        });
-      }
-      return biz;
-    }));
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
   // ── Auth functions ────────────────────────────────────────────────────────
 
-  /** Sign in — Supabase session when configured, otherwise Express JWT */
-  const apiLogin = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
-    const trimmedEmail = email.trim().toLowerCase();
-
-    if (supabase) {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: trimmedEmail,
-        password,
+  const signInWithOAuth = async (provider: 'google' | 'apple'): Promise<{ success: boolean; error?: string }> => {
+    if (!supabase) {
+      return { success: false, error: 'Google/Apple sign-in requires Supabase to be configured.' };
+    }
+    try {
+      const redirectTo = getOAuthRedirectUrl();
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo,
+          skipBrowserRedirect: true,
+          ...(provider === 'google'
+            ? { queryParams: { prompt: 'select_account', access_type: 'offline' } }
+            : { scopes: 'name email' }),
+        },
       });
+
       if (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: formatOAuthError(error.message, provider, language) };
       }
 
+      if (!data?.url) {
+        return {
+          success: false,
+          error: formatOAuthError('Unsupported provider: provider is not enabled', provider, language),
+        };
+      }
+
+      // Detect disabled provider before leaving the app (Supabase returns JSON 400 on authorize URL)
       try {
-        const res = await apiFetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: trimmedEmail, password }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          const backendUser = data.user as { role: string; name: string; phone: string; preferredLanguage?: string };
-          setCurrentUser((prev) => prev ? {
-            ...prev,
-            role:              normaliseRole(backendUser.role),
-            name:              backendUser.name || prev.name,
-            phone:             backendUser.phone || prev.phone,
-            preferredLanguage: (backendUser.preferredLanguage as 'en' | 'ar') || prev.preferredLanguage,
-          } : prev);
+        const probe = await fetch(data.url, { method: 'GET', redirect: 'manual', credentials: 'omit' });
+        const contentType = probe.headers.get('content-type') || '';
+        if (probe.status === 400 && contentType.includes('application/json')) {
+          const body = (await probe.json()) as { msg?: string; error_description?: string; message?: string };
+          const msg = body.msg || body.error_description || body.message || '';
+          if (msg.toLowerCase().includes('not enabled') || msg.toLowerCase().includes('unsupported provider')) {
+            return { success: false, error: formatOAuthError(msg, provider, language) };
+          }
         }
       } catch {
-        // Supabase session remains valid for app access
+        // CORS may block probe — proceed with redirect and let Supabase handle it
       }
 
-      addNotification('Login Successful', `Assalamu Alaykum. Welcome back!`, 'customer');
+      window.location.assign(data.url);
       return { success: true };
+    } catch {
+      return { success: false, error: 'Could not start sign-in. Please try again.' };
     }
+  };
+
+  const signInWithGoogle = () => signInWithOAuth('google');
+  const signInWithApple = () => signInWithOAuth('apple');
+
+  /** Sign in — backend JWT first (roles), Supabase fallback for OAuth-only accounts */
+  const apiLogin = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    const trimmedEmail = email.trim().toLowerCase();
 
     try {
       const res = await apiFetch('/api/auth/login', {
@@ -517,42 +724,67 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         body: JSON.stringify({ email: trimmedEmail, password }),
       });
       const data = await res.json();
-      if (!res.ok) return { success: false, error: data.error || 'Login failed.' };
 
-      const token: string = data.token;
-      const user = data.user as { id: string; email: string; phone: string; name: string; role: string; preferredLanguage?: string };
+      if (res.ok && data.token) {
+        const user = data.user as { id: string; email: string; phone: string; name: string; role: string; preferredLanguage?: string };
+        const profile = applyBackendSession(data.token, user);
+        void addNotification(
+          'Login Successful',
+          `Assalamu Alaykum, ${profile.name}. Welcome back!`,
+          profile.role,
+          true,
+          profile.id,
+        );
 
-      localStorage.setItem('shia_dir_token', token);
-      setApiToken(token);
+        await refreshDirectory(profile);
+        await refreshPayments(data.token, profile.role);
+        await refreshFavorites(data.token);
+        await syncMyDirectoryProfile(data.token, profile.email, profile.role);
 
-      const profile: UserProfile = {
-        id:                user.id,
-        email:             user.email,
-        phone:             user.phone || '',
-        name:              user.name,
-        role:              normaliseRole(user.role),
-        preferredLanguage: (user.preferredLanguage as 'en' | 'ar') || 'en',
-      };
-      setCurrentUser(profile);
-      addNotification('Login Successful', `Assalamu Alaykum, ${user.name}. Welcome back!`, normaliseRole(user.role));
+        if (supabase && profile.role !== 'admin') {
+          supabase.auth.signInWithPassword({ email: trimmedEmail, password }).catch(() => {});
+        }
+        return { success: true };
+      }
 
-      await refreshDirectory(profile);
-      await syncMyDirectoryProfile(token, user.email, profile.role);
-      return { success: true };
+      if (!supabase) {
+        return { success: false, error: data.error || 'Login failed.' };
+      }
     } catch {
-      return { success: false, error: 'Cannot reach server. Make sure the backend is running.' };
+      if (!supabase) {
+        return { success: false, error: 'Cannot reach server. Make sure the backend is running.' };
+      }
     }
+
+    if (supabase) {
+      safeRemoveItem(AUTH_SOURCE_KEY);
+      const { error } = await supabase.auth.signInWithPassword({
+        email: trimmedEmail,
+        password,
+      });
+      if (error) {
+        return { success: false, error: error.message };
+      }
+      addNotification('Login Successful', 'Assalamu Alaykum. Welcome back!', 'customer', true);
+      return { success: true };
+    }
+
+    return { success: false, error: 'Login failed.' };
   };
 
   const registerAccount = async (payload: {
     name: string;
     email: string;
     password: string;
-    phone?: string;
+    phone: string;
   }): Promise<{ success: boolean; error?: string }> => {
     const trimmedEmail = payload.email.trim().toLowerCase();
     const trimmedName = payload.name.trim();
-    const phone = payload.phone?.trim() ?? '';
+    const trimmedPhone = payload.phone.trim();
+
+    if (!trimmedName || !trimmedEmail || !trimmedPhone || !payload.password) {
+      return { success: false, error: 'All fields are required.' };
+    }
 
     if (supabase) {
       const { error } = await supabase.auth.signUp({
@@ -561,9 +793,9 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         options: {
           data: {
             name: trimmedName,
-            phone,
+            phone: trimmedPhone,
             role: 'customer',
-            preferredLanguage: language,
+            preferredLanguage: 'en',
           },
         },
       });
@@ -579,7 +811,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         body: JSON.stringify({
           name: trimmedName,
           email: trimmedEmail,
-          phone,
+          phone: trimmedPhone,
           role: 'customer',
           password: payload.password,
         }),
@@ -592,7 +824,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           return { success: false, error: data.error || 'Registration failed.' };
         }
       } else if (!supabase) {
-        localStorage.setItem('shia_dir_token', data.token);
+        safeSetItem('shia_dir_token', data.token);
         setApiToken(data.token);
         const user = data.user as { id: string; email: string; phone: string; name: string; role: string };
         setCurrentUser({
@@ -601,7 +833,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           phone: user.phone || '',
           name: user.name,
           role: normaliseRole(user.role),
-          preferredLanguage: language as 'en' | 'ar',
+          preferredLanguage: 'en',
         });
         await refreshDirectory();
         return { success: true };
@@ -623,6 +855,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const signOut = async (): Promise<void> => {
+    safeRemoveItem(AUTH_SOURCE_KEY);
     if (supabase) {
       await supabase.auth.signOut();
     }
@@ -654,39 +887,66 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           ...currentUser,
           name:              data.name              ?? currentUser.name,
           phone:             data.phone             ?? currentUser.phone,
-          preferredLanguage: data.preferredLanguage ?? currentUser.preferredLanguage,
+          preferredLanguage: 'en',
         });
-        if (updates.preferredLanguage) {
-          setLanguageState(updates.preferredLanguage);
-        }
         return { success: true };
       } catch {
-        // fall through to offline update
+        return { success: false, error: 'Cannot reach server. Make sure the backend is running.' };
       }
     }
 
-    setCurrentUser({ ...currentUser, ...updates });
-    if (updates.preferredLanguage) {
-      setLanguageState(updates.preferredLanguage);
-    }
-    return { success: true };
+    return { success: false, error: 'You must be signed in to update your profile.' };
   };
 
-  // ── Category helpers ──────────────────────────────────────────────────────
-  const setLanguage  = (lang: 'en' | 'ar' | 'fa') => setLanguageState(lang);
-  const setTheme     = (t: 'light' | 'dark' | 'system') => setThemeState(t);
-  const addCategory  = (cat: Category) => setCategories((p) => [...p, cat]);
-  const removeCategory = (id: string) => setCategories((p) => p.filter((c) => c.id !== id));
+  // ── Category helpers (server-backed) ──────────────────────────────────────
+  const setTheme = (t: 'light' | 'dark') => setThemeState(t);
+
+  const addCategory = async (cat: Category): Promise<{ success: boolean; error?: string }> => {
+    if (!apiToken) return { success: false, error: 'Admin authentication required.' };
+    try {
+      const res = await apiFetch('/api/categories', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiToken}`,
+        },
+        body: JSON.stringify({
+          id: cat.id,
+          name: cat.name,
+          group: cat.group,
+          iconName: cat.iconName,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) return { success: false, error: data.error || 'Failed to create category.' };
+      await refreshCategories();
+      return { success: true };
+    } catch {
+      return { success: false, error: 'Cannot reach server.' };
+    }
+  };
+
+  const removeCategory = async (id: string): Promise<{ success: boolean; error?: string }> => {
+    if (!apiToken) return { success: false, error: 'Admin authentication required.' };
+    try {
+      const res = await apiFetch(`/api/categories/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${apiToken}` },
+      });
+      if (!res.ok && res.status !== 204) {
+        const data = await res.json().catch(() => ({}));
+        return { success: false, error: data.error || 'Failed to delete category.' };
+      }
+      await refreshCategories();
+      return { success: true };
+    } catch {
+      return { success: false, error: 'Cannot reach server.' };
+    }
+  };
 
   // ── Business helpers ──────────────────────────────────────────────────────
   const addBusiness = (biz: Business) => {
     setBusinesses((p) => [...p, biz]);
-    const kindLabel = biz.listingType === 'service' ? 'Service' : 'Business';
-    addNotification(
-      'New Submission — Vetting Required',
-      `${biz.name} (${kindLabel}) is awaiting admin review.`,
-      'admin',
-    );
   };
   const updateBusiness = (updated: Business) =>
     setBusinesses((p) => p.map((b) => (b.id === updated.id ? updated : b)));
@@ -759,49 +1019,206 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         }
         return { success: true };
       } catch {
-        // fall through to offline save
+        return { success: false, error: 'Cannot reach server. Make sure the backend is running.' };
       }
     }
 
-    const offlineReview: Review = {
-      id: `rev-${Date.now()}`,
-      businessId,
-      userId: currentUser.id,
-      userName: currentUser.name || currentUser.email.split('@')[0],
-      rating,
-      comment: comment.trim(),
-      date: new Date().toISOString().split('T')[0],
-    };
-    addReview(offlineReview);
-    return { success: true };
+    return { success: false, error: 'You must be signed in to submit a review.' };
   };
 
-  // ── Favorites ─────────────────────────────────────────────────────────────
-  const toggleFavorite = (businessId: string) =>
-    setFavorites((p) => p.includes(businessId) ? p.filter((id) => id !== businessId) : [...p, businessId]);
-
-  // ── Payments ──────────────────────────────────────────────────────────────
-  const addPayment = (payment: PaymentRecord) => {
-    setPayments((p) => [payment, ...p]);
-    setBusinesses((p) => p.map((biz) => {
-      if (biz.id !== payment.businessId) return biz;
-      const expiry = new Date();
-      expiry.setDate(expiry.getDate() + 30);
-      return { ...biz, status: 'active', membershipExpiryDate: expiry.toISOString().split('T')[0] };
-    }));
-    const biz = businesses.find((b) => b.id === payment.businessId);
-    if (biz) addNotification('Subscription Renewed ✓', `Membership for ${biz.name} renewed successfully.`, 'business');
+  // ── Favorites (server-synced when signed in) ──────────────────────────────
+  const readLegacyLocalFavorites = (): string[] => {
+    try {
+      const s = safeGetItem('shia_dir_favorites');
+      if (!s) return [];
+      const parsed = JSON.parse(s);
+      return Array.isArray(parsed)
+        ? parsed.filter((id): id is string => typeof id === 'string')
+        : [];
+    } catch {
+      return [];
+    }
   };
 
-  // ── Products / Orders ─────────────────────────────────────────────────────
-  const addProduct = (product: Product) => setProducts((p) => [product, ...p]);
-  const updateOrderStatus = (id: string, status: Order['status']) =>
-    setOrders((p) => p.map((o) => (o.id === id ? { ...o, status } : o)));
+  const mergeFavoriteListings = (rawListings: Record<string, unknown>[]) => {
+    if (!Array.isArray(rawListings) || rawListings.length === 0) return;
+    const mapped = rawListings.map(mapDirectoryProfile);
+    setBusinesses((prev) => {
+      const byId = new Map(prev.map((b) => [b.id, b]));
+      mapped.forEach((biz) => byId.set(biz.id, biz));
+      return [...byId.values()];
+    });
+  };
+
+  const applyFavoritesPayload = (payload: unknown): string[] => {
+    if (Array.isArray(payload)) {
+      return payload.filter((id): id is string => typeof id === 'string');
+    }
+    if (payload && typeof payload === 'object') {
+      const data = payload as { businessIds?: unknown; listings?: unknown };
+      if (Array.isArray(data.listings)) {
+        mergeFavoriteListings(data.listings as Record<string, unknown>[]);
+      }
+      if (Array.isArray(data.businessIds)) {
+        return data.businessIds.filter((id): id is string => typeof id === 'string');
+      }
+    }
+    return [];
+  };
+
+  const refreshFavorites = async (token?: string | null): Promise<void> => {
+    const authToken = token ?? apiToken;
+    if (!authToken) {
+      setFavorites(readLegacyLocalFavorites());
+      setFavoritesError('');
+      return;
+    }
+
+    setFavoritesLoading(true);
+    setFavoritesError('');
+    try {
+      const res = await apiFetch('/api/favorites', {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setFavoritesError(data.error || 'Could not load saved favorites.');
+        return;
+      }
+
+      let serverIds = applyFavoritesPayload(data);
+
+      if (!favoritesMergedRef.current) {
+        favoritesMergedRef.current = true;
+        const legacy = readLegacyLocalFavorites();
+        const toUpload = legacy.filter((id) => !serverIds.includes(id));
+        for (const businessId of toUpload) {
+          try {
+            const addRes = await apiFetch(`/api/favorites/${businessId}`, {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${authToken}` },
+            });
+            if (addRes.ok) {
+              const addData = await addRes.json();
+              serverIds = applyFavoritesPayload(addData);
+            }
+          } catch { /**/ }
+        }
+        if (legacy.length > 0) safeRemoveItem('shia_dir_favorites');
+      }
+
+      setFavorites(serverIds);
+    } catch {
+      setFavoritesError('Cannot reach server. Make sure the backend is running.');
+      console.warn('[ABN Directory] Could not load saved favorites.');
+    } finally {
+      setFavoritesLoading(false);
+    }
+  };
+
+  const toggleFavorite = async (businessId: string): Promise<{ success: boolean; error?: string }> => {
+    if (!apiToken) {
+      return { success: false, error: 'Sign in to save favorites to your account.' };
+    }
+
+    const wasFav = favorites.includes(businessId);
+    setFavorites((p) => (wasFav ? p.filter((id) => id !== businessId) : [...p, businessId]));
+
+    const method = wasFav ? 'DELETE' : 'POST';
+    try {
+      const res = await apiFetch(`/api/favorites/${businessId}`, {
+        method,
+        headers: { Authorization: `Bearer ${apiToken}` },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setFavorites((p) => (wasFav ? [...p, businessId] : p.filter((id) => id !== businessId)));
+        return { success: false, error: data.error || 'Could not update saved list.' };
+      }
+      setFavorites(applyFavoritesPayload(data));
+      return { success: true };
+    } catch {
+      setFavorites((p) => (wasFav ? [...p, businessId] : p.filter((id) => id !== businessId)));
+      return { success: false, error: 'Cannot reach server. Make sure the backend is running.' };
+    }
+  };
+
+  // ── Payments (server-persisted via /api/payments) ─────────────────────────
+  const refreshPayments = async (token?: string | null, role?: UserRole): Promise<void> => {
+    const authToken = token ?? apiToken;
+    if (!authToken) {
+      setPayments([]);
+      return;
+    }
+
+    const path = role === 'admin' ? '/api/payments' : '/api/payments/mine';
+    try {
+      const res = await apiFetch(path, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (Array.isArray(data)) setPayments(data);
+    } catch {
+      console.warn('[ABN Directory] Could not load payment history.');
+    }
+  };
+
+  const renewMembership = async (
+    businessId: string,
+    amount: number,
+  ): Promise<{ success: boolean; error?: string; payment?: PaymentRecord }> => {
+    if (!apiToken) {
+      return { success: false, error: 'You must be signed in to renew membership.' };
+    }
+
+    try {
+      const res = await apiFetch('/api/payments/renew', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiToken}`,
+        },
+        body: JSON.stringify({ businessId, amount }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, error: data.error || 'Payment could not be recorded.' };
+      }
+
+      const payment = data.payment as PaymentRecord;
+      setPayments((p) => [payment, ...p.filter((x) => x.id !== payment.id)]);
+
+      if (data.profile) {
+        const mapped = mapDirectoryProfile(data.profile as Record<string, unknown>);
+        setBusinesses((prev) => {
+          const rest = prev.filter((b) => b.id !== mapped.id);
+          return [...rest, mapped];
+        });
+      } else {
+        setBusinesses((p) => p.map((biz) => {
+          if (biz.id !== businessId) return biz;
+          const expiry = new Date();
+          expiry.setDate(expiry.getDate() + 30);
+          return { ...biz, status: 'active', membershipExpiryDate: expiry.toISOString().split('T')[0] };
+        }));
+      }
+
+      const biz = businesses.find((b) => b.id === businessId);
+      if (biz) await refreshNotifications(apiToken);
+
+      return { success: true, payment };
+    } catch {
+      return { success: false, error: 'Could not reach payment service.' };
+    }
+  };
 
   // ── Jobs ──────────────────────────────────────────────────────────────────
-  const addJob = (jobData: Omit<Job, 'id' | 'postedDate'>) => {
-    const newJob: Job = { ...jobData, id: `job-${Date.now()}`, postedDate: new Date().toISOString().split('T')[0] };
-    setJobs((p) => [newJob, ...p]);
+  const addJob = (job: Job) => {
+    setJobs((p) => {
+      const rest = p.filter((j) => j.id !== job.id);
+      return [job, ...rest];
+    });
   };
   const updateJob = (updated: Job) => setJobs((p) => p.map((j) => (j.id === updated.id ? updated : j)));
   const deleteJob = (id: string) => setJobs((p) => p.filter((j) => j.id !== id));
@@ -850,30 +1267,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       }
     }
 
-    const localBiz: Business = {
-      id:                   `biz-${Date.now()}`,
-      ownerId:              currentUser.email,
-      name:                 payload.businessName,
-      logoUrl:              '',
-      coverUrl:             '',
-      description:          { en: payload.description, ar: payload.description },
-      categoryId:           'cat-maintenance',
-      subcategory:          { en: payload.category, ar: payload.category },
-      address:              '',
-      city:                 'New York',
-      area:                 '',
-      isVerified:           false,
-      status:               'active',
-      phone:                payload.phone,
-      whatsapp:             payload.whatsapp,
-      workingHours:         { en: payload.workingHours, ar: payload.workingHours },
-      membershipExpiryDate: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
-      gallery:              [],
-      rating:               0,
-      reviewsCount:         0,
-    };
-    addBusiness(localBiz);
-    return localBiz;
+    return null;
   };
 
   const setHiringActive = async (businessId: string, active: boolean): Promise<void> => {
@@ -899,33 +1293,78 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   };
 
-  // ── Notifications ─────────────────────────────────────────────────────────
-  const addNotification = (title: string, message: string, receiverRole: UserRole | 'all') => {
-    setNotifications((p) => [{
-      id: `notif-${Date.now()}`,
-      title, message,
-      date: new Date().toISOString().split('T')[0],
-      isRead: false,
-      receiverRole,
-    }, ...p]);
+  // ── Notifications (server-backed) ─────────────────────────────────────────
+  const addNotification = async (
+    title: string,
+    message: string,
+    receiverRole: UserRole | 'all',
+    personal = false,
+    explicitUserId?: string,
+  ) => {
+    const token = apiToken ?? (typeof window !== 'undefined' ? localStorage.getItem('shia_dir_token') : null);
+    if (!token) return;
+    try {
+      await apiFetch('/api/notifications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title,
+          message,
+          receiverRole,
+          userId: personal ? (explicitUserId ?? currentUser?.id) : undefined,
+        }),
+      });
+      await refreshNotifications(token);
+    } catch {
+      console.warn('[ABN Directory] Could not persist notification.');
+    }
   };
-  const markNotificationsAsRead = () => setNotifications((p) => p.map((n) => ({ ...n, isRead: true })));
-  const clearNotifications = () => setNotifications([]);
+
+  const markNotificationsAsRead = async () => {
+    if (!apiToken) return;
+    try {
+      await apiFetch('/api/notifications/read-all', {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${apiToken}` },
+      });
+      await refreshNotifications(apiToken);
+    } catch {
+      setNotifications((p) => p.map((n) => ({ ...n, isRead: true })));
+    }
+  };
+
+  const clearNotifications = async () => {
+    if (!apiToken) {
+      setNotifications([]);
+      return;
+    }
+    try {
+      await apiFetch('/api/notifications', {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${apiToken}` },
+      });
+      setNotifications([]);
+    } catch {
+      setNotifications([]);
+    }
+  };
 
   // ── Provider ──────────────────────────────────────────────────────────────
   return (
     <DirectoryContext.Provider value={{
-      authReady, isAuthenticated, currentUser, apiToken, apiLogin, registerAccount, signOut, updateUserProfile,
-      language, setLanguage, theme, setTheme,
-      categories, addCategory, removeCategory,
+      authReady, isAuthenticated, currentUser, apiToken, apiLogin, signInWithGoogle, signInWithApple, oauthAvailable: isSupabaseConfigured, registerAccount, signOut, updateUserProfile,
+      language, theme, setTheme,
+      categories, addCategory, removeCategory, refreshCategories,
       businesses, addBusiness, updateBusiness, removeBusiness, refreshDirectory,
       reviews, addReview, fetchReviewsForBusiness, submitReview,
-      favorites, toggleFavorite,
-      payments, addPayment,
-      products, addProduct,
-      orders, updateOrderStatus,
-      notifications, addNotification, markNotificationsAsRead, clearNotifications,
-      jobs, addJob, updateJob, deleteJob,
+      favorites, favoritesLoading, favoritesError, refreshFavorites, toggleFavorite,
+      payments, refreshPayments, renewMembership,
+      notifications, notificationsLoading, notificationsError,
+      refreshNotifications, addNotification, markNotificationsAsRead, clearNotifications,
+      jobs, addJob, updateJob, deleteJob, refreshJobs,
       hiringActive, setHiringActive, ensureBusinessListing,
     }}>
       {children}

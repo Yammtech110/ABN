@@ -38,9 +38,6 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
   // ── Customer / Admin account fields ─────────────────────────────────────
   const [name, setName] = useState(currentUser?.name || '');
   const [phone, setPhone] = useState(currentUser?.phone || '');
-  const [preferredLanguage, setPreferredLanguage] = useState<'en' | 'ar'>(
-    currentUser?.preferredLanguage || 'en',
-  );
 
   // ── Business / Service Provider listing fields ────────────────────────────
   const [bizName, setBizName] = useState(myBusiness?.name || currentUser?.name || '');
@@ -78,7 +75,6 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
     const result = await updateUserProfile({
       name: name.trim(),
       phone: phone.trim(),
-      preferredLanguage,
     });
     setSaving(false);
     if (!result.success) {
@@ -175,56 +171,19 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
           addBusiness(created);
         }
         await refreshDirectory();
+        setSaving(false);
+        setSuccess(t.profileUpdated);
+        setTimeout(onClose, 1200);
+        return;
       } catch {
-        console.warn('[ABN] API save failed — saving locally.');
+        setSaving(false);
+        setError(language === 'en' ? 'Cannot reach server. Make sure the backend is running.' : 'تعذر الاتصال بالخادم.');
+        return;
       }
     }
 
-    if (myBusiness) {
-      updateBusiness({
-        ...myBusiness,
-        name: bizName.trim(),
-        categoryId,
-        subcategory: { en: subcatEn, ar: subcatEn },
-        description: { en: descEn, ar: descEn },
-        address: address.trim(),
-        area: area.trim(),
-        city: city as Business['city'],
-        phone: bizPhone.trim(),
-        whatsapp: whatsapp.trim(),
-        workingHours: { en: hoursEn, ar: hoursEn },
-        logoUrl,
-        coverUrl,
-        gallery: images.length > 0 ? images : myBusiness.gallery,
-      });
-    } else if (!apiToken) {
-      addBusiness({
-        id: `biz-${Date.now()}`,
-        ownerId: currentUser?.email || currentUser?.id || '',
-        name: bizName.trim(),
-        logoUrl,
-        coverUrl,
-        description: { en: descEn, ar: descEn },
-        categoryId,
-        subcategory: { en: subcatEn, ar: subcatEn },
-        address: address.trim(),
-        city: city as Business['city'],
-        area: area.trim(),
-        isVerified: false,
-        status: 'active',
-        phone: bizPhone.trim(),
-        whatsapp: whatsapp.trim(),
-        workingHours: { en: hoursEn, ar: hoursEn },
-        membershipExpiryDate: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
-        gallery: images.length > 0 ? images : [logoUrl],
-        rating: 0,
-        reviewsCount: 0,
-      });
-    }
-
     setSaving(false);
-    setSuccess(t.profileUpdated);
-    setTimeout(onClose, 1200);
+    setError(language === 'en' ? 'You must be signed in to save your listing.' : 'يجب تسجيل الدخول لحفظ النشاط.');
   };
 
   const headerIcon = isListingOwner
@@ -293,15 +252,15 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-wider">{t.selectCategory}*</label>
+              <label className="block text-[10px] font-bold app-label mb-1.5 uppercase tracking-wider">{t.selectCategory}*</label>
               <select
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full p-3 rounded-xl bg-[#0F0E0C] border border-[#2D2319] text-xs text-[#FFA048] outline-none"
+                className="w-full p-3 rounded-xl border text-xs app-field outline-none"
                 id="edit-profile-category"
               >
                 {categories.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name[language] || c.name.en}</option>
+                  <option key={c.id} value={c.id}>{c.name.en}</option>
                 ))}
               </select>
             </div>

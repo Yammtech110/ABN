@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import {defineConfig} from 'vite';
 
-const API_PROXY_TARGET = process.env.VITE_API_PROXY_TARGET || 'http://192.168.100.13:3001';
+const API_PROXY_TARGET = process.env.VITE_API_PROXY_TARGET || 'http://127.0.0.1:3001';
 
 export default defineConfig(() => {
   return {

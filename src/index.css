@@ -113,6 +113,7 @@ html.light .bg-\[\#13110E\],
 html.light .bg-\[\#191613\],
 html.light .bg-\[\#1A1612\],
 html.light .bg-\[\#201B15\],
+html.light .bg-\[\#1C1914\],
 html.light .bg-\[\#0A0705\]\/80 {
   background-color: #FFFFFF !important;
   box-shadow: var(--shadow-card) !important;
@@ -315,6 +316,201 @@ html.light .bg-black.z-30 div {
   color: #CBD5E1 !important;
 }
 
+/* Dark: form labels & selects */
+html.dark label.text-gray-400,
+html.dark .text-xs.text-gray-400 {
+  color: #B8C0CC !important;
+}
+html.dark select.text-\[\#FFA048\],
+html.dark select.text-white {
+  color: #F4E3D7 !important;
+}
+
+/* Light: dropdown / filter pills on home & search */
+html.light #home-tab-container .hover\:text-white:hover,
+html.light #search-tab-container button.hover\:text-white:hover {
+  color: #0F172A !important;
+}
+html.light #home-tab-container .bg-\[\#13110E\].text-gray-400 {
+  background-color: #F8FAFC !important;
+  color: #475569 !important;
+}
+
+/* Shared form tokens — use on inputs/selects for both themes */
+.app-field {
+  background-color: var(--color-surface) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text) !important;
+}
+.app-label {
+  color: var(--color-text-secondary) !important;
+}
+
+html.dark .text-gray-600,
+html.dark .text-gray-500 {
+  color: #A8B0BC !important;
+}
+html.dark select option {
+  background-color: #13110E;
+  color: #F4E3D7;
+}
+
+/* Light: status / action colors — stronger contrast on white cards */
+html.light .text-green-300 { color: #15803D !important; }
+html.light .text-green-400 { color: #16A34A !important; }
+html.light .text-red-300,
+html.light .text-red-400   { color: #DC2626 !important; }
+html.light .text-blue-400  { color: #2563EB !important; }
+html.light .text-amber-400 { color: #D97706 !important; }
+
+html.light .bg-green-500\/10,
+html.light .bg-green-600\/15 { background-color: #DCFCE7 !important; }
+html.light .bg-red-500\/10,
+html.light .bg-red-600\/15,
+html.light .bg-red-950\/40  { background-color: #FEE2E2 !important; }
+html.light .bg-blue-500\/10,
+html.light .bg-blue-500\/20 { background-color: #DBEAFE !important; }
+html.light .bg-amber-500\/10,
+html.light .bg-amber-500\/20 { background-color: #FEF3C7 !important; }
+html.light .bg-green-950\/40 {
+  background-color: #DCFCE7 !important;
+  border-color: #86EFAC !important;
+}
+html.light .border-green-900\/60 { border-color: #86EFAC !important; }
+html.light .border-red-900\/60   { border-color: #FCA5A5 !important; }
+
+/* Light: hover states that used white text on pale surfaces */
+html.light .hover\:text-white:hover,
+html.light .group:hover .group-hover\:text-white {
+  color: #0F172A !important;
+}
+
+html.light .bg-\[\#2D2319\] {
+  background-color: #E2E8F0 !important;
+}
+html.light .bg-black\/20 {
+  background-color: rgba(15, 23, 42, 0.10) !important;
+  color: #0F172A !important;
+}
+html.light .bg-white\/10 {
+  background-color: #E2E8F0 !important;
+}
+html.light .border-white\/20 {
+  border-color: #CBD5E1 !important;
+}
+html.light .bg-stone-900 {
+  background-color: #F1F5F9 !important;
+  color: #475569 !important;
+}
+html.light .bg-stone-900:hover {
+  color: #DC2626 !important;
+}
+
+html.light .app-field option,
+html.dark .app-field option {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+}
+html.light select option {
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+}
+
+/* ─── Admin panel ─────────────────────────────────────────── */
+html.light #admin-panel-container h2,
+html.light #admin-panel-container h3,
+html.light #admin-panel-container h4 {
+  color: #0F172A !important;
+}
+html.light #admin-panel-container .text-\[\#F4E3D7\] {
+  color: #0F172A !important;
+}
+html.light #admin-segment-bar button:not([class*="bg-[#FFA048]"]) {
+  color: #475569 !important;
+}
+html.light #admin-segment-bar button:not([class*="bg-[#FFA048]"]):hover {
+  color: #0F172A !important;
+  background-color: #F1F5F9 !important;
+}
+html.light #admin-biz-section .bg-white\/10.text-white,
+html.light #admin-biz-section button.bg-white\/10 {
+  background-color: #E2E8F0 !important;
+  color: #0F172A !important;
+  border-color: #94A3B8 !important;
+}
+html.light #admin-biz-section .bg-\[\#13110E\].text-gray-400 {
+  background-color: #F8FAFC !important;
+  color: #475569 !important;
+}
+html.light #admin-biz-section .bg-\[\#2D2319\].text-gray-500 {
+  color: #334155 !important;
+}
+
+html.light #admin-jobs-section h3,
+html.light #admin-jobs-section h4 {
+  color: #0F172A !important;
+}
+
+/* ─── Search tab ──────────────────────────────────────────── */
+html.light #search-tab-container .hover\:text-white:hover {
+  color: #0F172A !important;
+}
+html.light #search-tab-container .bg-\[\#191613\] {
+  background-color: #FFFFFF !important;
+}
+
+/* ─── Saved tab ───────────────────────────────────────────── */
+html.light #saved-tab-container h3 {
+  color: #0F172A !important;
+}
+
+/* ─── Portal / registration forms ───────────────────────── */
+html.light #portal-tab-container label {
+  color: #475569 !important;
+}
+html.light #portal-tab-container select.text-\[\#FFA048\] {
+  color: #0F172A !important;
+}
+html.dark #portal-tab-container select option {
+  background-color: #0F0E0C;
+  color: #F4E3D7;
+}
+
+/* ─── Account tab options list ────────────────────────────── */
+html.light #account-options-list .hover\:text-white:hover {
+  color: var(--color-primary) !important;
+}
+html.light #account-tab-container label,
+html.light #account-tab-container p {
+  color: #475569 !important;
+}
+html.light #account-tab-container .text-white {
+  color: #0F172A !important;
+}
+
+/* ─── Auth screen ─────────────────────────────────────────── */
+html.light #auth-screen-root input,
+html.light #auth-screen-root select,
+html.light #auth-screen-root textarea,
+html.light #auth-screen-content input,
+html.light #auth-screen-content select,
+html.light #auth-screen-content textarea {
+  color: #0F172A !important;
+}
+html.light #auth-screen-root label,
+html.light #auth-screen-content label {
+  color: #475569 !important;
+}
+
+/* ─── Modals (business details, edit profile) ─────────────── */
+html.light [id*="modal"] .text-white,
+html.light .fixed.inset-0 .text-white {
+  color: #0F172A !important;
+}
+html.light .fixed.inset-0 .bg-\[\#13110E\] {
+  background-color: #FFFFFF !important;
+}
+
 /* ─── Base Reset & Typography ────────────────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -498,8 +694,8 @@ html.light select:focus-visible {
 
 /* ─── Image lazy fade-in ─────────────────────────────────── */
 img { transition: opacity 0.3s ease; }
-img[loading="lazy"]        { opacity: 0; }
-img[loading="lazy"].loaded { opacity: 1; }
+img.lazy-image { opacity: 1; }
+img.lazy-image.loaded { opacity: 1; }
 
 /* ─── RTL tweaks ─────────────────────────────────────────── */
 [dir="rtl"] .rtl-flip { transform: scaleX(-1); }

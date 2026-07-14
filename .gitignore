@@ -9,5 +9,4 @@ backend/.env
 .env
 .env.local
 .env.production
-*.apk
-.DS_Store
+test-results/

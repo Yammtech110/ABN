@@ -24,6 +24,11 @@ const storageMeta = () => (isSupabaseStorage()
       directory: 'Supabase table profiles_directory',
       jobs: 'Supabase table jobs_board',
       reviews: 'Supabase table business_reviews',
+      payments: 'Supabase table membership_payments',
+      favorites: 'Supabase table user_favorites',
+      reports: 'Supabase table listing_reports',
+      categories: 'Supabase table directory_categories',
+      notifications: 'Supabase table app_notifications',
     }
   : {
       mode: 'memory',
@@ -31,6 +36,11 @@ const storageMeta = () => (isSupabaseStorage()
       directory: 'In-memory profiles (lost on restart)',
       jobs: 'In-memory jobs board (lost on restart)',
       reviews: 'In-memory reviews (lost on restart)',
+      payments: 'In-memory payments (lost on restart)',
+      favorites: 'In-memory favorites (lost on restart)',
+      reports: 'In-memory listing reports (lost on restart)',
+      categories: 'In-memory categories (lost on restart)',
+      notifications: 'In-memory notifications (lost on restart)',
     });
 
 /** Ping Supabase on startup — throws if required tables are missing. */
@@ -42,6 +52,11 @@ async function verifySupabaseConnection(supabaseAdmin) {
   ];
   const optional = [
     { table: 'business_reviews', migration: '003_persistence_extras.sql' },
+    { table: 'membership_payments', migration: '004_payments.sql' },
+    { table: 'user_favorites', migration: '005_user_favorites.sql' },
+    { table: 'listing_reports', migration: '007_listing_reports.sql' },
+    { table: 'directory_categories', migration: '008_categories.sql' },
+    { table: 'app_notifications', migration: '009_notifications.sql' },
   ];
 
   for (const { table, migration } of required) {

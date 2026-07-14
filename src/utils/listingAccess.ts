@@ -27,3 +27,15 @@ export const isPendingSubmission = (listing: Business): boolean =>
 
 export const listingKind = (listing: Business | null | undefined): ListingKind =>
   listing?.listingType === 'service' ? 'service' : 'business';
+
+/** Registered business listing approved for directory — required to post jobs */
+export const isJobEligibleListing = (listing: Business | null | undefined): boolean =>
+  Boolean(listing && listing.listingType === 'business');
+
+export const canPostJobs = (listing: Business | null | undefined): boolean =>
+  Boolean(
+    listing &&
+    listing.isVerified &&
+    listing.status === 'active' &&
+    isJobEligibleListing(listing),
+  );

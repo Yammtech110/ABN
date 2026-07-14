@@ -28,9 +28,18 @@ const mapProfileFromDb = (row) => ({
   createdAt:          row.created_at || null,
 });
 
+/** DB role values for profiles_directory (see migrations/001_init_supabase.sql) */
+const listingTypeToDbRole = (listingType) =>
+  listingType === 'service' ? 'service_provider' : 'business_owner';
+
 const mapProfileToDb = (api, { email } = {}) => {
   const row = {};
   if (email !== undefined) row.email = email;
+  if (api.role !== undefined) {
+    row.role = api.role;
+  } else if (api.listingType !== undefined) {
+    row.role = listingTypeToDbRole(api.listingType);
+  }
   if (api.listingType !== undefined) row.listing_type = api.listingType;
   if (api.businessName !== undefined) row.business_name = api.businessName;
   if (api.category !== undefined) row.category = api.category;
@@ -73,6 +82,7 @@ const mapJobFromDb = (row) => ({
 
 const mapJobToDb = (api) => {
   const row = {};
+  if (api.id !== undefined) row.id = api.id;
   if (api.businessId !== undefined) row.business_id = api.businessId;
   if (api.businessName !== undefined) row.business_name = api.businessName;
   if (api.businessLogoUrl !== undefined) row.business_logo_url = api.businessLogoUrl;
@@ -97,6 +107,21 @@ const mapReviewFromDb = (row) => ({
   date:       row.review_date,
 });
 
+const mapReportFromDb = (row) => ({
+  id:            String(row.id),
+  businessId:    String(row.business_id),
+  businessName:  row.business_name || '',
+  reporterId:    row.reporter_id,
+  reporterName:  row.reporter_name || '',
+  reporterEmail: row.reporter_email || '',
+  reason:        row.reason || '',
+  status:        row.status || 'open',
+  adminNotes:    row.admin_notes || '',
+  date:          row.created_at ? String(row.created_at).slice(0, 10) : '',
+  resolvedAt:    row.resolved_at || null,
+  createdAt:     row.created_at || null,
+});
+
 const mapUserFromDb = (row) => ({
   id:                row.id,
   email:             row.email,
@@ -105,6 +130,7 @@ const mapUserFromDb = (row) => ({
   role:              row.role,
   passwordHash:      row.password_hash,
   preferredLanguage: row.preferred_language || 'en',
+  isBlocked:         Boolean(row.is_blocked),
 });
 
 const mapUserToDb = (user) => ({
@@ -123,6 +149,7 @@ module.exports = {
   mapJobFromDb,
   mapJobToDb,
   mapReviewFromDb,
+  mapReportFromDb,
   mapUserFromDb,
   mapUserToDb,
 };

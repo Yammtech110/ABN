@@ -1,5 +1,6 @@
-﻿const fs = require('fs');
-const file = fs.readFileSync('src/data/translations.ts', 'utf8');
+import { readFileSync, writeFileSync } from 'fs';
+const file = readFileSync('src/data/translations.ts', 'utf8');
+
 
 const faTranslation = {
   appName: 'دایرکتوری کوثر',
@@ -124,5 +125,7 @@ const faTranslation = {
   allCategories: 'همه دسته‌بندی‌ها'
 };
 
-const newFile = file.replace(/};\s*$/g, , fa: \ \n};);
-fs.writeFileSync('src/data/translations.ts', newFile);
+const newFile = file.replace(/};\s*$/, `,\n  fa: ${JSON.stringify(faTranslation, null, 2)}\n};`);
+writeFileSync('src/data/translations.ts', newFile);
+
+

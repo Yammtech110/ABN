@@ -6,13 +6,60 @@
 
 const express = require('express');
 const { supabaseAdmin } = require('../supabase');
-const { isSupabaseStorage, directoryProfiles, jobsBoard, newId, today } = require('../db');
+const { isSupabaseStorage, directoryProfiles, jobsBoard, newId, newUuid, today } = require('../db');
 const { mapJobFromDb, mapJobToDb } = require('../lib/supabaseMappers');
 const { authenticate, requireRole } = require('../middleware/authMiddleware');
+const { publicMediaPath } = require('../lib/listingMedia');
 
 const router = express.Router();
 
+const JOB_OWNER_ROLES = ['customer', 'business', 'service_provider', 'admin'];
+
 const VALID_CATEGORIES = ['IT', 'Graphic Designing', 'Developer', 'Chef', 'Maid', 'Others'];
+
+const JOB_ELIGIBLE_LISTING_TYPES = new Set(['business']);
+
+/** Only verified business directory profiles may post or manage jobs */
+const assertJobPostingAllowed = (profile, userRole) => {
+  if (userRole === 'admin') return null;
+
+  if (!profile) {
+    return {
+      status: 404,
+      error: 'Register as a business before posting jobs.',
+    };
+  }
+
+  if (!JOB_ELIGIBLE_LISTING_TYPES.has(profile.listingType)) {
+    return {
+      status: 403,
+      error: 'Only registered business listings can post jobs.',
+    };
+  }
+
+  if (!profile.isVerified) {
+    return {
+      status: 403,
+      error: 'Your listing must be approved by an admin before posting jobs.',
+    };
+  }
+
+  if (profile.subscriptionStatus === 'suspended') {
+    return {
+      status: 403,
+      error: 'Your listing is suspended. Renew membership to post jobs.',
+    };
+  }
+
+  if (!profile.hiringActive) {
+    return {
+      status: 403,
+      error: 'Hiring is not active on your profile. Enable it first from the Account tab.',
+    };
+  }
+
+  return null;
+};
 
 const mapJob = (row) => ({ ...row });
 
@@ -91,12 +138,27 @@ router.get('/', async (req, res, next) => {
   }
 });
 
+// ── GET /api/jobsboard/all ────────────────────────────────────────────────
+/** Admin-only: every job posting regardless of active/hiring status */
+router.get('/all', authenticate, requireRole('admin'), async (req, res, next) => {
+  try {
+    const allJobs = await fetchAllJobs();
+    allJobs.sort((a, b) => String(b.createdAt || b.postedDate || '').localeCompare(String(a.createdAt || a.postedDate || '')));
+    res.json(allJobs.map(mapJob));
+  } catch (err) {
+    next(err);
+  }
+});
+
 // ── GET /api/jobsboard/mine ───────────────────────────────────────────────
-router.get('/mine', authenticate, requireRole('customer', 'admin'), async (req, res, next) => {
+router.get('/mine', authenticate, requireRole(...JOB_OWNER_ROLES), async (req, res, next) => {
   try {
     const profile = await findProfileByEmail(req.user.email);
     if (!profile) {
       return res.status(404).json({ error: 'You do not have a directory profile yet.' });
+    }
+    if (!JOB_ELIGIBLE_LISTING_TYPES.has(profile.listingType)) {
+      return res.status(403).json({ error: 'Only registered business listings can view job postings here.' });
     }
 
     const allJobs = await fetchAllJobs();
@@ -122,7 +184,7 @@ router.get('/:id', async (req, res, next) => {
 });
 
 // ── POST /api/jobsboard ───────────────────────────────────────────────────
-router.post('/', authenticate, requireRole('customer', 'admin'), async (req, res, next) => {
+router.post('/', authenticate, requireRole(...JOB_OWNER_ROLES), async (req, res, next) => {
   try {
     const {
       title, category, requirements = '',
@@ -142,23 +204,20 @@ router.post('/', authenticate, requireRole('customer', 'admin'), async (req, res
     }
 
     const profile = await findProfileByEmail(req.user.email);
-    if (!profile) {
-      return res.status(404).json({ error: 'You must have a directory profile before posting jobs.' });
-    }
-    if (profile.listingType !== 'business' && req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Jobs can only be posted from approved business listings.' });
-    }
-    if (!profile.hiringActive) {
-      return res.status(403).json({
-        error: 'Hiring is not active on your profile. Enable it first from the Account tab.',
-      });
+    const denied = assertJobPostingAllowed(profile, req.user.role);
+    if (denied) {
+      return res.status(denied.status).json({ error: denied.error });
     }
 
+    const logoForJob = profile.imageUrl && /^https?:\/\//i.test(String(profile.imageUrl).trim())
+      ? profile.imageUrl
+      : publicMediaPath(profile.id, 'logo');
+
     const job = {
-      id:              newId('job'),
+      id:              isSupabaseStorage() ? newUuid() : newId('job'),
       businessId:      profile.id,
       businessName:    profile.businessName,
-      businessLogoUrl: profile.imageUrl || '',
+      businessLogoUrl: logoForJob,
       title,
       category,
       requirements,
@@ -182,24 +241,33 @@ router.post('/', authenticate, requireRole('customer', 'admin'), async (req, res
       .single();
 
     if (error) return res.status(500).json({ error: error.message });
-    res.status(201).json(mapJob(mapJobFromDb(data)));
+    const saved = mapJob(mapJobFromDb(data));
+    const memIdx = jobsBoard.findIndex((j) => j.id === saved.id);
+    if (memIdx >= 0) jobsBoard[memIdx] = saved;
+    else jobsBoard.unshift(saved);
+    res.status(201).json(saved);
   } catch (err) {
     next(err);
   }
 });
 
 // ── PUT /api/jobsboard/:id ────────────────────────────────────────────────
-router.put('/:id', authenticate, requireRole('customer', 'admin'), async (req, res, next) => {
+router.put('/:id', authenticate, requireRole(...JOB_OWNER_ROLES), async (req, res, next) => {
   try {
     const job = await findJobById(req.params.id);
     if (!job) return res.status(404).json({ error: 'Job not found.' });
 
     const profile = await findProfileByEmail(req.user.email);
-    if (req.user.role !== 'admin' && (!profile || profile.id !== job.businessId)) {
-      return res.status(403).json({ error: 'You can only edit your own job postings.' });
+    if (req.user.role !== 'admin') {
+      if (!profile || profile.id !== job.businessId) {
+        return res.status(403).json({ error: 'You can only edit your own job postings.' });
+      }
+      if (!JOB_ELIGIBLE_LISTING_TYPES.has(profile.listingType)) {
+        return res.status(403).json({ error: 'Only registered business listings can manage jobs.' });
+      }
     }
 
-    const { title, category, requirements, salaryMin, salaryMax, hiringEmail } = req.body;
+    const { title, category, requirements, salaryMin, salaryMax, hiringEmail, isActive } = req.body;
 
     if (category && !VALID_CATEGORIES.includes(category)) {
       return res.status(400).json({ error: `category must be one of: ${VALID_CATEGORIES.join(', ')}` });
@@ -212,6 +280,9 @@ router.put('/:id', authenticate, requireRole('customer', 'admin'), async (req, r
     if (hiringEmail  !== undefined) updated.hiringEmail  = hiringEmail;
     if (salaryMin    !== undefined) updated.salaryMin    = parseFloat(salaryMin);
     if (salaryMax    !== undefined) updated.salaryMax    = parseFloat(salaryMax);
+    if (isActive     !== undefined && req.user.role === 'admin') {
+      updated.isActive = Boolean(isActive);
+    }
 
     if (!isSupabaseStorage()) {
       const idx = jobsBoard.findIndex((j) => j.id === req.params.id);
@@ -227,21 +298,66 @@ router.put('/:id', authenticate, requireRole('customer', 'admin'), async (req, r
       .single();
 
     if (error) return res.status(500).json({ error: error.message });
-    res.json(mapJob(mapJobFromDb(data)));
+    const saved = mapJob(mapJobFromDb(data));
+    const memIdx = jobsBoard.findIndex((j) => j.id === saved.id);
+    if (memIdx >= 0) jobsBoard[memIdx] = saved;
+    res.json(saved);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── PATCH /api/jobsboard/:id/active ───────────────────────────────────────
+/** Admin block / unblock a job posting */
+router.patch('/:id/active', authenticate, requireRole('admin'), async (req, res, next) => {
+  try {
+    const { isActive } = req.body;
+    if (typeof isActive !== 'boolean') {
+      return res.status(400).json({ error: 'isActive (boolean) is required.' });
+    }
+
+    const job = await findJobById(req.params.id);
+    if (!job) return res.status(404).json({ error: 'Job not found.' });
+
+    const updated = { ...job, isActive };
+
+    if (!isSupabaseStorage()) {
+      const idx = jobsBoard.findIndex((j) => j.id === req.params.id);
+      if (idx >= 0) jobsBoard[idx] = updated;
+      return res.json(mapJob(updated));
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('jobs_board')
+      .update({ is_active: isActive })
+      .eq('id', req.params.id)
+      .select('*')
+      .single();
+
+    if (error) return res.status(500).json({ error: error.message });
+    const saved = mapJob(mapJobFromDb(data));
+    const memIdx = jobsBoard.findIndex((j) => j.id === saved.id);
+    if (memIdx >= 0) jobsBoard[memIdx] = saved;
+    res.json(saved);
   } catch (err) {
     next(err);
   }
 });
 
 // ── DELETE /api/jobsboard/:id ─────────────────────────────────────────────
-router.delete('/:id', authenticate, requireRole('customer', 'admin'), async (req, res, next) => {
+router.delete('/:id', authenticate, requireRole(...JOB_OWNER_ROLES), async (req, res, next) => {
   try {
     const job = await findJobById(req.params.id);
     if (!job) return res.status(404).json({ error: 'Job not found.' });
 
     const profile = await findProfileByEmail(req.user.email);
-    if (req.user.role !== 'admin' && (!profile || profile.id !== job.businessId)) {
-      return res.status(403).json({ error: 'You can only delete your own job postings.' });
+    if (req.user.role !== 'admin') {
+      if (!profile || profile.id !== job.businessId) {
+        return res.status(403).json({ error: 'You can only delete your own job postings.' });
+      }
+      if (!JOB_ELIGIBLE_LISTING_TYPES.has(profile.listingType)) {
+        return res.status(403).json({ error: 'Only registered business listings can manage jobs.' });
+      }
     }
 
     if (!isSupabaseStorage()) {
@@ -252,6 +368,8 @@ router.delete('/:id', authenticate, requireRole('customer', 'admin'), async (req
 
     const { error } = await supabaseAdmin.from('jobs_board').delete().eq('id', req.params.id);
     if (error) return res.status(500).json({ error: error.message });
+    const memIdx = jobsBoard.findIndex((j) => j.id === req.params.id);
+    if (memIdx >= 0) jobsBoard.splice(memIdx, 1);
     res.status(204).end();
   } catch (err) {
     next(err);

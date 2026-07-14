@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDirectory } from '../context/DirectoryContext';
 import { TRANSLATIONS } from '../data/translations';
 import {
@@ -7,14 +7,15 @@ import {
   Shield,
   Bell,
   Lock,
-  Globe,
   LogOut,
   ChevronRight,
   Eye,
   Zap,
 } from 'lucide-react';
 import { EditProfileModal } from './EditProfileModal';
-import { canManageListing, getUserListing, listingKind } from '../utils/listingAccess';
+import { NotificationCenterModal } from './NotificationCenterModal';
+import { canManageListing, canPostJobs, getUserListing, listingKind } from '../utils/listingAccess';
+import { countUnreadNotifications, filterNotificationsForUser } from '../utils/notifications';
 
 interface AccountTabProps {
   onSwitchTab: (tabId: string) => void;
@@ -23,19 +24,22 @@ interface AccountTabProps {
 export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab }) => {
   const {
     language,
-    setLanguage,
     theme,
     setTheme,
     currentUser,
     signOut,
     businesses,
+    hiringActive,
+    setHiringActive,
     notifications,
+    notificationsLoading,
+    notificationsError,
+    refreshNotifications,
     markNotificationsAsRead,
     clearNotifications,
   } = useDirectory();
   const t = TRANSLATIONS[language];
 
-  // Modals for sub-sections
   const [showNotificationsModal, setShowNotificationsModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -44,15 +48,27 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab }) => {
   const canManage = canManageListing(myListing);
   const kind = listingKind(myListing);
   const isAdmin = currentUser?.role === 'admin';
+  const canUseJobs = canPostJobs(myListing);
+  const hiringEnabled = myListing ? (hiringActive[myListing.id] ?? false) : false;
+  const [hiringBusy, setHiringBusy] = useState(false);
 
-  const activeNotifs = notifications.filter(
-    (n) => n.receiverRole === 'all' || n.receiverRole === currentUser?.role
-  );
-  const unreadCount = activeNotifs.filter((n) => !n.isRead).length;
+  const activeNotifs = filterNotificationsForUser(notifications, currentUser);
+  const unreadCount = countUnreadNotifications(notifications, currentUser);
+
+  useEffect(() => {
+    refreshNotifications();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleOpenNotificationCenter = () => {
     setShowNotificationsModal(true);
-    markNotificationsAsRead();
+    void refreshNotifications();
+    void markNotificationsAsRead();
+  };
+
+  const handleClearNotifications = async () => {
+    if (!confirm('Clear all notifications from your inbox?')) return;
+    await clearNotifications();
+    await refreshNotifications();
   };
 
   const roleBadgeLabel = () => {
@@ -73,6 +89,16 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab }) => {
     void signOut();
   };
 
+  const handleHiringToggle = async () => {
+    if (!myListing || !canUseJobs) return;
+    setHiringBusy(true);
+    try {
+      await setHiringActive(myListing.id, !hiringEnabled);
+    } finally {
+      setHiringBusy(false);
+    }
+  };
+
   if (isEditingProfile && !isAdmin) {
     return (
       <EditProfileModal onClose={() => setIsEditingProfile(false)} />
@@ -90,29 +116,20 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab }) => {
 
       {/* Signed-in profile card */}
       <div className={`flex flex-col ${isAdmin ? 'gap-0' : 'gap-4'}`}>
-        <div className="p-4.5 rounded-3xl bg-[#13110E] border border-[#2D2319] flex items-center justify-between gap-3" id="signedin-profile-card">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-[#FFA048] text-black font-extrabold flex items-center justify-center border border-[#3A2E22]">
-              {currentUser.name.charAt(0).toUpperCase()}
-            </div>
-            <div className="min-w-0 flex-1">
-              <h3 className="text-xs font-black text-white truncate max-w-[160px]">{currentUser.name}</h3>
-              <p className="text-[9px] text-gray-500 truncate max-w-[180px]">{currentUser.email}</p>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-[9px] text-green-400 font-bold flex items-center gap-1">
-                  {currentUser.role === 'admin' && <Shield className="w-2.5 h-2.5 text-red-400" />}
-                  Signed in ({roleBadgeLabel()})
-                </span>
-              </div>
+        <div className="p-4.5 rounded-3xl bg-[#13110E] border border-[#2D2319] flex items-center gap-3" id="signedin-profile-card">
+          <div className="w-12 h-12 rounded-full bg-[#FFA048] text-black font-extrabold flex items-center justify-center border border-[#3A2E22]">
+            {currentUser.name.charAt(0).toUpperCase()}
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-xs font-black text-white truncate max-w-[160px]">{currentUser.name}</h3>
+            <p className="text-[9px] text-gray-500 truncate max-w-[180px]">{currentUser.email}</p>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className="text-[9px] text-green-400 font-bold flex items-center gap-1">
+                {currentUser.role === 'admin' && <Shield className="w-2.5 h-2.5 text-red-400" />}
+                Signed in ({roleBadgeLabel()})
+              </span>
             </div>
           </div>
-          <button
-            onClick={handleSignOut}
-            className="px-4 py-1.5 rounded-full bg-[#201B15] text-[#FFA048] border border-[#3A2E22] hover:bg-[#2D2319] text-[10px] font-black tracking-tight transition-all"
-            id="signedin-btn-signout"
-          >
-            Sign out
-          </button>
         </div>
 
         {!isAdmin && (
@@ -161,7 +178,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab }) => {
                   }`}>
                     {canManage
                       ? `${subscriptionLabel()} (Renews ${myListing.membershipExpiryDate})`
-                      : (language === 'en' ? 'Pending Approval' : 'بانتظار الموافقة')}
+                      : 'Pending Approval'}
                   </span>
                 </div>
                 <div>
@@ -198,45 +215,50 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab }) => {
             <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-[#FFA048]" />
           </button>
         )}
-        {/* Language Selection Bar (Value-Added localization tool) */}
-        <div className="flex items-center justify-between p-4" id="row-language-switch">
-          <span className="flex items-center gap-3 text-xs text-gray-300 font-semibold">
-            <Globe className="w-4.5 h-4.5 text-[#FFA048]" />
-            {t.languageSelection}
-          </span>
-          <div className="flex gap-1.5 p-1 rounded-xl bg-[#0F0E0C] border border-[#2D2319]">
-            <button
-              onClick={() => setLanguage('en')}
-              className={`px-2.5 py-1 text-[9px] font-black uppercase rounded ${
-                language === 'en' ? 'bg-[#FFA048] text-black' : 'text-gray-400'
-              }`}
-            >
-              EN
-            </button>
-            <button
-              onClick={() => setLanguage('ar')}
-              className={`px-2.5 py-1 text-[9px] font-black uppercase rounded ${
-                language === 'ar' ? 'bg-[#FFA048] text-black' : 'text-gray-400'
-              }`}
-            >
-              عربي
-            </button>
-            <button
-              onClick={() => setLanguage('fa')}
-              className={`px-2.5 py-1 text-[9px] font-black uppercase rounded ${
-                language === 'fa' ? 'bg-[#FFA048] text-black' : 'text-gray-400'
-              }`}
-            >
-              فارسی
-            </button>
-          </div>
-        </div>
 
+        {canUseJobs && myListing && (
+          <>
+            <div className="flex items-center justify-between p-4" id="row-hiring-active">
+              <span className="flex items-center gap-3 text-xs text-gray-300 font-semibold">
+                <Briefcase className="w-4.5 h-4.5 text-[#FFA048]" />
+                Hiring Active
+              </span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={hiringEnabled}
+                disabled={hiringBusy}
+                onClick={handleHiringToggle}
+                className={`relative w-11 h-6 rounded-full transition-colors ${
+                  hiringEnabled ? 'bg-[#FFA048]' : 'bg-stone-700'
+                } ${hiringBusy ? 'opacity-60' : ''}`}
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+                    hiringEnabled ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+
+            <button
+              onClick={() => onSwitchTab('job-management')}
+              className="w-full flex items-center justify-between p-4 hover:bg-stone-900/10 transition-colors group"
+              id="row-manage-jobs"
+            >
+              <span className="flex items-center gap-3 text-xs text-gray-300 font-semibold">
+                <Briefcase className="w-4.5 h-4.5 text-green-400" />
+                Manage Job Postings
+              </span>
+              <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-[#FFA048]" />
+            </button>
+          </>
+        )}
         {/* Theme Selection Bar */}
         <div className="flex items-center justify-between p-4" id="row-theme-switch">
           <span className="flex items-center gap-3 text-xs text-gray-300 font-semibold">
             <Eye className="w-4.5 h-4.5 text-[#FFA048]" />
-            {language === 'en' ? 'Theme Preference' : 'تفضيل المظهر'}
+            Theme Preference
           </span>
           <div className="flex gap-1.5 p-1 rounded-xl bg-[#0F0E0C] border border-[#2D2319]">
             <button
@@ -254,14 +276,6 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab }) => {
               }`}
             >
               Dark
-            </button>
-            <button
-              onClick={() => setTheme('system')}
-              className={`px-2.5 py-1 text-[9px] font-black uppercase rounded ${
-                theme === 'system' ? 'bg-[#FFA048] text-black' : 'text-gray-400'
-              }`}
-            >
-              System
             </button>
           </div>
         </div>
@@ -310,68 +324,14 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab }) => {
 
       {/* SUB-MODAL 1: SYSTEM NOTIFICATIONS POPUP */}
       {showNotificationsModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="relative w-full max-w-md rounded-3xl bg-[#13110E] border border-[#2D2319] p-6 text-[#F4E3D7]">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-black uppercase tracking-wider text-[#FFA048] flex items-center gap-2">
-                <Bell className="w-5 h-5" />
-                {t.notifications}
-                {activeNotifs.length > 0 && (
-                  <span className="text-[9px] px-1.5 py-0.5 bg-[#FFA048]/15 text-[#FFA048] rounded-full font-bold">{activeNotifs.length}</span>
-                )}
-              </h3>
-              <div className="flex items-center gap-2">
-                {activeNotifs.length > 0 && (
-                  <button
-                    onClick={clearNotifications}
-                    className="text-[9px] px-2 py-1 bg-red-950/40 text-red-400 border border-red-900/40 rounded-lg font-bold hover:bg-red-950/70 transition-colors"
-                    id="notif-btn-clear-all"
-                  >
-                    {language === 'en' ? 'Clear All' : 'مسح الكل'}
-                  </button>
-                )}
-                <button
-                  onClick={() => setShowNotificationsModal(false)}
-                  className="p-1.5 rounded-full hover:bg-[#201B15] text-gray-400 hover:text-[#FFA048] transition-colors"
-                  id="notif-modal-close"
-                >
-                  <span className="text-sm">✕</span>
-                </button>
-              </div>
-            </div>
-
-            <div className="max-h-[320px] overflow-y-auto space-y-2.5 pr-1 scrollbar-thin" id="notif-modal-list">
-              {activeNotifs.length === 0 ? (
-                <div className="text-center py-10 px-4">
-                  <Bell className="w-8 h-8 text-gray-700 mx-auto mb-2" />
-                  <p className="text-xs text-gray-500">{language === 'en' ? 'No notifications yet.' : 'لا توجد إشعارات حتى الآن.'}</p>
-                </div>
-              ) : (
-                activeNotifs.map((n) => {
-                  const isExpiry = n.title.includes('Expir');
-                  const isLogin = n.title.includes('Login');
-                  const dotColor = isExpiry ? 'bg-amber-500' : isLogin ? 'bg-green-500' : 'bg-[#FFA048]';
-                  return (
-                    <div key={n.id} className={`p-3.5 rounded-xl border space-y-1.5 transition-all ${n.isRead ? 'bg-[#0F0E0C] border-[#2D2319]/50' : 'bg-[#191613] border-[#FFA048]/20'}`}>
-                      <div className="flex items-center justify-between text-[9px]">
-                        <div className="flex items-center gap-1.5">
-                          <div className={`w-1.5 h-1.5 rounded-full ${dotColor} ${!n.isRead ? 'animate-pulse' : ''}`} />
-                          <span className="text-gray-500">{n.date}</span>
-                        </div>
-                        <span className="font-bold uppercase tracking-wider text-[#FFA048] bg-[#FFA048]/10 px-1.5 py-0.5 rounded">
-                          {n.receiverRole === 'all' ? 'Platform' : n.receiverRole}
-                        </span>
-                      </div>
-                      <h4 className="text-xs font-bold text-white">{n.title}</h4>
-                      <p className="text-[10px] text-gray-400 leading-relaxed">{n.message}</p>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
-        </div>
+        <NotificationCenterModal
+          notifications={activeNotifs}
+          loading={notificationsLoading}
+          error={notificationsError}
+          onClose={() => setShowNotificationsModal(false)}
+          onRefresh={() => refreshNotifications()}
+          onClearAll={handleClearNotifications}
+        />
       )}
 
       {/* SUB-MODAL 2: PRIVACY GUIDELINE STATEMENT */}

@@ -4,7 +4,7 @@ import { TRANSLATIONS } from '../data/translations';
 import { Mail, Phone, User, LogIn, UserPlus, Lock, Loader2 } from 'lucide-react';
 import { AbnBrandMark } from '../components/AbnBrandMark';
 
-/** Full-screen auth gateway — Sign In / Register only (no guest, no demo shortcuts) */
+/** Full-screen auth gateway — Sign In / Register with email & password */
 export const AuthScreen: React.FC = () => {
   const { language, apiLogin, registerAccount } = useDirectory();
   const t = TRANSLATIONS[language];
@@ -12,6 +12,7 @@ export const AuthScreen: React.FC = () => {
   const [authMode, setAuthMode] = useState<'signin' | 'register'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
@@ -21,6 +22,7 @@ export const AuthScreen: React.FC = () => {
   const resetForm = () => {
     setEmail('');
     setPassword('');
+    setConfirmPassword('');
     setPhone('');
     setName('');
     setError('');
@@ -49,21 +51,31 @@ export const AuthScreen: React.FC = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email || !password) {
-      setError(language === 'en' ? 'Name, email and password are required.' : 'الاسم والبريد وكلمة المرور مطلوبة.');
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim().toLowerCase();
+    const trimmedPhone = phone.trim();
+
+    if (!trimmedName || !trimmedEmail || !trimmedPhone || !password || !confirmPassword) {
+      setError('All fields are required. Please fill in name, email, phone, password, and confirm password.');
       return;
     }
     if (password.length < 6) {
-      setError(language === 'en' ? 'Password must be at least 6 characters.' : 'كلمة المرور يجب أن تكون 6 أحرف على الأقل.');
+      setError('Password must be at least 6 characters.');
       return;
     }
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
     setIsLoading(true);
     setError('');
+
     const result = await registerAccount({
-      name: name.trim(),
-      email: email.trim(),
+      name: trimmedName,
+      email: trimmedEmail,
       password,
-      phone: phone.trim(),
+      phone: trimmedPhone,
     });
     setIsLoading(false);
     if (!result.success) {
@@ -72,8 +84,8 @@ export const AuthScreen: React.FC = () => {
     }
     setRegSuccess(
       language === 'en'
-        ? `Welcome, ${name.trim()}! Account created.`
-        : `أهلاً ${name.trim()}! تم إنشاء حسابك.`,
+        ? `Welcome, ${name.trim()}! Account created — you are now signed in.`
+        : `أهلاً ${name.trim()}! تم إنشاء حسابك وأنت مسجّل الدخول الآن.`,
     );
   };
 
@@ -189,8 +201,8 @@ export const AuthScreen: React.FC = () => {
             <>
               <p className="text-xs text-center text-gray-400 mb-4">
                 {language === 'en'
-                  ? 'Create your free ABN user account. Business and service listings are added later from the directory.'
-                  : 'أنشئ حساب مستخدم مجاني. تُضاف listings الأعمال والخدمات لاحقاً من الدليل.'}
+                  ? 'Create your ABN account with email and password.'
+                  : 'أنشئ حساب ABN بالبريد وكلمة المرور.'}
               </p>
               <form onSubmit={handleRegister} className="space-y-3">
                 {error && <p className="text-red-400 text-xs text-center bg-red-950/30 p-2 rounded-lg">{error}</p>}
@@ -233,15 +245,20 @@ export const AuthScreen: React.FC = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-400 mb-1">{t.phone}</label>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">{t.phone} *</label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-3 w-4 h-4 text-gray-500" />
                     <input
                       type="tel"
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      onChange={(e) => {
+                        setPhone(e.target.value);
+                        setError('');
+                      }}
+                      required
                       placeholder="+1 770 000 0000"
                       className={inputCls}
+                      autoComplete="tel"
                     />
                   </div>
                 </div>
@@ -259,7 +276,29 @@ export const AuthScreen: React.FC = () => {
                         setError('');
                       }}
                       required
+                      minLength={6}
                       placeholder="Min. 6 characters"
+                      className={inputCls}
+                      autoComplete="new-password"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-400 mb-1">
+                    {language === 'en' ? 'Confirm password' : 'تأكيد كلمة المرور'} *
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 w-4 h-4 text-gray-500" />
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => {
+                        setConfirmPassword(e.target.value);
+                        setError('');
+                      }}
+                      required
+                      minLength={6}
+                      placeholder={language === 'en' ? 'Re-enter password' : 'أعد إدخال كلمة المرور'}
                       className={inputCls}
                       autoComplete="new-password"
                     />

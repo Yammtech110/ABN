@@ -21,8 +21,6 @@ export interface DirectoryRegistrationMessages {
   zipInvalid: string;
   stateRequired: string;
   hoursRequired: string;
-  otpRequired: string;
-  phoneVerificationRequired: string;
 }
 
 const ZIP_PATTERN = /^\d{5}$/;

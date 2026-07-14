@@ -6,9 +6,8 @@
  */
 
 const jwt = require('jsonwebtoken');
-const { users } = require('../db');
-
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
+const { findByEmail } = require('../lib/userStore');
+const { JWT_SECRET } = require('../config/security');
 
 let supabaseAdmin = null;
 try {
@@ -55,7 +54,7 @@ const authenticate = async (req, res, next) => {
 
       const authUser = data.user;
       const email = authUser.email?.toLowerCase().trim() ?? '';
-      const dbUser = email ? users.get(email) : null;
+      const dbUser = email ? await findByEmail(email) : null;
 
       if (dbUser) {
         req.user = mapDbUser(dbUser);

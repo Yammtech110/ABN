@@ -1,9 +1,14 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useDirectory } from '../context/DirectoryContext';
 import { apiFetch } from '../lib/api';
 import { TRANSLATIONS } from '../data/translations';
 import { Job, JobCategory } from '../types';
+import { textEn } from '../utils/englishOnly';
 import { isLiveDirectoryListing } from '../utils/listingAccess';
+import { resolveListingCoverUrl, resolveListingLogoUrl } from '../utils/listingImages';
+import { BusinessThumbnail } from './BusinessThumbnail';
+import { NotificationCenterModal } from './NotificationCenterModal';
+import { countUnreadNotifications, filterNotificationsForUser } from '../utils/notifications';
 import {
   Search,
   MapPin,
@@ -114,8 +119,30 @@ export const HomeTab: React.FC<HomeTabProps> = ({
   onSwitchTab,
   setSearchQueryText
 }) => {
-  const { language, businesses, categories, currentUser, notifications, jobs, hiringActive } = useDirectory();
+  const {
+    language,
+    businesses,
+    categories,
+    currentUser,
+    notifications,
+    notificationsLoading,
+    notificationsError,
+    refreshNotifications,
+    markNotificationsAsRead,
+    clearNotifications,
+    jobs,
+    hiringActive,
+  } = useDirectory();
   const t = TRANSLATIONS[language];
+
+  const [showNotificationsModal, setShowNotificationsModal] = useState(false);
+
+  useEffect(() => {
+    if (currentUser) refreshNotifications();
+  }, [currentUser?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const activeNotifs = filterNotificationsForUser(notifications, currentUser);
+  const unreadCount = countUnreadNotifications(notifications, currentUser);
 
   const [inputSearch, setInputSearch] = useState('');
   const [selectedCity, setSelectedCity] = useState<string>('all');
@@ -157,8 +184,8 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             id:                   String(p.id ?? ''),
             ownerId:              String(p.email ?? ''),
             name:                 String(p.businessName ?? ''),
-            logoUrl:              String(p.imageUrl ?? ''),
-            coverUrl:             String(p.coverUrl ?? ''),
+            logoUrl:              resolveListingLogoUrl(String(p.imageUrl ?? ''), String(p.coverUrl ?? ''), String(p.id ?? '')),
+            coverUrl:             resolveListingCoverUrl(String(p.coverUrl ?? ''), String(p.imageUrl ?? ''), String(p.id ?? '')),
             description:          { en: String(p.description ?? ''), ar: '' },
             categoryId:           String(p.category ?? '').toLowerCase().replace(/ /g, '-'),
             subcategory:          { en: String(p.category ?? ''), ar: '' },
@@ -190,8 +217,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
     return () => { if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current); };
   }, [inputSearch, selectedCity]);
 
-  // Unread notifications count
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  // Unread notifications count — shown on bell when signed in
 
   // Use live API results when available; otherwise filter the local businesses array
   const activeBusinesses = useMemo(() => {
@@ -218,7 +244,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
 
   // Active job openings from Supabase-backed jobs state
   const activeJobs = useMemo(
-    () => jobs.filter((j) => j.isActive && hiringActive[j.businessId] !== false),
+    () => jobs.filter((j) => j.isActive && hiringActive[j.businessId] === true),
     [jobs, hiringActive]
   );
 
@@ -317,8 +343,27 @@ export const HomeTab: React.FC<HomeTabProps> = ({
       {/* Top Navigation Banner & Search */}
       <div className="space-y-4 animate-fade-in-up" id="home-top-section">
         {/* Header — premium orange wordmark */}
-        <div className="pt-1 pb-0.5">
+        <div className="pt-1 pb-0.5 flex items-center justify-between gap-3">
           <h1 className="text-3xl font-black text-[#FFA048] tracking-widest uppercase">ABN</h1>
+          {currentUser && (
+            <button
+              type="button"
+              onClick={() => {
+                setShowNotificationsModal(true);
+                void refreshNotifications();
+                void markNotificationsAsRead();
+              }}
+              className="relative p-2 rounded-xl bg-[#13110E] border border-[#2D2319] hover:border-[#FFA048]/40 transition-colors"
+              aria-label="Notifications"
+            >
+              <Bell className="w-4 h-4 text-[#FFA048]" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[8px] font-black flex items-center justify-center">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+          )}
         </div>
 
         {/* Search Bar (Relocated) */}
@@ -346,15 +391,16 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           <button
             type="button"
             onClick={() => {
-              setInputSearch('New York');
-              setSearchQueryText('New York');
+              const query = selectedCity !== 'all' ? selectedCity : '';
+              setInputSearch(query);
+              setSearchQueryText(query);
               onSwitchTab('search');
             }}
             className="absolute right-2 px-2.5 py-1.5 rounded-xl bg-[#201B15] text-[#FFA048] font-bold text-[10px] border border-[#3A2F22] flex items-center gap-1 hover:bg-[#2D251C] transition-colors"
             id="home-location-badge-btn"
           >
             <MapPin className="w-3 h-3 text-[#FFA048]" />
-            {t.newyork}
+            {CITY_KEYS.find(c => c.key === selectedCity)?.label || t.allCities}
           </button>
         </form>
       </div>
@@ -416,7 +462,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                 {renderCategoryIcon(cat.iconName)}
               </div>
               <span className="text-[10px] font-black text-gray-300 tracking-tight block truncate w-full">
-                {cat.name[language] || cat.name.en}
+                {cat.name.en}
               </span>
             </button>
           ))}
@@ -462,7 +508,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           <div className="p-4 rounded-2xl bg-[#13110E] border border-[#2D2319] text-center">
             <p className="text-xs text-gray-500">
               {language === 'en'
-                ? 'No active job openings yet. Businesses can post jobs from Account → Hiring Active.'
+                ? 'No active job openings yet. Business owners: Account → turn on Hiring Active → Manage Job Postings.'
                 : 'لا توجد وظائف نشطة حالياً. يمكن لأصحاب الأعمال نشر الوظائف من الحساب.'}
             </p>
           </div>
@@ -549,15 +595,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               >
                 {/* Image avatar left side */}
                 <div className="w-14 h-14 rounded-xl overflow-hidden bg-stone-900 border border-[#2D2319] flex-shrink-0">
-                  <img
-                    src={biz.logoUrl}
-                    alt={biz.name}
-                    loading="lazy"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=200&h=200';
-                    }}
-                  />
+                  <BusinessThumbnail business={biz} />
                 </div>
 
                 {/* Center description */}
@@ -566,7 +604,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                     {biz.name}
                   </h4>
                   <p className="text-[10px] text-gray-400 capitalize mt-0.5">
-                    {biz.subcategory[language] || biz.subcategory.en}
+                    {textEn(biz.subcategory)}
                   </p>
                   <span className="text-[9px] text-gray-500 flex items-center gap-0.5 mt-1">
                     <MapPin className="w-3 h-3 text-[#FFA048]" />
@@ -584,7 +622,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                   </span>
                   {isOpen !== null && (
                     <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded ${isOpen ? 'badge-open' : 'badge-closed'}`}>
-                      {isOpen ? (language === 'ar' ? 'مفتوح' : 'Open') : (language === 'ar' ? 'مغلق' : 'Closed')}
+                      {isOpen ? 'Open' : 'Closed'}
                     </span>
                   )}
                 </div>
@@ -593,6 +631,21 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           })}
         </div>
       </div>
+
+      {showNotificationsModal && (
+        <NotificationCenterModal
+          notifications={activeNotifs}
+          loading={notificationsLoading}
+          error={notificationsError}
+          onClose={() => setShowNotificationsModal(false)}
+          onRefresh={() => refreshNotifications()}
+          onClearAll={async () => {
+            if (!confirm('Clear all notifications from your inbox?')) return;
+            await clearNotifications();
+            await refreshNotifications();
+          }}
+        />
+      )}
 
     </div>
   );

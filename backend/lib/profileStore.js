@@ -24,6 +24,21 @@ async function findProfileByEmail(email) {
   return data ? mapProfileFromDb(data) : null;
 }
 
+async function findProfileById(id) {
+  if (!isSupabaseStorage()) {
+    return directoryProfiles.find((p) => p.id === id) || null;
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from('profiles_directory')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data ? mapProfileFromDb(data) : null;
+}
+
 /** Returns null for customers/admins without querying the directory table. */
 async function findProfileForUser(user) {
   if (!user || !userOwnsDirectoryProfile(user.role)) return null;
@@ -34,5 +49,6 @@ module.exports = {
   DIRECTORY_OWNER_ROLES,
   userOwnsDirectoryProfile,
   findProfileByEmail,
+  findProfileById,
   findProfileForUser,
 };

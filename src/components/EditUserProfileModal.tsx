@@ -13,9 +13,6 @@ export const EditUserProfileModal: React.FC<EditUserProfileModalProps> = ({ onCl
 
   const [name, setName] = useState(currentUser?.name || '');
   const [phone, setPhone] = useState(currentUser?.phone || '');
-  const [preferredLanguage, setPreferredLanguage] = useState<'en' | 'ar'>(
-    currentUser?.preferredLanguage || 'en',
-  );
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [saving, setSaving] = useState(false);
@@ -34,7 +31,6 @@ export const EditUserProfileModal: React.FC<EditUserProfileModalProps> = ({ onCl
     const result = await updateUserProfile({
       name: name.trim(),
       phone: phone.trim(),
-      preferredLanguage,
     });
     setSaving(false);
 
@@ -107,26 +103,6 @@ export const EditUserProfileModal: React.FC<EditUserProfileModalProps> = ({ onCl
             className="w-full p-3 rounded-xl bg-[#0F0E0C] border border-[#2D2319] focus:border-[#FFA048] text-xs text-[#F4E3D7] outline-none"
             id="edit-profile-phone"
           />
-        </div>
-
-        <div>
-          <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-wider">{t.preferredLanguage}</label>
-          <div className="flex gap-2">
-            {(['en', 'ar'] as const).map((lang) => (
-              <button
-                key={lang}
-                type="button"
-                onClick={() => setPreferredLanguage(lang)}
-                className={`flex-1 py-2.5 rounded-xl text-xs font-bold border transition-all ${
-                  preferredLanguage === lang
-                    ? 'bg-[#FFA048] text-black border-[#FFA048]'
-                    : 'bg-[#0F0E0C] text-gray-400 border-[#2D2319] hover:border-[#FFA048]/40'
-                }`}
-              >
-                {lang === 'en' ? 'English' : 'العربية'}
-              </button>
-            ))}
-          </div>
         </div>
 
         <button

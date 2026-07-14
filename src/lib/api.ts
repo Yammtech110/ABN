@@ -21,9 +21,9 @@ function resolveApiBaseUrl(): string {
     return normalizeBaseUrl(fromEnv);
   }
 
-  // Dev-only fallback (browser + same Wi‑Fi phone testing)
+  // Dev browser: same-origin /api via Vite proxy (localhost:3000 → backend)
   if (!import.meta.env.PROD && !Capacitor.isNativePlatform()) {
-    return normalizeBaseUrl('http://192.168.100.13:3001');
+    return '';
   }
 
   // Production web: Vercel rewrites /api → backend on the same origin

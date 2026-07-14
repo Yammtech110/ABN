@@ -3,7 +3,9 @@ import { useDirectory } from '../context/DirectoryContext';
 import { TRANSLATIONS } from '../data/translations';
 import { Search, MapPin, ArrowLeft, CheckCircle, Clock } from 'lucide-react';
 import { Business } from '../types';
+import { textEn } from '../utils/englishOnly';
 import { isLiveDirectoryListing } from '../utils/listingAccess';
+import { BusinessThumbnail } from './BusinessThumbnail';
 
 interface SearchTabProps {
   initialQuery?: string;
@@ -12,13 +14,15 @@ interface SearchTabProps {
   onSwitchTab: (tabId: string) => void;
 }
 
-const CITIES: ('All' | 'Baghdad' | 'Najaf' | 'Karbala' | 'Basra' | 'Erbil')[] = [
+const CITIES: ('All' | 'New York' | 'Los Angeles' | 'Chicago' | 'Houston' | 'Miami' | 'Dearborn' | 'Dallas')[] = [
   'All',
-  'Baghdad',
-  'Najaf',
-  'Karbala',
-  'Basra',
-  'Erbil'
+  'New York',
+  'Los Angeles',
+  'Chicago',
+  'Houston',
+  'Miami',
+  'Dearborn',
+  'Dallas'
 ];
 
 // ── Open Now helper (shared logic) ───────────────────────────
@@ -77,7 +81,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const [selectedCity, setSelectedCity] = useState<'All' | 'Baghdad' | 'Najaf' | 'Karbala' | 'Basra' | 'Erbil'>('All');
+  const [selectedCity, setSelectedCity] = useState<'All' | 'New York' | 'Los Angeles' | 'Chicago' | 'Houston' | 'Miami' | 'Dearborn' | 'Dallas'>('All');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
 
   // Debounce search input by 300ms
@@ -99,7 +103,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
         setSelectedCategory(initialQuery);
         setSearchQuery('');
         setDebouncedQuery('');
-      } else if (['Baghdad', 'Najaf', 'Karbala', 'Basra', 'Erbil', 'All'].includes(initialQuery)) {
+      } else if (['New York', 'Los Angeles', 'Chicago', 'Houston', 'Miami', 'Dearborn', 'Dallas', 'All'].includes(initialQuery)) {
         setSelectedCity(initialQuery as any);
         setSearchQuery('');
         setDebouncedQuery('');
@@ -127,10 +131,8 @@ export const SearchTab: React.FC<SearchTabProps> = ({
       const matchQuery =
         !q ||
         biz.name.toLowerCase().includes(q) ||
-        (biz.subcategory[language] || '').toLowerCase().includes(q) ||
-        (biz.subcategory.en || '').toLowerCase().includes(q) ||
-        (biz.description[language] || '').toLowerCase().includes(q) ||
-        (biz.description.en || '').toLowerCase().includes(q) ||
+        textEn(biz.subcategory).toLowerCase().includes(q) ||
+        textEn(biz.description).toLowerCase().includes(q) ||
         biz.area.toLowerCase().includes(q) ||
         // Improvement #13: search by phone & WhatsApp number
         biz.phone.replace(/\s+/g, '').includes(q.replace(/\s+/g, '')) ||
@@ -183,7 +185,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none snap-x animate-fade-in-up" style={{animationDelay:'0.10s'}} id="search-cities-scroll">
         {CITIES.map((city) => {
           const isSelected = selectedCity === city;
-          const label = city === 'All' ? t.allCities : (t[city.toLowerCase() as keyof typeof t] as string || city);
+          const label = city === 'All' ? t.allCities : (t[city.replace(/\s+/g, '').toLowerCase() as keyof typeof t] as string || city);
           return (
             <button
               key={city}
@@ -228,7 +230,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
               }`}
               id={`cat-chip-${cat.id}`}
             >
-              {cat.name[language] || cat.name.en}
+              {cat.name.en}
             </button>
           );
         })}
@@ -272,15 +274,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
                 >
                   {/* Image Left */}
                   <div className="w-14 h-14 rounded-xl overflow-hidden bg-stone-900 border border-[#2D2319] flex-shrink-0">
-                    <img
-                      src={biz.logoUrl}
-                      alt={biz.name}
-                      loading="lazy"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=200&h=200';
-                      }}
-                    />
+                    <BusinessThumbnail business={biz} />
                   </div>
 
                   {/* Central Information */}
@@ -289,11 +283,11 @@ export const SearchTab: React.FC<SearchTabProps> = ({
                       {biz.name}
                     </h4>
                     <p className="text-[10px] text-gray-400 font-medium capitalize mt-0.5">
-                      {biz.subcategory[language] || biz.subcategory.en}
+                      {textEn(biz.subcategory)}
                     </p>
                     <div className="flex items-center gap-1 mt-1 text-[9px] text-gray-500">
                       <MapPin className="w-3.5 h-3.5 text-[#FFA048]" />
-                      <span>{(t[biz.city.toLowerCase() as keyof typeof t] as string) || biz.city}</span>
+                      <span>{(t[biz.city.replace(/\s+/g, '').toLowerCase() as keyof typeof t] as string) || biz.city}</span>
                       <span className="text-gray-700 font-normal">|</span>
                       <span>{biz.area}</span>
                     </div>
@@ -311,7 +305,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
                     </span>
                     {isOpen !== null && (
                       <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded ${isOpen ? 'badge-open' : 'badge-closed'}`}>
-                        {isOpen ? (language === 'ar' ? 'مفتوح' : 'Open') : (language === 'ar' ? 'مغلق' : 'Closed')}
+                        {isOpen ? 'Open' : 'Closed'}
                       </span>
                     )}
                   </div>

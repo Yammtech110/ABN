@@ -27,7 +27,7 @@ export const EditBusinessProfileModal: React.FC<EditBusinessProfileModalProps> =
   const [descEn, setDescEn] = useState(business.description.en || '');
   const [address, setAddress] = useState(business.address || '');
   const [area, setArea] = useState(business.area || '');
-  const [city, setCity] = useState(business.city || 'Baghdad');
+  const [city, setCity] = useState(business.city || 'New York');
   const [phone, setPhone] = useState(business.phone || '');
   const [whatsapp, setWhatsapp] = useState(business.whatsapp || '');
   const [hoursEn, setHoursEn] = useState(business.workingHours.en || '');
@@ -154,15 +154,15 @@ export const EditBusinessProfileModal: React.FC<EditBusinessProfileModalProps> =
           </div>
 
           <div>
-            <label className="block text-xs text-gray-400 mb-1">{t.selectCategory}*</label>
+            <label className="block text-xs app-label mb-1">{t.selectCategory}*</label>
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full p-2.5 rounded-xl bg-[#0F0E0C] border border-[#2D2319] text-xs text-[#FFA048] outline-none"
+              className="w-full p-2.5 rounded-xl border text-xs app-field outline-none"
             >
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.name[language] || c.name.en}
+                  {c.name.en}
                 </option>
               ))}
             </select>
@@ -216,19 +216,19 @@ export const EditBusinessProfileModal: React.FC<EditBusinessProfileModalProps> =
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-xs text-gray-400 mb-1">{t.city}*</label>
+            <label className="block text-xs app-label mb-1">{t.city}*</label>
             <select
               value={city}
               onChange={(e) => setCity(e.target.value as any)}
-              className="w-full p-2.5 rounded-xl bg-[#0F0E0C] border border-[#2D2319] text-xs text-[#FFA048]"
+              className="w-full p-2.5 rounded-xl border text-xs app-field"
             >
-              <option value="Baghdad">{t.baghdad}</option>
-              <option value="Najaf">{t.najaf}</option>
-              <option value="Karbala">{t.karbala}</option>
-              <option value="Basra">{t.basra}</option>
-              <option value="Erbil">{t.erbil}</option>
-              <option value="Diwaniyah">{t.diwaniyah}</option>
-              <option value="Samarra">{t.samarra}</option>
+              <option value="New York">{t.newyork}</option>
+              <option value="Los Angeles">{t.losangeles}</option>
+              <option value="Chicago">{t.chicago}</option>
+              <option value="Houston">{t.houston}</option>
+              <option value="Miami">{t.miami}</option>
+              <option value="Dearborn">{t.dearborn}</option>
+              <option value="Dallas">{t.dallas}</option>
             </select>
           </div>
           <div>

@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Business } from '../types';
+import { textEn } from '../utils/englishOnly';
 import { useDirectory } from '../context/DirectoryContext';
 import { TRANSLATIONS } from '../data/translations';
 import {
@@ -14,8 +15,12 @@ import {
   Bookmark,
   Heart,
   ChevronRight,
-  Send
+  Send,
+  AlertTriangle,
 } from 'lucide-react';
+import { apiFetch } from '../lib/api';
+import { businessLogoUrl, DEFAULT_LISTING_COVER, DEFAULT_LISTING_LOGO, resolveListingCoverUrl } from '../utils/listingImages';
+import { BusinessThumbnail } from './BusinessThumbnail';
 
 interface BusinessDetailsModalProps {
   business: Business;
@@ -53,7 +58,7 @@ function isBusinessOpenNow(workingHours: string): boolean | null {
 export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ business, onClose }) => {
   const {
     language, reviews, currentUser, favorites, toggleFavorite,
-    fetchReviewsForBusiness, submitReview,
+    fetchReviewsForBusiness, submitReview, apiToken, isAuthenticated,
   } = useDirectory();
   const t = TRANSLATIONS[language];
 
@@ -66,18 +71,28 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
   const [reviewSuccess, setReviewSuccess] = useState('');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
+  const [reportReason, setReportReason] = useState('');
+  const [reportError, setReportError] = useState('');
+  const [reportSuccess, setReportSuccess] = useState('');
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+
   useEffect(() => {
     fetchReviewsForBusiness(business.id);
   }, [business.id, fetchReviewsForBusiness]);
-
-  // Local clicks counter to simulate offline referral tracking
-  const [whatsappClicks, setWhatsappClicks] = useState(34);
-  const [callClicks, setCallClicks] = useState(19);
 
   // Filter reviews matching current business id
   const businessReviews = reviews.filter((r) => r.businessId === business.id);
 
   const isFav = favorites.includes(business.id);
+  const isListingOwner = currentUser?.id === business.ownerId;
+  const canReportListing = isAuthenticated && !isListingOwner && currentUser?.role !== 'admin';
+
+  const handleToggleFavorite = async () => {
+    const result = await toggleFavorite(business.id);
+    if (!result.success && result.error) {
+      alert(result.error);
+    }
+  };
 
   const handleCreateReview = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,12 +119,55 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
     setTimeout(() => setReviewSuccess(''), 4000);
   };
 
+  const handleSubmitReport = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setReportError('');
+    setReportSuccess('');
+
+    if (!apiToken) {
+      setReportError(language === 'en' ? 'You must be signed in to report a listing.' : 'يجب تسجيل الدخول للإبلاغ عن نشاط.');
+      return;
+    }
+
+    const trimmed = reportReason.trim();
+    if (trimmed.length < 10) {
+      setReportError(language === 'en' ? 'Please describe the issue in at least 10 characters.' : 'يرجى وصف المشكلة في 10 أحرف على الأقل.');
+      return;
+    }
+
+    setIsSubmittingReport(true);
+    try {
+      const res = await apiFetch('/api/reports', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiToken}`,
+        },
+        body: JSON.stringify({ businessId: business.id, reason: trimmed }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setReportError(data.error || (language === 'en' ? 'Could not submit report.' : 'تعذر إرسال البلاغ.'));
+        return;
+      }
+      setReportReason('');
+      setReportSuccess(
+        language === 'en'
+          ? 'Report submitted. Our admin team will review it.'
+          : 'تم إرسال البلاغ. سيقوم فريق الإدارة بمراجعته.'
+      );
+      setTimeout(() => setReportSuccess(''), 5000);
+    } catch {
+      setReportError(language === 'en' ? 'Cannot reach server. Try again later.' : 'تعذر الاتصال بالخادم. حاول لاحقاً.');
+    } finally {
+      setIsSubmittingReport(false);
+    }
+  };
+
   const handleActionClick = (actionType: 'phone' | 'whatsapp' | 'maps') => {
     if (actionType === 'phone') {
-      setCallClicks((prev) => prev + 1);
       window.open(`tel:${business.phone}`, '_self');
     } else if (actionType === 'whatsapp') {
-      setWhatsappClicks((prev) => prev + 1);
       const prefilledText = encodeURIComponent(t.whatsappMessage);
       const url = `https://wa.me/${business.whatsapp}?text=${prefilledText}`;
       window.open(url, '_blank');
@@ -127,7 +185,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
         {/* Floating Close & Favorite Buttons */}
         <div className="absolute top-4 right-4 z-10 flex gap-2" id="details-floating-controls">
           <button
-            onClick={() => toggleFavorite(business.id)}
+            onClick={handleToggleFavorite}
             className={`p-2.5 rounded-full backdrop-blur-md border border-[#3A2E22] transition-colors ${
               isFav ? 'bg-[#FFA048] text-black hover:bg-opacity-95' : 'bg-black/50 text-[#F4E3D7] hover:bg-black/80'
             }`}
@@ -148,11 +206,12 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
         {/* Cover Photo Banner */}
         <div className="relative h-48 md:h-64 w-full bg-slate-800" id="details-cover-wrapper">
           <img
-            src={business.coverUrl}
+            src={resolveListingCoverUrl(business.coverUrl, business.logoUrl, business.id)}
             alt={business.name}
-            className="w-full h-full object-cover opacity-85"
+            className="w-full h-full object-cover opacity-85 lazy-image"
+            onLoad={(e) => e.currentTarget.classList.add('loaded')}
             onError={(e) => {
-              (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=600&h=400';
+              (e.target as HTMLImageElement).src = DEFAULT_LISTING_COVER;
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0F0E0C] to-transparent"></div>
@@ -163,21 +222,14 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             {/* Logo Avatar */}
             <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-2xl overflow-hidden border-4 border-[#0F0E0C] bg-[#191613]" id="details-logo-wrapper">
-              <img
-                src={business.logoUrl}
-                alt={business.name}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=200&h=200';
-                }}
-              />
+              <BusinessThumbnail business={business} className="w-full h-full object-cover" />
             </div>
 
             {/* Verification & Location */}
             <div className="flex-1 min-w-0 md:mb-2">
               <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider bg-[#201B15] text-[#FFA048] border border-[#2D2319]">
-                  {business.subcategory[language] || business.subcategory.en}
+                  {textEn(business.subcategory)}
                 </span>
                 {business.isVerified && (
                   <span className="flex items-center gap-1 text-[10px] font-bold tracking-wider bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded-full">
@@ -187,7 +239,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                 )}
                 <span className="text-[10px] bg-[#2E2822] text-gray-300 px-2 py-0.5 rounded-full flex items-center gap-0.5">
                   <MapPin className="w-3 h-3 text-[#FFA048]" />
-                  {(t[business.city.toLowerCase() as keyof typeof t] as string) || business.city}
+                  {(t[business.city.replace(/\s+/g, '').toLowerCase() as keyof typeof t] as string) || business.city}
                 </span>
               </div>
               <h1 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight" id="details-biz-title">
@@ -238,7 +290,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                 {language === 'en' ? 'About Our Business' : 'نبذة وتفاصيل العمل'}
               </h3>
               <p className="text-sm leading-relaxed text-gray-300 whitespace-pre-line">
-                {business.description[language] || business.description.en}
+                {textEn(business.description)}
               </p>
 
               {/* Working Hours with Open/Closed badge */}
@@ -249,11 +301,11 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                     <strong className="text-gray-200">{t.workingHours}:</strong>
                     {isOpen !== null && (
                       <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider ${isOpen ? 'badge-open' : 'badge-closed'}`}>
-                        {isOpen ? (language === 'ar' ? '🟢 مفتوح الآن' : '🟢 Open Now') : (language === 'ar' ? '🔴 مغلق الآن' : '🔴 Closed Now')}
+                        {isOpen ? '🟢 Open Now' : '🔴 Closed Now'}
                       </span>
                     )}
                   </div>
-                  <span className="block mt-0.5">{business.workingHours[language] || business.workingHours.en}</span>
+                  <span className="block mt-0.5">{textEn(business.workingHours)}</span>
                 </div>
               </div>
             </div>
@@ -411,27 +463,60 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
 
               {/* Past reviews list only — submit form is above under "Rate This Business" */}
             </div>
+
+            {/* Report listing — real submissions stored in backend */}
+            <div className="p-5 rounded-2xl bg-[#13110E] border border-red-950/25 space-y-3" id="report-listing-section">
+              <div className="flex items-center gap-2 pb-2 border-b border-[#2D2319]">
+                <AlertTriangle className="w-4 h-4 text-amber-400" />
+                <h3 className="text-sm font-bold tracking-wider text-amber-400">
+                  {language === 'en' ? 'Report This Listing' : 'الإبلاغ عن هذا النشاط'}
+                </h3>
+              </div>
+
+              {!isAuthenticated ? (
+                <p className="text-xs text-gray-500">
+                  {language === 'en'
+                    ? 'Sign in to report inaccurate information, unresponsive contact, or community concerns.'
+                    : 'سجّل الدخول للإبلاغ عن معلومات غير دقيقة أو عدم الاستجابة أو مخاوف مجتمعية.'}
+                </p>
+              ) : !canReportListing ? (
+                <p className="text-xs text-gray-500">
+                  {language === 'en'
+                    ? 'Listing owners and admins manage concerns through the account portal.'
+                    : 'أصحاب النشاط والمسؤولون يديرون البلاغات من لوحة الحساب.'}
+                </p>
+              ) : (
+                <form onSubmit={handleSubmitReport} className="space-y-3">
+                  <textarea
+                    value={reportReason}
+                    onChange={(e) => setReportReason(e.target.value)}
+                    rows={3}
+                    maxLength={2000}
+                    placeholder={
+                      language === 'en'
+                        ? 'Describe the issue (e.g. wrong phone number, misleading info, unresponsive)...'
+                        : 'صف المشكلة (مثل رقم خاطئ، معلومات مضللة، عدم الرد)...'
+                    }
+                    className="w-full p-3 text-xs rounded-xl bg-[#0F0E0C] border border-[#2D2319] text-gray-200 placeholder:text-gray-600 resize-none"
+                  />
+                  {reportError && <p className="text-[10px] text-red-400">{reportError}</p>}
+                  {reportSuccess && <p className="text-[10px] text-green-400">{reportSuccess}</p>}
+                  <button
+                    type="submit"
+                    disabled={isSubmittingReport}
+                    className="w-full py-2.5 rounded-xl text-xs font-bold bg-red-600/20 text-red-300 border border-red-600/30 hover:bg-red-600/30 disabled:opacity-50"
+                  >
+                    {isSubmittingReport
+                      ? (language === 'en' ? 'Submitting...' : 'جاري الإرسال...')
+                      : (language === 'en' ? 'Submit Report to Admin' : 'إرسال البلاغ للإدارة')}
+                  </button>
+                </form>
+              )}
+            </div>
           </div>
 
           {/* Right Column (Direct Actions Sidebar) */}
           <div className="space-y-6">
-            
-            {/* Quick Referrals Stat panel */}
-            <div className="p-5 rounded-2xl bg-[#13110E] border border-[#2D2319]/90 text-center space-y-2">
-              <span className="text-[10px] uppercase font-bold tracking-widest text-[#FFA048]">
-                {language === 'en' ? 'Community Activity' : 'عمليات واستعلامات المنصة'}
-              </span>
-              <div className="grid grid-cols-2 gap-2 pt-2">
-                <div className="p-2.5 rounded-xl bg-[#0F0E0C] border border-[#2D2319]/40">
-                  <span className="block text-lg font-black text-white">{whatsappClicks}</span>
-                  <span className="text-[9px] text-gray-400 block mt-0.5">WhatsApp Taps</span>
-                </div>
-                <div className="p-2.5 rounded-xl bg-[#0F0E0C] border border-[#2D2319]/40">
-                  <span className="block text-lg font-black text-white">{callClicks}</span>
-                  <span className="text-[9px] text-gray-400 block mt-0.5">Call Referrals</span>
-                </div>
-              </div>
-            </div>
 
             {/* Instant Communication Action Buttons */}
             <div className="p-5 rounded-2xl bg-[#13110E] border border-[#2D2319] space-y-3" id="details-actions">
@@ -496,26 +581,20 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
               )}
             </div>
 
-            {/* Map Placeholder Mock representation */}
+            {/* Real Google Map embed */}
             <div className="p-5 rounded-2xl bg-[#13110E] border border-[#2D2319] space-y-3">
               <h4 className="text-xs font-bold uppercase tracking-widest text-[#FFA048]">
                 {language === 'en' ? 'Map Location View' : 'موقع خارطة الدليل'}
               </h4>
               <div className="relative aspect-video rounded-xl overflow-hidden border border-[#2D2319] bg-stone-900" id="details-mini-map">
-                {/* SVG Mock Map graphic */}
-                <svg className="w-full h-full bg-[#1A1612]" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M0 20 H100 M0 50 H100 M0 80 H100" stroke="#2D2319" strokeWidth="1" />
-                  <path d="M20 0 V100 M50 0 V100 M80 0 V100" stroke="#2D2319" strokeWidth="1" />
-                  {/* Rivers / Parks */}
-                  <path d="M0 60 Q30 55 60 70 T100 65" stroke="#3D5060" strokeWidth="6" fill="none" opacity="0.3" />
-                  {/* Pin */}
-                  <circle cx="50" cy="45" r="5" fill="#FFA048" />
-                  <circle cx="50" cy="45" r="10" stroke="#FFA048" strokeWidth="1" opacity="0.5" className="animate-ping" />
-                </svg>
-                <div className="absolute inset-x-0 bottom-0 bg-[#0F0E0C]/90 p-2 text-[9px] text-[#FFA048] flex items-center justify-between border-t border-[#2D2319]">
-                  <span className="font-mono">{business.city}, USA</span>
-                  <span className="font-bold underline cursor-pointer">{language === 'en' ? 'EXPAND' : 'تكبير'}</span>
-                </div>
+                <iframe
+                  title="Google Maps"
+                  className="w-full h-full border-0"
+                  src={`https://www.google.com/maps?q=${encodeURIComponent(`${business.name}, ${business.address}, ${business.city}, USA`)}&output=embed`}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                ></iframe>
               </div>
             </div>
 

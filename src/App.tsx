@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DirectoryProvider, useDirectory } from './context/DirectoryContext';
 import { TRANSLATIONS } from './data/translations';
 import { AuthScreen } from './screens/AuthScreen';
@@ -14,7 +14,7 @@ import { AdminPanelTab } from './components/AdminPanelTab';
 import { JobManagementScreen } from './components/JobManagementScreen';
 import { JobBoardScreen } from './components/JobBoardScreen';
 import { Business } from './types';
-import { getUserListing } from './utils/listingAccess';
+import { getUserListing, canPostJobs } from '../utils/listingAccess';
 import {
   Home,
   Search,
@@ -128,7 +128,7 @@ function TabContent({
         </TabView>
       )}
 
-      {activeTab === 'job-management' && myListing?.listingType === 'business' && (
+      {activeTab === 'job-management' && canPostJobs(myListing) && (
         <TabView tabKey="job-management">
           <JobManagementScreen onBack={() => setActiveTab('account')} />
         </TabView>
@@ -236,7 +236,7 @@ function BottomNav({
 }
 
 function DirectoryAppContent() {
-  const { language, setLanguage, currentUser, businesses, authReady, isAuthenticated } = useDirectory();
+  const { language, currentUser, businesses, authReady, isAuthenticated } = useDirectory();
   const t = TRANSLATIONS[language];
   const liveTime = useLiveClock();
   const isMobile = useIsMobile();
@@ -260,18 +260,27 @@ function DirectoryAppContent() {
   const isAdmin = currentUser?.role === 'admin';
   const myListing = getUserListing(currentUser, businesses);
 
-  // Apply RTL direction when Arabic is selected
+  const prevRoleRef = useRef(currentUser?.role);
   useEffect(() => {
-    document.documentElement.setAttribute('dir', language === 'ar' ? 'rtl' : 'ltr');
-    document.documentElement.setAttribute('lang', language);
-  }, [language]);
+    const prev = prevRoleRef.current;
+    const next = currentUser?.role;
+    if (next === 'admin' && prev !== 'admin') {
+      setActiveTab('admin');
+    }
+    prevRoleRef.current = next;
+  }, [currentUser?.role]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('dir', 'ltr');
+    document.documentElement.setAttribute('lang', 'en');
+  }, []);
 
   // Job management is only for approved business listings
   useEffect(() => {
-    if (activeTab === 'job-management' && myListing?.listingType !== 'business') {
+    if (activeTab === 'job-management' && !canPostJobs(myListing)) {
       setActiveTab('account');
     }
-  }, [activeTab, myListing?.listingType]);
+  }, [activeTab, myListing]);
 
   const verifiedActiveCount = businesses.filter((b) => b.isVerified && b.status === 'active').length;
   const expiredCount = businesses.filter((b) => b.status === 'suspended').length;
@@ -365,20 +374,6 @@ function DirectoryAppContent() {
             <div className="hidden sm:block min-w-0">
               <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest truncate">{t.tagline}</p>
             </div>
-          </div>
-          <div className="flex rounded-md overflow-hidden border border-[#2D2319] bg-black/40">
-            <button
-              onClick={() => setLanguage('en')}
-              className={`px-3 py-1.5 text-xs font-bold transition-all ${language === 'en' ? 'bg-[#FFA048] text-black' : 'text-gray-400 hover:text-white'}`}
-            >
-              English
-            </button>
-            <button
-              onClick={() => setLanguage('ar')}
-              className={`px-3 py-1.5 text-xs font-bold transition-all ${language === 'ar' ? 'bg-[#FFA048] text-black' : 'text-gray-400 hover:text-white'}`}
-            >
-              العربية
-            </button>
           </div>
         </div>
       </header>
@@ -507,6 +502,10 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 
   static getDerivedStateFromError(error: Error) {
     return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('[ABN] Render error caught by boundary:', error, errorInfo.componentStack);
   }
 
   render() {

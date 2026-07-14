@@ -6,7 +6,7 @@ export interface UserProfile {
   phone: string;
   name: string;
   role: UserRole;
-  preferredLanguage: 'en' | 'ar';
+  preferredLanguage: 'en';
 }
 
 export type CategoryGroup = 'Shops' | 'Services' | 'Professionals' | 'Food';
@@ -41,6 +41,7 @@ export interface Business {
   website?: string;
   workingHours: { en: string; ar: string };
   membershipExpiryDate: string; // ISO date string
+  registeredAt?: string; // ISO date when listing was created
   subscriptionTier?: 30 | 50;
   gallery: string[];
   rating: number; // calculated from reviews or static
@@ -73,6 +74,7 @@ export interface AppNotification {
   date: string;
   isRead: boolean;
   receiverRole: UserRole | 'all';
+  userId?: string | null;
 }
 
 export interface Product {

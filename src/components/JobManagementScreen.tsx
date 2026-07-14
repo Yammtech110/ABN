@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDirectory } from '../context/DirectoryContext';
 import { apiFetch } from '../lib/api';
 import { TRANSLATIONS } from '../data/translations';
 import { Job, JobCategory } from '../types';
+import { canPostJobs, getUserListing } from '../utils/listingAccess';
 import {
   ArrowLeft,
   Plus,
@@ -34,15 +35,18 @@ interface JobManagementScreenProps {
 export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedded = false, onBack }) => {
   const {
     language, currentUser, businesses, jobs,
-    addJob, updateJob, deleteJob,
-    hiringActive, apiToken, refreshDirectory, ensureBusinessListing,
+    addJob, updateJob, deleteJob, refreshJobs,
+    hiringActive, apiToken, refreshDirectory, ensureBusinessListing, setHiringActive,
   } = useDirectory();
   const t = TRANSLATIONS[language];
 
-  const myBusiness = businesses.find((b) => b.ownerId === currentUser?.id || b.ownerId === currentUser?.email);
-  const businessForHiring = myBusiness ?? businesses.find(
-    (b) => b.ownerId === currentUser?.id || b.ownerId === currentUser?.email,
-  );
+  useEffect(() => {
+    if (apiToken) void refreshJobs(apiToken);
+  }, [apiToken, refreshJobs]);
+
+  const myListing = getUserListing(currentUser, businesses);
+  const businessForHiring = myListing;
+  const canManageJobs = canPostJobs(myListing);
   const isHiring = businessForHiring ? (hiringActive[businessForHiring.id] ?? false) : false;
   const myJobs = jobs.filter((j) => j.businessId === businessForHiring?.id);
 
@@ -58,6 +62,7 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
   const [formEmail,        setFormEmail]        = useState('');
   const [formSuccess,      setFormSuccess]      = useState('');
   const [formError,        setFormError]        = useState('');
+  const [hiringBusy,       setHiringBusy]       = useState(false);
 
   const openNewForm = () => {
     setEditingJob(null); setFormTitle(''); setFormCategory('Others');
@@ -75,11 +80,24 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
-    let activeBusiness = myBusiness;
+    let activeBusiness = myListing;
     if (!activeBusiness) {
       activeBusiness = await ensureBusinessListing();
     }
-    if (!activeBusiness) { setFormError('No business profile found.'); return; }
+    if (!activeBusiness || !canPostJobs(activeBusiness)) {
+      setFormError(
+        language === 'en'
+          ? 'Only approved business listings can post jobs.'
+          : 'يمكن فقط للأعمال التجارية المعتمدة نشر الوظائف.',
+      );
+      return;
+    }
+    if (!isHiring) {
+      setFormError(language === 'en'
+        ? 'Turn on Hiring Active in Account before posting jobs.'
+        : 'فعّل التوظيف من الحساب قبل نشر الوظائف.');
+      return;
+    }
     if (!formTitle.trim()) { setFormError('Job title is required.'); return; }
     if (!formEmail.trim() || !formEmail.includes('@')) { setFormError('A valid hiring email is required.'); return; }
     const min = parseInt(formSalaryMin, 10);
@@ -109,7 +127,7 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
         if (res.ok) {
           const saved = await res.json();
           const mapped: Job = {
-            id:               String(saved.id ?? editingJob?.id ?? `job-${Date.now()}`),
+            id:               String(saved.id ?? editingJob?.id ?? ''),
             businessId:       String(saved.businessId ?? activeBusiness.id),
             businessName:     String(saved.businessName ?? activeBusiness.name),
             businessLogoUrl:  String(saved.businessLogoUrl ?? activeBusiness.logoUrl),
@@ -122,22 +140,9 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
             postedDate:       String(saved.postedDate ?? new Date().toISOString().split('T')[0]),
             isActive:         saved.isActive !== false,
           };
-          if (editingJob) {
-            updateJob(mapped);
-          } else {
-            addJob({
-              businessId: mapped.businessId,
-              businessName: mapped.businessName,
-              businessLogoUrl: mapped.businessLogoUrl,
-              title: mapped.title,
-              category: mapped.category,
-              requirements: mapped.requirements,
-              salaryMin: mapped.salaryMin,
-              salaryMax: mapped.salaryMax,
-              hiringEmail: mapped.hiringEmail,
-              isActive: mapped.isActive,
-            });
-          }
+          if (editingJob) updateJob(mapped);
+          else addJob(mapped);
+          await refreshJobs(apiToken);
           await refreshDirectory();
           setFormSuccess(editingJob ? 'Job updated!' : 'Job posted!');
           setIsLoading(false);
@@ -145,24 +150,18 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
           return;
         }
         const err = await res.json();
-        setFormError(err.error || 'API error. Falling back to local save.');
+        setFormError(err.error || 'Could not save job.');
+        setIsLoading(false);
+        return;
       } catch {
-        setFormError('Cannot reach server — saved locally as fallback.');
+        setFormError('Cannot reach server. Make sure the backend is running.');
+        setIsLoading(false);
+        return;
       }
     }
 
-    // ── Fallback: local state (works offline / without backend) ─────────
-    const jobData = {
-      businessId: activeBusiness.id, businessName: activeBusiness.name,
-      businessLogoUrl: activeBusiness.logoUrl, title: formTitle.trim(),
-      category: formCategory, requirements: formRequirements.trim(),
-      salaryMin: min, salaryMax: max, hiringEmail: formEmail.trim(),
-      isActive: isHiring,
-    };
-    if (editingJob) { updateJob({ ...editingJob, ...jobData }); } else { addJob(jobData); }
-    setFormSuccess(editingJob ? 'Job updated (local).' : 'Job posted (local).');
+    setFormError('You must be signed in to manage jobs.');
     setIsLoading(false);
-    setTimeout(() => { setView('list'); setFormSuccess(''); }, 1100);
   };
 
   const handleDelete = async (jobId: string) => {
@@ -175,12 +174,59 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
           method: 'DELETE',
           headers: { Authorization: `Bearer ${apiToken}` },
         });
-        if (res.ok) { await refreshDirectory(); return; }
-      } catch { /* fallback below */ }
+        if (res.ok || res.status === 204) {
+          deleteJob(jobId);
+          await refreshJobs(apiToken);
+          await refreshDirectory();
+          return;
+        }
+        alert('Could not delete job on server.');
+      } catch {
+        alert('Cannot reach server. Make sure the backend is running.');
+      }
+      return;
     }
-    // ── Fallback: remove from local state ───────────────────────────────
-    deleteJob(jobId);
+    alert('You must be signed in to delete jobs.');
   };
+
+  const handleHiringToggle = async () => {
+    if (!businessForHiring) return;
+    setHiringBusy(true);
+    try {
+      await setHiringActive(businessForHiring.id, !isHiring);
+    } finally {
+      setHiringBusy(false);
+    }
+  };
+
+  if (!canManageJobs) {
+    return (
+      <div className="space-y-4 p-4" id="job-management-denied">
+        {!embedded && onBack && (
+          <button
+            onClick={onBack}
+            className="p-2 rounded-full bg-[#191613] hover:bg-[#2D251C] border border-[#2D2319] transition-colors"
+            aria-label="Back"
+          >
+            <ArrowLeft className="w-4 h-4 text-[#FFA048]" />
+          </button>
+        )}
+        <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-900/20 border border-amber-700/40">
+          <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-bold text-[#F4E3D7]">
+              {language === 'en' ? 'Job posting unavailable' : 'نشر الوظائف غير متاح'}
+            </p>
+            <p className="text-xs text-gray-400 mt-1">
+              {language === 'en'
+                ? 'Register and get approved as a business to post jobs.'
+                : 'سجّل واعتمد كعمل تجاري لنشر الوظائف.'}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // ── FORM VIEW ─────────────────────────────────────────────────
   if (view === 'form') {
@@ -225,13 +271,13 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
               />
             </div>
             <div>
-              <label className="block text-xs text-gray-400 mb-1">
+              <label className="block text-xs app-label mb-1">
                 {language === 'en' ? 'Job Category*' : 'تصنيف الوظيفة*'}
               </label>
               <select
                 value={formCategory}
                 onChange={(e) => setFormCategory(e.target.value as JobCategory)}
-                className="w-full p-2.5 rounded-xl bg-[#0F0E0C] border border-[#2D2319] text-xs text-[#FFA048] outline-none"
+                className="w-full p-2.5 rounded-xl border text-xs app-field outline-none"
               >
                 {JOB_CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>{cat}</option>
@@ -453,6 +499,35 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {businessForHiring && (
+        <div className="p-4 rounded-2xl bg-[#13110E] border border-[#2D2319] flex items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-bold text-white">Hiring Active</p>
+            <p className="text-[10px] text-gray-500 mt-0.5">
+              {isHiring
+                ? 'Your job posts appear on Home and the Job Board.'
+                : 'Turn on to publish job openings on the home feed.'}
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={isHiring}
+            disabled={hiringBusy}
+            onClick={handleHiringToggle}
+            className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${
+              isHiring ? 'bg-[#FFA048]' : 'bg-stone-700'
+            } ${hiringBusy ? 'opacity-60' : ''}`}
+          >
+            <span
+              className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+                isHiring ? 'translate-x-5' : 'translate-x-0'
+              }`}
+            />
+          </button>
         </div>
       )}
     </div>
