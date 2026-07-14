@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { getOAuthRedirectUrl, clearOAuthCallbackUrl, formatOAuthError } from '../lib/oauth';
+import { getOAuthRedirectUrl, clearOAuthCallbackUrl, formatOAuthError, isNativeApp } from '../lib/oauth';
 import { apiFetch } from '../lib/api';
 import {
   UserProfile, Business, BusinessStatus, Category, Review,
@@ -30,7 +30,7 @@ const safeRemoveItem = (key: string): void => {
 };
 
 /** Bump to force-clear cached mock listings only (never user auth or notifications). */
-const DATA_STORE_VERSION = '5-clean-slate-v2';
+const DATA_STORE_VERSION = '6-per-listing-images';
 if (typeof window !== 'undefined') {
   const stored = safeGetItem('shia_dir_data_version');
   if (stored !== DATA_STORE_VERSION) {
@@ -59,8 +59,8 @@ const mapDirectoryProfile = (p: Record<string, unknown>): Business => ({
   // Use email as ownerId so it matches currentUser.email across auth systems
   ownerId:              String(p.email ?? ''),
   name:                 String(p.businessName ?? ''),
-  logoUrl:              resolveListingLogoUrl(String(p.imageUrl ?? ''), String(p.coverUrl ?? ''), String(p.id ?? '')),
-  coverUrl:             resolveListingCoverUrl(String(p.coverUrl ?? ''), String(p.imageUrl ?? ''), String(p.id ?? '')),
+  logoUrl:              resolveListingLogoUrl(String(p.imageUrl ?? ''), String(p.coverUrl ?? ''), String(p.id ?? ''), String(p.businessName ?? '')),
+  coverUrl:             resolveListingCoverUrl(String(p.coverUrl ?? ''), String(p.imageUrl ?? ''), String(p.id ?? ''), String(p.businessName ?? '')),
   description:          { en: String(p.description ?? ''), ar: '' },
   categoryId:           String(p.category ?? '').toLowerCase().replace(/ /g, '-'),
   subcategory:          { en: String(p.category ?? ''), ar: '' },
@@ -94,9 +94,7 @@ const mapApiJob = (j: Record<string, unknown>): Job => {
     id:               String(j.id ?? ''),
     businessId,
     businessName:     String(j.businessName ?? ''),
-    businessLogoUrl:  rawLogo.startsWith('/api/directory/')
-      ? rawLogo
-      : resolveListingLogoUrl(rawLogo, '', businessId),
+    businessLogoUrl:  resolveListingLogoUrl(rawLogo, '', businessId, String(j.businessName ?? '')),
     title:            String(j.title ?? ''),
     category:         String(j.category ?? 'Others') as JobCategory,
     requirements:     String(j.requirements ?? ''),
@@ -572,6 +570,17 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   // ── Supabase session listener — auth gateway source of truth ───────────────
   useEffect(() => {
+    // Native APK: email/password uses Render backend JWT; restore it immediately.
+    if (isNativeApp()) {
+      const backendSession = restoreBackendSessionFromStorage();
+      if (backendSession) {
+        setApiToken(backendSession.token);
+        setCurrentUser(backendSession.user);
+      }
+      setAuthReady(true);
+      return;
+    }
+
     if (!isSupabaseConfigured || !supabase) {
       setAuthReady(true);
       return;
@@ -621,9 +630,11 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
   }, [applySupabaseSession, syncOAuthUser]);
 
-  const isAuthenticated = isSupabaseConfigured
+  const isAuthenticated = isNativeApp()
     ? Boolean(currentUser && apiToken)
-    : Boolean(currentUser);
+    : isSupabaseConfigured
+      ? Boolean(currentUser && apiToken)
+      : Boolean(currentUser);
 
   // Refresh directory when authenticated — re-fetch when role changes (e.g. admin login)
   const lastHydratedKeyRef = useRef<string | null>(null);
@@ -741,22 +752,27 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         await refreshFavorites(data.token);
         await syncMyDirectoryProfile(data.token, profile.email, profile.role);
 
-        if (supabase && profile.role !== 'admin') {
+        if (supabase && !isNativeApp() && profile.role !== 'admin') {
           supabase.auth.signInWithPassword({ email: trimmedEmail, password }).catch(() => {});
         }
         return { success: true };
       }
 
-      if (!supabase) {
+      if (!supabase || isNativeApp()) {
         return { success: false, error: data.error || 'Login failed.' };
       }
     } catch {
-      if (!supabase) {
-        return { success: false, error: 'Cannot reach server. Make sure the backend is running.' };
+      if (!supabase || isNativeApp()) {
+        return {
+          success: false,
+          error: isNativeApp()
+            ? 'Cannot reach server. Wait 60 seconds and try again — the cloud server may be waking up.'
+            : 'Cannot reach server. Make sure the backend is running.',
+        };
       }
     }
 
-    if (supabase) {
+    if (supabase && !isNativeApp()) {
       safeRemoveItem(AUTH_SOURCE_KEY);
       const { error } = await supabase.auth.signInWithPassword({
         email: trimmedEmail,
@@ -786,7 +802,8 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       return { success: false, error: 'All fields are required.' };
     }
 
-    if (supabase) {
+    // Web: optional Supabase sign-up. Native APK uses backend only (Supabase is server-side).
+    if (supabase && !isNativeApp()) {
       const { error } = await supabase.auth.signUp({
         email: trimmedEmail,
         password: payload.password,
@@ -820,31 +837,28 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
       if (!res.ok) {
         const exists = res.status === 409;
-        if (!supabase || !exists) {
+        if (isNativeApp() || !supabase || !exists) {
           return { success: false, error: data.error || 'Registration failed.' };
         }
-      } else if (!supabase) {
+      } else {
         safeSetItem('shia_dir_token', data.token);
         setApiToken(data.token);
         const user = data.user as { id: string; email: string; phone: string; name: string; role: string };
-        setCurrentUser({
-          id: user.id,
-          email: user.email,
-          phone: user.phone || '',
-          name: user.name,
-          role: normaliseRole(user.role),
-          preferredLanguage: 'en',
-        });
+        applyBackendSession(data.token, user);
         await refreshDirectory();
+        await refreshFavorites(data.token);
         return { success: true };
       }
     } catch {
-      if (!supabase) {
-        return { success: false, error: 'Cannot reach server. Make sure the backend is running.' };
-      }
+      return {
+        success: false,
+        error: isNativeApp()
+          ? 'Cannot reach server. Wait 60 seconds and try again — the cloud server may be waking up.'
+          : 'Cannot reach server. Make sure the backend is running.',
+      };
     }
 
-    if (supabase) {
+    if (supabase && !isNativeApp()) {
       const loginResult = await apiLogin(trimmedEmail, payload.password);
       return loginResult.success
         ? { success: true }

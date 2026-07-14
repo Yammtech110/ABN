@@ -4,8 +4,7 @@ import {
   businessCoverUrl,
   businessLogoUrl,
   businessPhotoUrls,
-  DEFAULT_LISTING_COVER,
-  DEFAULT_LISTING_LOGO,
+  listingPlaceholderDataUrl,
 } from '../utils/listingImages';
 import { Business } from '../types';
 
@@ -14,12 +13,10 @@ type AdminListingPhotosProps = {
   language: 'en' | 'ar';
 };
 
-const FALLBACK = DEFAULT_LISTING_LOGO;
-
-/** Fetch listing media as blob so admin thumbnails work reliably through the API proxy. */
-function useAdminImage(url: string, fallback: string = FALLBACK) {
-  const [src, setSrc] = useState(fallback);
-  const [loading, setLoading] = useState(true);
+/** Prefer direct <img> for API media; blob fetch only when helpful for same-origin proxy. */
+function useAdminImage(url: string, fallback: string) {
+  const [src, setSrc] = useState(url || fallback);
+  const [loading, setLoading] = useState(Boolean(url));
 
   useEffect(() => {
     let objectUrl: string | null = null;
@@ -32,6 +29,14 @@ function useAdminImage(url: string, fallback: string = FALLBACK) {
       return;
     }
 
+    // Data URLs and remote https can be used directly
+    if (url.startsWith('data:') || /^https?:\/\//i.test(url)) {
+      setSrc(url);
+      setLoading(false);
+      return;
+    }
+
+    // API media paths: try blob (handles auth-less streaming); fall back to direct URL
     fetch(url)
       .then((res) => (res.ok ? res.blob() : null))
       .then((blob) => {
@@ -40,11 +45,11 @@ function useAdminImage(url: string, fallback: string = FALLBACK) {
           objectUrl = URL.createObjectURL(blob);
           setSrc(objectUrl);
         } else {
-          setSrc(fallback);
+          setSrc(url || fallback);
         }
       })
       .catch(() => {
-        if (!cancelled) setSrc(fallback);
+        if (!cancelled) setSrc(url || fallback);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -61,12 +66,13 @@ function useAdminImage(url: string, fallback: string = FALLBACK) {
 
 type PhotoTileProps = {
   url: string;
+  fallback: string;
   label: string;
   onExpand: () => void;
 };
 
-const PhotoTile: React.FC<PhotoTileProps> = ({ url, label, onExpand }) => {
-  const { src, loading } = useAdminImage(url);
+const PhotoTile: React.FC<PhotoTileProps> = ({ url, fallback, label, onExpand }) => {
+  const { src, loading } = useAdminImage(url, fallback);
 
   return (
     <button
@@ -83,6 +89,9 @@ const PhotoTile: React.FC<PhotoTileProps> = ({ url, label, onExpand }) => {
         className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${
           loading ? 'opacity-60' : 'opacity-100'
         }`}
+        onError={(e) => {
+          (e.target as HTMLImageElement).src = fallback;
+        }}
       />
       <span className="absolute bottom-0 inset-x-0 px-2 py-1 text-[8px] font-bold uppercase tracking-wider bg-black/70 text-gray-300">
         {label}
@@ -98,18 +107,19 @@ export const AdminListingPhotos: React.FC<AdminListingPhotosProps> = ({ business
   const [expanded, setExpanded] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
+  const fallbackLogo = listingPlaceholderDataUrl(business.name || business.id);
+  const fallbackCover = listingPlaceholderDataUrl(business.name || business.id, { wide: true });
   const logoUrl = businessLogoUrl(business);
   const coverUrl = businessCoverUrl(business);
-  const { src: coverSrc, loading: coverLoading } = useAdminImage(coverUrl, DEFAULT_LISTING_COVER);
-  const { src: logoSrc, loading: logoLoading } = useAdminImage(logoUrl);
+  const { src: coverSrc, loading: coverLoading } = useAdminImage(coverUrl, fallbackCover);
+  const { src: logoSrc, loading: logoLoading } = useAdminImage(logoUrl, fallbackLogo);
 
   const photos = useMemo(() => businessPhotoUrls(business), [business]);
   const lightboxSrc = lightboxIndex !== null ? photos[lightboxIndex] : null;
-  const { src: lightboxDisplaySrc } = useAdminImage(lightboxSrc ?? '', FALLBACK);
+  const { src: lightboxDisplaySrc } = useAdminImage(lightboxSrc ?? '', fallbackLogo);
 
   return (
     <div className="space-y-2" id={`admin-photos-${business.id}`}>
-      {/* Cover banner with logo overlay */}
       <div className="relative h-24 rounded-xl overflow-hidden border border-[#2D2319] bg-[#0F0E0C]">
         <img
           src={coverSrc}
@@ -117,6 +127,9 @@ export const AdminListingPhotos: React.FC<AdminListingPhotosProps> = ({ business
           loading="eager"
           decoding="async"
           className={`w-full h-full object-cover ${coverLoading ? 'opacity-50' : 'opacity-100'}`}
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = fallbackCover;
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
         <div className="absolute bottom-2 left-2 flex items-end gap-2">
@@ -127,6 +140,9 @@ export const AdminListingPhotos: React.FC<AdminListingPhotosProps> = ({ business
               loading="eager"
               decoding="async"
               className={`w-full h-full object-cover ${logoLoading ? 'opacity-50' : 'opacity-100'}`}
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = fallbackLogo;
+              }}
             />
           </div>
           <span className="text-[8px] font-bold uppercase tracking-wider text-gray-300 pb-0.5">
@@ -154,6 +170,7 @@ export const AdminListingPhotos: React.FC<AdminListingPhotosProps> = ({ business
         <div className="grid grid-cols-2 gap-2">
           <PhotoTile
             url={logoUrl}
+            fallback={fallbackLogo}
             label={language === 'en' ? 'Logo' : 'الشعار'}
             onExpand={() => {
               const idx = photos.indexOf(logoUrl);
@@ -162,6 +179,7 @@ export const AdminListingPhotos: React.FC<AdminListingPhotosProps> = ({ business
           />
           <PhotoTile
             url={coverUrl}
+            fallback={fallbackCover}
             label={language === 'en' ? 'Cover' : 'الغلاف'}
             onExpand={() => {
               const idx = photos.indexOf(coverUrl);

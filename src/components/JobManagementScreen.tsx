@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useDirectory } from '../context/DirectoryContext';
+import { useBackHandler } from '../context/BackNavigationContext';
 import { apiFetch } from '../lib/api';
 import { TRANSLATIONS } from '../data/translations';
 import { Job, JobCategory } from '../types';
@@ -63,6 +64,16 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
   const [formSuccess,      setFormSuccess]      = useState('');
   const [formError,        setFormError]        = useState('');
   const [hiringBusy,       setHiringBusy]       = useState(false);
+
+  const handleFormBack = useCallback((): boolean => {
+    if (view === 'form') {
+      setView('list');
+      return true;
+    }
+    return false;
+  }, [view]);
+
+  useBackHandler('job-management-form', handleFormBack, view === 'form');
 
   const openNewForm = () => {
     setEditingJob(null); setFormTitle(''); setFormCategory('Others');

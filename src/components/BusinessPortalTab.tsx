@@ -47,12 +47,27 @@ import {
   getDaysRemaining,
 } from '../hooks/useInAppPurchase';
 
-const DEFAULT_LOGO = 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=200&h=200';
-const DEFAULT_COVER = 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&q=80&w=1200&h=400';
+const isLegacyMockImage = (url?: string): boolean =>
+  Boolean(
+    url &&
+      /images\.unsplash\.com\/photo-1542838132|images\.unsplash\.com\/photo-1578916171728/i.test(url),
+  );
+
+const isUsableUploadSrc = (url?: string): boolean => {
+  if (!url) return false;
+  const trimmed = url.trim();
+  if (!trimmed) return false;
+  // Never re-submit API media paths or the old shared grocery mock as "uploads"
+  if (trimmed.includes('/api/directory/')) return false;
+  if (isLegacyMockImage(trimmed)) return false;
+  return trimmed.startsWith('data:image/') || /^https?:\/\//i.test(trimmed);
+};
 
 const buildListingImages = (gallery: string[] | undefined, logoUrl?: string): string[] => {
-  if (gallery && gallery.length > 0) return gallery.slice(0, 5);
-  if (logoUrl) return [logoUrl];
+  // Keep API media URLs for preview in the grid; submit path filters via isUsableUploadSrc
+  const fromGallery = (gallery ?? []).filter((url) => url && !isLegacyMockImage(url)).slice(0, 5);
+  if (fromGallery.length > 0) return fromGallery;
+  if (logoUrl && !isLegacyMockImage(logoUrl)) return [logoUrl];
   return [];
 };
 
@@ -408,7 +423,10 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
         operatingHours: regHours,
         phone: regPhone,
         whatsapp: regWhatsapp,
-        images: regImages,
+        // Existing listings already have photos on the server — don't force re-upload
+        images: regImages.length > 0
+          ? regImages
+          : (myBusiness.logoUrl || myBusiness.coverUrl ? ['existing'] : []),
         kind: registrationType,
       },
       {
@@ -429,7 +447,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
 
     const cat = categories.find((c) => c.id === regCatId);
     const categoryLabel = cat?.name.en || myBusiness.subcategory.en;
-    const defaultLogo = regImages[0] || myBusiness.logoUrl;
+    const uploadedLogo = regImages.find(isUsableUploadSrc);
     const formattedPhone = isValidUSPhone(regPhone) ? `+${normalizeUSPhone(regPhone)}` : regPhone.trim();
 
     setIsSavingManage(true);
@@ -448,35 +466,40 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
       whatsapp: regWhatsapp.trim() || formattedPhone,
       website: regWeb,
       workingHours: bilingualEn(regHours),
-      logoUrl: defaultLogo,
-      coverUrl: regImages[0] || myBusiness.coverUrl,
-      gallery: regImages.length > 0 ? regImages : myBusiness.gallery,
+      logoUrl: uploadedLogo || myBusiness.logoUrl,
+      coverUrl: uploadedLogo || myBusiness.coverUrl,
+      gallery: regImages.filter(isUsableUploadSrc).length > 0
+        ? regImages.filter(isUsableUploadSrc)
+        : myBusiness.gallery,
     };
 
     updateBusiness(updatedBiz);
 
     if (apiToken) {
       try {
+        const body: Record<string, unknown> = {
+          businessName: regName,
+          category: categoryLabel,
+          description: regDesc,
+          address: regAddress,
+          area: regZipCode,
+          city: regCity,
+          phone: formattedPhone,
+          whatsapp: regWhatsapp.trim() || formattedPhone,
+          website: regWeb,
+          workingHours: regHours,
+        };
+        if (uploadedLogo) {
+          body.imageUrl = uploadedLogo;
+          body.coverUrl = uploadedLogo;
+        }
         await apiFetch(`/api/directory/${myBusiness.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${apiToken}`,
           },
-          body: JSON.stringify({
-            businessName: regName,
-            category: categoryLabel,
-            description: regDesc,
-            address: regAddress,
-            area: regZipCode,
-            city: regCity,
-            phone: formattedPhone,
-            whatsapp: regWhatsapp.trim() || formattedPhone,
-            website: regWeb,
-            workingHours: regHours,
-            imageUrl: defaultLogo,
-            coverUrl: regImages[0] || myBusiness.coverUrl,
-          }),
+          body: JSON.stringify(body),
         });
         await refreshDirectory();
       } catch {
@@ -495,6 +518,9 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
     e.preventDefault();
     if (!myBusiness) return;
 
+    const uploadedLogo = editImages.find(isUsableUploadSrc);
+    const uploadedCover = editImages.filter(isUsableUploadSrc)[1] || (isUsableUploadSrc(editCover) ? editCover : '');
+
     const updatedBiz: Business = {
       ...myBusiness,
       name: editName,
@@ -502,30 +528,33 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
       phone: editPhone,
       whatsapp: editWhatsapp,
       workingHours: bilingualEn(editHours),
-      logoUrl: editImages[0] || myBusiness.logoUrl,
-      coverUrl: editImages[1] || editCover || myBusiness.coverUrl,
-      gallery: editImages.length > 0 ? editImages : myBusiness.gallery,
+      logoUrl: uploadedLogo || myBusiness.logoUrl,
+      coverUrl: uploadedCover || uploadedLogo || myBusiness.coverUrl,
+      gallery: editImages.filter(isUsableUploadSrc).length > 0
+        ? editImages.filter(isUsableUploadSrc)
+        : myBusiness.gallery,
     };
 
     updateBusiness(updatedBiz);
 
     if (apiToken) {
       try {
+        const body: Record<string, unknown> = {
+          businessName: editName,
+          description: editDesc,
+          phone: editPhone,
+          whatsapp: editWhatsapp,
+          workingHours: editHours,
+        };
+        if (uploadedLogo) body.imageUrl = uploadedLogo;
+        if (uploadedCover || uploadedLogo) body.coverUrl = uploadedCover || uploadedLogo;
         await apiFetch(`/api/directory/${myBusiness.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${apiToken}`,
           },
-          body: JSON.stringify({
-            businessName: editName,
-            description: editDesc,
-            phone: editPhone,
-            whatsapp: editWhatsapp,
-            workingHours: editHours,
-            imageUrl: editImages[0] || myBusiness.logoUrl,
-            coverUrl: editImages[1] || editCover || myBusiness.coverUrl,
-          }),
+          body: JSON.stringify(body),
         });
         await refreshDirectory();
       } catch {

@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { businessLogoUrl, DEFAULT_LISTING_LOGO } from '../utils/listingImages';
+import {
+  businessCoverUrl,
+  businessLogoUrl,
+  listingPlaceholderDataUrl,
+} from '../utils/listingImages';
 
 type BusinessLike = {
   id: string;
@@ -17,7 +21,7 @@ type BusinessThumbnailProps = {
   eager?: boolean;
 };
 
-/** Listing thumbnail — resolves API logo URL and shows a fallback if load fails */
+/** Listing thumbnail — loads logo, then cover, then a unique initials placeholder (never the old grocery mock). */
 export const BusinessThumbnail: React.FC<BusinessThumbnailProps> = ({
   business,
   className = 'w-full h-full object-cover',
@@ -25,23 +29,46 @@ export const BusinessThumbnail: React.FC<BusinessThumbnailProps> = ({
   alt,
   eager = false,
 }) => {
-  const resolved = businessLogoUrl(business);
-  const [src, setSrc] = useState(resolved);
+  const logo = businessLogoUrl(business);
+  const cover = businessCoverUrl(business);
+  const placeholder = listingPlaceholderDataUrl(business.name || business.id || 'BN');
+  const [src, setSrc] = useState(logo || placeholder);
+  const [stage, setStage] = useState(0);
 
   useEffect(() => {
-    setSrc(businessLogoUrl(business));
-  }, [business.id, business.logoUrl, business.coverUrl]);
+    setStage(0);
+    setSrc(businessLogoUrl(business) || listingPlaceholderDataUrl(business.name || business.id || 'BN'));
+  }, [business.id, business.name, business.logoUrl, business.coverUrl]);
+
+  const handleError = () => {
+    if (stage === 0 && cover && cover !== logo) {
+      setStage(1);
+      setSrc(cover);
+      return;
+    }
+    if (stage === 1) {
+      setStage(2);
+      const retryLogo = businessLogoUrl(business);
+      const retry = retryLogo.includes('?') ? `${retryLogo}&retry=1` : `${retryLogo}?retry=1`;
+      setSrc(retry);
+      return;
+    }
+    if (stage === 2) {
+      setStage(3);
+      setSrc(placeholder);
+    }
+  };
 
   return (
     <img
       id={id}
-      key={resolved}
-      src={src || DEFAULT_LISTING_LOGO}
+      key={`${business.id}-${stage}`}
+      src={src || placeholder}
       alt={alt ?? business.name ?? 'Business'}
       loading={eager ? 'eager' : 'lazy'}
       decoding="async"
       className={className}
-      onError={() => setSrc(DEFAULT_LISTING_LOGO)}
+      onError={handleError}
     />
   );
 };

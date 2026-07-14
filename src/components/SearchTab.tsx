@@ -274,7 +274,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
                 >
                   {/* Image Left */}
                   <div className="w-14 h-14 rounded-xl overflow-hidden bg-stone-900 border border-[#2D2319] flex-shrink-0">
-                    <BusinessThumbnail business={biz} />
+                    <BusinessThumbnail business={biz} eager />
                   </div>
 
                   {/* Central Information */}

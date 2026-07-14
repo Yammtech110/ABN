@@ -19,7 +19,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { apiFetch } from '../lib/api';
-import { businessLogoUrl, DEFAULT_LISTING_COVER, DEFAULT_LISTING_LOGO, resolveListingCoverUrl } from '../utils/listingImages';
+import { businessLogoUrl, listingPlaceholderDataUrl, resolveListingCoverUrl } from '../utils/listingImages';
 import { BusinessThumbnail } from './BusinessThumbnail';
 
 interface BusinessDetailsModalProps {
@@ -206,12 +206,15 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
         {/* Cover Photo Banner */}
         <div className="relative h-48 md:h-64 w-full bg-slate-800" id="details-cover-wrapper">
           <img
-            src={resolveListingCoverUrl(business.coverUrl, business.logoUrl, business.id)}
+            src={resolveListingCoverUrl(business.coverUrl, business.logoUrl, business.id, business.name)}
             alt={business.name}
             className="w-full h-full object-cover opacity-85 lazy-image"
             onLoad={(e) => e.currentTarget.classList.add('loaded')}
             onError={(e) => {
-              (e.target as HTMLImageElement).src = DEFAULT_LISTING_COVER;
+              (e.target as HTMLImageElement).src = listingPlaceholderDataUrl(
+                business.name || business.id,
+                { wide: true },
+              );
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0F0E0C] to-transparent"></div>
@@ -410,7 +413,10 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                         loading="lazy"
                         className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                         onError={(e) => {
-                          (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=400&h=300';
+                          (e.target as HTMLImageElement).src = listingPlaceholderDataUrl(
+                            business.name || business.id,
+                            { wide: true },
+                          );
                         }}
                       />
                     </div>

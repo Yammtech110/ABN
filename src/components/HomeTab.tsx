@@ -1,5 +1,6 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useDirectory } from '../context/DirectoryContext';
+import { useBackHandler } from '../context/BackNavigationContext';
 import { apiFetch } from '../lib/api';
 import { TRANSLATIONS } from '../data/translations';
 import { Job, JobCategory } from '../types';
@@ -184,8 +185,8 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             id:                   String(p.id ?? ''),
             ownerId:              String(p.email ?? ''),
             name:                 String(p.businessName ?? ''),
-            logoUrl:              resolveListingLogoUrl(String(p.imageUrl ?? ''), String(p.coverUrl ?? ''), String(p.id ?? '')),
-            coverUrl:             resolveListingCoverUrl(String(p.coverUrl ?? ''), String(p.imageUrl ?? ''), String(p.id ?? '')),
+            logoUrl:              resolveListingLogoUrl(String(p.imageUrl ?? ''), String(p.coverUrl ?? ''), String(p.id ?? ''), String(p.businessName ?? '')),
+            coverUrl:             resolveListingCoverUrl(String(p.coverUrl ?? ''), String(p.imageUrl ?? ''), String(p.id ?? ''), String(p.businessName ?? '')),
             description:          { en: String(p.description ?? ''), ar: '' },
             categoryId:           String(p.category ?? '').toLowerCase().replace(/ /g, '-'),
             subcategory:          { en: String(p.category ?? ''), ar: '' },
@@ -250,6 +251,20 @@ export const HomeTab: React.FC<HomeTabProps> = ({
 
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 
+  const handleOverlayBack = useCallback((): boolean => {
+    if (showNotificationsModal) {
+      setShowNotificationsModal(false);
+      return true;
+    }
+    if (selectedJob) {
+      setSelectedJob(null);
+      return true;
+    }
+    return false;
+  }, [showNotificationsModal, selectedJob]);
+
+  useBackHandler('home-tab-overlay', handleOverlayBack, showNotificationsModal || Boolean(selectedJob));
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // If the API search already returned results, we stay on home and show them inline.
@@ -290,11 +305,10 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         <div className="p-5 rounded-3xl bg-[#13110E] border border-[#2D2319] space-y-5">
           <div className="flex items-center gap-3">
             <div className="w-14 h-14 rounded-2xl overflow-hidden bg-[#0F0E0C] border border-[#2D2319] flex-shrink-0">
-              <img
-                src={selectedJob.businessLogoUrl}
-                alt={selectedJob.businessName}
+              <BusinessThumbnail
+                business={{ id: selectedJob.businessId, name: selectedJob.businessName, logoUrl: selectedJob.businessLogoUrl }}
                 className="w-full h-full object-cover"
-                onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=200&h=200'; }}
+                eager
               />
             </div>
             <div className="min-w-0">
@@ -525,11 +539,10 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                 {/* Business logo + title */}
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-xl overflow-hidden bg-[#0F0E0C] border border-[#2D2319] flex-shrink-0">
-                    <img
-                      src={job.businessLogoUrl}
-                      alt={job.businessName}
+                    <BusinessThumbnail
+                      business={{ id: job.businessId, name: job.businessName, logoUrl: job.businessLogoUrl }}
                       className="w-full h-full object-cover"
-                      onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=200&h=200'; }}
+                      eager
                     />
                   </div>
                   <div className="min-w-0">
@@ -595,7 +608,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               >
                 {/* Image avatar left side */}
                 <div className="w-14 h-14 rounded-xl overflow-hidden bg-stone-900 border border-[#2D2319] flex-shrink-0">
-                  <BusinessThumbnail business={biz} />
+                  <BusinessThumbnail business={biz} eager />
                 </div>
 
                 {/* Center description */}

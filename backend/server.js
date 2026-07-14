@@ -70,7 +70,10 @@ app.use(globalLimiter);
 
 // ── Security & middleware ──────────────────────────────────────────────────
 
-app.use(helmet());
+// cross-origin so Capacitor / separate API hosts can load streamed listing images in <img>
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+}));
 
 // Global mobile + web — JWT in Authorization header (no cookies), so origin * is safe
 app.use(cors({

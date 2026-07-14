@@ -1,7 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useDirectory } from '../context/DirectoryContext';
+import { useBackHandler } from '../context/BackNavigationContext';
 import { TRANSLATIONS } from '../data/translations';
 import { Job, JobCategory } from '../types';
+import { BusinessThumbnail } from './BusinessThumbnail';
 import {
   ArrowLeft,
   Briefcase,
@@ -51,6 +53,16 @@ export const JobBoardScreen: React.FC<JobBoardScreenProps> = ({ onBack, initialJ
     [publicJobs, selectedCategory]
   );
 
+  const handleJobDetailBack = useCallback((): boolean => {
+    if (selectedJob) {
+      setSelectedJob(null);
+      return true;
+    }
+    return false;
+  }, [selectedJob]);
+
+  useBackHandler('job-board-detail', handleJobDetailBack, Boolean(selectedJob));
+
   // ── JOB DETAIL VIEW ──────────────────────────────────────────
   if (selectedJob) {
     return (
@@ -72,14 +84,10 @@ export const JobBoardScreen: React.FC<JobBoardScreenProps> = ({ onBack, initialJ
           {/* Business identity header */}
           <div className="flex items-center gap-3">
             <div className="w-14 h-14 rounded-2xl overflow-hidden bg-[#0F0E0C] border border-[#2D2319] flex-shrink-0">
-              <img
-                src={selectedJob.businessLogoUrl}
-                alt={selectedJob.businessName}
+              <BusinessThumbnail
+                business={{ id: selectedJob.businessId, name: selectedJob.businessName, logoUrl: selectedJob.businessLogoUrl }}
                 className="w-full h-full object-cover"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src =
-                    'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=200&h=200';
-                }}
+                eager
               />
             </div>
             <div className="min-w-0">
@@ -208,14 +216,10 @@ export const JobBoardScreen: React.FC<JobBoardScreenProps> = ({ onBack, initialJ
             >
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-xl overflow-hidden bg-[#0F0E0C] border border-[#2D2319] flex-shrink-0">
-                  <img
-                    src={job.businessLogoUrl}
-                    alt={job.businessName}
+                  <BusinessThumbnail
+                    business={{ id: job.businessId, name: job.businessName, logoUrl: job.businessLogoUrl }}
                     className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src =
-                        'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=200&h=200';
-                    }}
+                    eager
                   />
                 </div>
                 <div className="flex-1 min-w-0">

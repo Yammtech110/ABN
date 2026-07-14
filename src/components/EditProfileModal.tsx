@@ -7,8 +7,6 @@ import { ImageUploadGrid } from './ImageUploadGrid';
 import { getUserListing } from '../utils/listingAccess';
 import { apiFetch } from '../lib/api';
 
-const DEFAULT_LOGO = 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=200&h=200';
-
 interface EditProfileModalProps {
   onClose: () => void;
 }
@@ -96,7 +94,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
     setSaving(true);
     const cat = categories.find((c) => c.id === categoryId);
     const categoryLabel = subcatEn || cat?.name.en || 'General';
-    const logoUrl = images[0] || myBusiness?.logoUrl || DEFAULT_LOGO;
+    const logoUrl = images[0] || myBusiness?.logoUrl || '';
     const coverUrl = images[1] || myBusiness?.coverUrl || logoUrl;
 
     const payload = {

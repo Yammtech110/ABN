@@ -7,9 +7,9 @@
 const express = require('express');
 const { supabaseAdmin } = require('../supabase');
 const { isSupabaseStorage, directoryProfiles, jobsBoard, newId, newUuid, today } = require('../db');
-const { mapJobFromDb, mapJobToDb } = require('../lib/supabaseMappers');
+const { mapJobFromDb, mapJobToDb, mapProfileFromDb } = require('../lib/supabaseMappers');
 const { authenticate, requireRole } = require('../middleware/authMiddleware');
-const { publicMediaPath } = require('../lib/listingMedia');
+const { publicMediaPath, jobLogoFromProfile } = require('../lib/listingMedia');
 
 const router = express.Router();
 
@@ -63,6 +63,14 @@ const assertJobPostingAllowed = (profile, userRole) => {
 
 const mapJob = (row) => ({ ...row });
 
+/** Always resolve job thumbnails from the live listing media endpoint */
+const withLiveLogo = (job) => ({
+  ...job,
+  businessLogoUrl: job.businessId
+    ? publicMediaPath(job.businessId, 'logo')
+    : (job.businessLogoUrl || ''),
+});
+
 async function fetchAllJobs() {
   if (!isSupabaseStorage()) return jobsBoard.map(mapJob);
 
@@ -94,7 +102,7 @@ async function findProfileByEmail(email) {
     .maybeSingle();
 
   if (error) throw new Error(error.message);
-  return data ? require('../lib/supabaseMappers').mapProfileFromDb(data) : null;
+  return data ? mapProfileFromDb(data) : null;
 }
 
 const isBusinessHiring = async (businessId) => {
@@ -132,7 +140,7 @@ router.get('/', async (req, res, next) => {
     }
 
     results.sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
-    res.json(results.map(mapJob));
+    res.json(results.map((job) => withLiveLogo(mapJob(job))));
   } catch (err) {
     next(err);
   }
@@ -144,7 +152,7 @@ router.get('/all', authenticate, requireRole('admin'), async (req, res, next) =>
   try {
     const allJobs = await fetchAllJobs();
     allJobs.sort((a, b) => String(b.createdAt || b.postedDate || '').localeCompare(String(a.createdAt || a.postedDate || '')));
-    res.json(allJobs.map(mapJob));
+    res.json(allJobs.map((job) => withLiveLogo(mapJob(job))));
   } catch (err) {
     next(err);
   }
@@ -209,9 +217,7 @@ router.post('/', authenticate, requireRole(...JOB_OWNER_ROLES), async (req, res,
       return res.status(denied.status).json({ error: denied.error });
     }
 
-    const logoForJob = profile.imageUrl && /^https?:\/\//i.test(String(profile.imageUrl).trim())
-      ? profile.imageUrl
-      : publicMediaPath(profile.id, 'logo');
+    const logoForJob = jobLogoFromProfile(profile);
 
     const job = {
       id:              isSupabaseStorage() ? newUuid() : newId('job'),
@@ -231,7 +237,7 @@ router.post('/', authenticate, requireRole(...JOB_OWNER_ROLES), async (req, res,
 
     if (!isSupabaseStorage()) {
       jobsBoard.unshift(job);
-      return res.status(201).json(mapJob(job));
+      return res.status(201).json(withLiveLogo(mapJob(job)));
     }
 
     const { data, error } = await supabaseAdmin
@@ -245,7 +251,7 @@ router.post('/', authenticate, requireRole(...JOB_OWNER_ROLES), async (req, res,
     const memIdx = jobsBoard.findIndex((j) => j.id === saved.id);
     if (memIdx >= 0) jobsBoard[memIdx] = saved;
     else jobsBoard.unshift(saved);
-    res.status(201).json(saved);
+    res.status(201).json(withLiveLogo(saved));
   } catch (err) {
     next(err);
   }

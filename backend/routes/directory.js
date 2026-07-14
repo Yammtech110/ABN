@@ -13,10 +13,10 @@ const { findByEmail: findUserByEmail } = require('../lib/userStore');
 const { createNotification } = require('../lib/notificationStore');
 const { authenticate, requireRole } = require('../middleware/authMiddleware');
 const {
-  DEFAULT_LOGO,
-  DEFAULT_COVER,
   mapProfileForList,
   streamStoredImage,
+  publicMediaPath,
+  normalizeIncomingImage,
 } = require('../lib/listingMedia');
 
 const router = express.Router();
@@ -158,7 +158,11 @@ router.get('/:id/logo', async (req, res, next) => {
   try {
     const profile = await findProfileById(req.params.id);
     if (!profile) return res.status(404).end();
-    await streamStoredImage(res, profile.imageUrl, profile.coverUrl, DEFAULT_LOGO);
+    await streamStoredImage(res, profile.imageUrl, profile.coverUrl, {
+      name: profile.businessName,
+      seed: profile.id,
+      wide: false,
+    });
   } catch (err) {
     next(err);
   }
@@ -169,7 +173,11 @@ router.get('/:id/cover', async (req, res, next) => {
   try {
     const profile = await findProfileById(req.params.id);
     if (!profile) return res.status(404).end();
-    await streamStoredImage(res, profile.coverUrl, profile.imageUrl, DEFAULT_COVER);
+    await streamStoredImage(res, profile.coverUrl, profile.imageUrl, {
+      name: profile.businessName,
+      seed: profile.id,
+      wide: true,
+    });
   } catch (err) {
     next(err);
   }
@@ -223,8 +231,8 @@ router.post('/', authenticate, requireRole('customer', 'admin'), async (req, res
       category,
       subscriptionStatus: 'pending',
       subscriptionTier:   tier,
-      imageUrl,
-      coverUrl,
+      imageUrl:           normalizeIncomingImage(imageUrl, '') || '',
+      coverUrl:           normalizeIncomingImage(coverUrl, '') || '',
       description:        description || '',
       address,
       area,
@@ -272,7 +280,7 @@ router.post('/', authenticate, requireRole('customer', 'admin'), async (req, res
       // non-fatal
     }
 
-    return res.status(201).json(mapProfile(savedProfile));
+    return res.status(201).json(mapProfile(mapProfileForList(savedProfile)));
   } catch (err) {
     next(err);
   }
@@ -300,8 +308,8 @@ router.put('/:id', authenticate, async (req, res, next) => {
     if (businessName       !== undefined) updated.businessName       = businessName;
     if (category           !== undefined) updated.category           = category;
     if (description        !== undefined) updated.description        = description;
-    if (imageUrl           !== undefined) updated.imageUrl           = imageUrl;
-    if (coverUrl           !== undefined) updated.coverUrl           = coverUrl;
+    if (imageUrl           !== undefined) updated.imageUrl           = normalizeIncomingImage(imageUrl, existing.imageUrl);
+    if (coverUrl           !== undefined) updated.coverUrl           = normalizeIncomingImage(coverUrl, existing.coverUrl);
     if (address            !== undefined) updated.address            = address;
     if (area               !== undefined) updated.area               = area;
     if (city               !== undefined) updated.city               = city;
@@ -314,9 +322,22 @@ router.put('/:id', authenticate, async (req, res, next) => {
     if (subscriptionStatus !== undefined && req.user.role === 'admin') updated.subscriptionStatus = subscriptionStatus;
     if (isVerified         !== undefined && req.user.role === 'admin') updated.isVerified         = isVerified;
 
+    const logoChanged =
+      (imageUrl !== undefined && updated.imageUrl !== existing.imageUrl) ||
+      (coverUrl !== undefined && updated.coverUrl !== existing.coverUrl);
+    const logoForJobs = publicMediaPath(updated.id, 'logo');
+
     if (!isSupabaseStorage()) {
       const idx = directoryProfiles.findIndex((p) => p.id === req.params.id);
       directoryProfiles[idx] = updated;
+      if (logoChanged || businessName !== undefined) {
+        jobsBoard.forEach((job) => {
+          if (job.businessId === req.params.id) {
+            job.businessLogoUrl = logoForJobs;
+            if (businessName !== undefined) job.businessName = businessName;
+          }
+        });
+      }
     } else {
       const { data, error } = await supabaseAdmin
         .from('profiles_directory')
@@ -327,6 +348,15 @@ router.put('/:id', authenticate, async (req, res, next) => {
 
       if (error) return res.status(500).json({ error: error.message });
       updated = mapProfile(mapProfileFromDb(data));
+
+      if (logoChanged || businessName !== undefined) {
+        const jobPatch = { business_logo_url: logoForJobs };
+        if (businessName !== undefined) jobPatch.business_name = businessName;
+        await supabaseAdmin
+          .from('jobs_board')
+          .update(jobPatch)
+          .eq('business_id', req.params.id);
+      }
     }
 
     if (req.user.role === 'admin') {
@@ -380,7 +410,7 @@ router.put('/:id', authenticate, async (req, res, next) => {
       }
     }
 
-    return res.json(mapProfile(updated));
+    return res.json(mapProfile(mapProfileForList(updated)));
   } catch (err) {
     next(err);
   }
