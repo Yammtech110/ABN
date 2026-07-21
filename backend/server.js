@@ -105,6 +105,9 @@ app.get('/', (_req, res) => {
 // Strict rate limit on auth mutation endpoints
 app.use('/api/auth/login',    authLimiter);
 app.use('/api/auth/register', authLimiter);
+app.use('/api/auth/forgot-password', authLimiter);
+app.use('/api/auth/verify-reset-code', authLimiter);
+app.use('/api/auth/reset-password', authLimiter);
 // Auth — JWT + bcrypt, persisted in Supabase app_users (or memory fallback)
 app.use('/api/auth',      require('./routes/auth'));
 

@@ -13,7 +13,8 @@ const { findByEmail, findById, createUser, updateUser, deleteUser, listAllUsers,
 const { createNotification } = require('../lib/notificationStore');
 const { userOwnsDirectoryProfile, findProfileForUser, findProfileByEmail } = require('../lib/profileStore');
 const { authenticate, requireRole } = require('../middleware/authMiddleware');
-const { createCode, verifyCode } = require('../lib/emailVerify');
+const { createCode, verifyCode, clearCode, shouldExposeOtp } = require('../lib/emailVerify');
+const { sendOtpEmail } = require('../lib/mailer');
 const { listBlockedUserIds, blockUser, unblockUser } = require('../lib/blockStore');
 
 const router         = express.Router();
@@ -113,7 +114,8 @@ router.post('/register', async (req, res, next) => {
       emailVerified: false,
     });
 
-    const demoCode = createCode(key);
+    const demoCode = createCode(key, 'verify');
+    await sendOtpEmail({ to: key, code: demoCode, purpose: 'verify' });
 
     try {
       await createNotification({
@@ -133,7 +135,7 @@ router.post('/register', async (req, res, next) => {
       message: `We sent a verification code. If you do not receive email, contact ${SUPPORT_EMAIL}.`,
     };
     // Expose code when SMTP is not configured (common on free Render) so QA / reviewers can finish signup
-    if (process.env.NODE_ENV !== 'production' || process.env.EXPOSE_VERIFY_CODE === 'true' || !process.env.SMTP_HOST) {
+    if (shouldExposeOtp()) {
       payload.verificationCode = demoCode;
     }
 
@@ -163,7 +165,7 @@ router.post('/verify-email', async (req, res, next) => {
       return res.json(await buildAuthResponse(user, token));
     }
 
-    if (!verifyCode(key, code)) {
+    if (!verifyCode(key, code, 'verify')) {
       return res.status(400).json({ error: 'Invalid or expired verification code.' });
     }
 
@@ -190,9 +192,10 @@ router.post('/resend-verification', async (req, res, next) => {
     if (user.emailVerified !== false) {
       return res.json({ message: 'Email already verified.' });
     }
-    const demoCode = createCode(key);
+    const demoCode = createCode(key, 'verify');
+    await sendOtpEmail({ to: key, code: demoCode, purpose: 'verify' });
     const body = { message: `Verification code resent. Contact ${SUPPORT_EMAIL} if needed.` };
-    if (process.env.NODE_ENV !== 'production' || process.env.EXPOSE_VERIFY_CODE === 'true' || !process.env.SMTP_HOST) {
+    if (shouldExposeOtp()) {
       body.verificationCode = demoCode;
     }
     res.json(body);
@@ -259,13 +262,14 @@ router.post('/login', async (req, res, next) => {
     }
 
     if (user.emailVerified === false) {
-      const demoCode = createCode(key);
+      const demoCode = createCode(key, 'verify');
+      await sendOtpEmail({ to: key, code: demoCode, purpose: 'verify' });
       const body = {
         needsEmailVerification: true,
         email: key,
         error: 'Email not verified. Enter the code sent to your email.',
       };
-      if (process.env.NODE_ENV !== 'production' || process.env.EXPOSE_VERIFY_CODE === 'true' || !process.env.SMTP_HOST) {
+      if (shouldExposeOtp()) {
         body.verificationCode = demoCode;
       }
       return res.status(403).json(body);
@@ -278,6 +282,166 @@ router.post('/login', async (req, res, next) => {
     );
 
     res.json(await buildAuthResponse(user, token));
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── POST /api/auth/forgot-password ────────────────────────────────────────
+router.post('/forgot-password', async (req, res, next) => {
+  try {
+    const { email } = req.body || {};
+    if (!email || typeof email !== 'string') {
+      return res.status(400).json({ error: 'email is required.' });
+    }
+    const key = email.toLowerCase().trim();
+    if (!EMAIL_RE.test(key)) {
+      return res.status(400).json({ error: 'A valid email address is required.' });
+    }
+
+    const user = await findByEmail(key);
+    // Always respond similarly to avoid account enumeration, but only send when user exists
+    const payload = {
+      message: `If an account exists for that email, a reset code was sent. Contact ${SUPPORT_EMAIL} if needed.`,
+      email: key,
+    };
+
+    if (user && !user.isBlocked) {
+      const code = createCode(key, 'reset');
+      await sendOtpEmail({ to: key, code, purpose: 'reset' });
+      try {
+        await createNotification({
+          userId: user.id,
+          receiverRole: user.role,
+          title: 'Password reset code',
+          message: 'A password reset code was requested for your ABN account.',
+        });
+      } catch {
+        // non-fatal
+      }
+      if (shouldExposeOtp()) {
+        payload.resetCode = code;
+      }
+    }
+
+    res.json(payload);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── POST /api/auth/verify-reset-code ──────────────────────────────────────
+router.post('/verify-reset-code', async (req, res, next) => {
+  try {
+    const { email, code } = req.body || {};
+    if (!email || !code) {
+      return res.status(400).json({ error: 'email and code are required.' });
+    }
+    const key = String(email).toLowerCase().trim();
+    const user = await findByEmail(key);
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid or expired reset code.' });
+    }
+    if (user.isBlocked) {
+      return res.status(403).json({ error: `This account has been blocked. Contact ${SUPPORT_EMAIL}.` });
+    }
+
+    // Do not consume yet — final step (reset-password) consumes the code
+    if (!verifyCode(key, code, 'reset', { consume: false })) {
+      return res.status(400).json({ error: 'Invalid or expired reset code.' });
+    }
+
+    const resetToken = jwt.sign(
+      { id: user.id, email: user.email, purpose: 'password_reset' },
+      JWT_SECRET,
+      { expiresIn: '15m' },
+    );
+
+    res.json({
+      verified: true,
+      resetToken,
+      email: key,
+      message: 'Code verified. Choose a new password or keep your current one.',
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── POST /api/auth/reset-password ─────────────────────────────────────────
+// After OTP: either set a new password or keep the current one, then sign in.
+router.post('/reset-password', async (req, res, next) => {
+  try {
+    const { email, code, resetToken, action, newPassword } = req.body || {};
+    const keepCurrent = action === 'keep';
+
+    if (!keepCurrent && action !== 'change') {
+      return res.status(400).json({ error: 'action must be "change" or "keep".' });
+    }
+    if (!keepCurrent) {
+      if (!newPassword || typeof newPassword !== 'string') {
+        return res.status(400).json({ error: 'newPassword is required when changing password.' });
+      }
+      if (newPassword.length < 6 || newPassword.length > MAX_FIELD_LEN) {
+        return res.status(400).json({ error: 'Password must be between 6 and 200 characters.' });
+      }
+    }
+
+    let user = null;
+
+    if (resetToken && typeof resetToken === 'string') {
+      let payload;
+      try {
+        payload = jwt.verify(resetToken, JWT_SECRET);
+      } catch {
+        return res.status(400).json({ error: 'Reset session expired. Request a new code.' });
+      }
+      if (payload.purpose !== 'password_reset' || !payload.id) {
+        return res.status(400).json({ error: 'Invalid reset session.' });
+      }
+      user = await findById(payload.id);
+      if (!user) return res.status(404).json({ error: 'Account not found.' });
+
+      if (code) {
+        if (!verifyCode(user.email, code, 'reset', { consume: true })) {
+          return res.status(400).json({ error: 'Invalid or expired reset code.' });
+        }
+      } else {
+        clearCode(user.email, 'reset');
+      }
+    } else {
+      if (!email || !code) {
+        return res.status(400).json({ error: 'email and code (or resetToken) are required.' });
+      }
+      const key = String(email).toLowerCase().trim();
+      user = await findByEmail(key);
+      if (!user) {
+        return res.status(400).json({ error: 'Invalid or expired reset code.' });
+      }
+      if (!verifyCode(key, code, 'reset', { consume: true })) {
+        return res.status(400).json({ error: 'Invalid or expired reset code.' });
+      }
+    }
+
+    if (user.isBlocked) {
+      return res.status(403).json({ error: `This account has been blocked. Contact ${SUPPORT_EMAIL}.` });
+    }
+
+    let updated = user;
+    if (!keepCurrent) {
+      updated = await updateUser(user.id, {
+        passwordHash: await bcrypt.hash(newPassword, HASH_ROUNDS),
+      });
+      if (!updated) return res.status(404).json({ error: 'Account not found.' });
+    }
+
+    const token = jwt.sign(
+      { id: updated.id, email: updated.email, role: updated.role, name: updated.name },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN },
+    );
+
+    res.json(await buildAuthResponse(updated, token));
   } catch (err) {
     next(err);
   }

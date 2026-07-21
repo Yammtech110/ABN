@@ -157,6 +157,15 @@ interface DirectoryContextType {
   registerAccount:  (payload: { name: string; email: string; password: string; phone: string }) => Promise<{ success: boolean; error?: string; needsEmailVerification?: boolean; email?: string; verificationCode?: string }>;
   verifyEmailCode:  (email: string, code: string) => Promise<{ success: boolean; error?: string }>;
   resendVerificationCode: (email: string) => Promise<{ success: boolean; error?: string; verificationCode?: string }>;
+  requestPasswordReset: (email: string) => Promise<{ success: boolean; error?: string; resetCode?: string; email?: string }>;
+  verifyResetCode: (email: string, code: string) => Promise<{ success: boolean; error?: string; resetToken?: string }>;
+  completePasswordReset: (opts: {
+    email: string;
+    code: string;
+    resetToken: string;
+    action: 'change' | 'keep';
+    newPassword?: string;
+  }) => Promise<{ success: boolean; error?: string }>;
   deleteAccount:    () => Promise<{ success: boolean; error?: string }>;
   blockListingOwner: (ownerEmailOrId: string) => Promise<{ success: boolean; error?: string }>;
   signOut:          () => Promise<void>;
@@ -772,34 +781,16 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         return { success: true };
       }
 
-      if (!supabase || isNativeApp()) {
-        return { success: false, error: data.error || 'Login failed.' };
-      }
+      // Backend responded — never fall through to Supabase (would wipe admin → customer)
+      return { success: false, error: data.error || 'Login failed.' };
     } catch {
-      if (!supabase || isNativeApp()) {
-        return {
-          success: false,
-          error: isNativeApp()
-            ? 'Cannot reach server. Wait 60 seconds and try again — the cloud server may be waking up.'
-            : 'Cannot reach server. Make sure the backend is running.',
-        };
-      }
+      return {
+        success: false,
+        error: isNativeApp()
+          ? 'Cannot reach server. Wait 60 seconds and try again — the cloud server may be waking up.'
+          : 'Cannot reach server. Check VITE_API_BASE_URL / backend.',
+      };
     }
-
-    if (supabase && !isNativeApp()) {
-      safeRemoveItem(AUTH_SOURCE_KEY);
-      const { error } = await supabase.auth.signInWithPassword({
-        email: trimmedEmail,
-        password,
-      });
-      if (error) {
-        return { success: false, error: error.message };
-      }
-      addNotification('Login Successful', 'Assalamu Alaykum. Welcome back!', 'customer', true);
-      return { success: true };
-    }
-
-    return { success: false, error: 'Login failed.' };
   };
 
   const registerAccount = async (payload: {
@@ -891,6 +882,88 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       const data = await res.json();
       if (!res.ok) return { success: false, error: data.error || 'Could not resend code.' };
       return { success: true, verificationCode: data.verificationCode };
+    } catch {
+      return { success: false, error: 'Cannot reach server.' };
+    }
+  };
+
+  const requestPasswordReset = async (
+    email: string,
+  ): Promise<{ success: boolean; error?: string; resetCode?: string; email?: string }> => {
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail) return { success: false, error: 'Email is required.' };
+    try {
+      const res = await apiFetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmedEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok) return { success: false, error: data.error || 'Could not send reset code.' };
+      return {
+        success: true,
+        email: data.email || trimmedEmail,
+        resetCode: data.resetCode,
+      };
+    } catch {
+      return {
+        success: false,
+        error: isNativeApp()
+          ? 'Cannot reach server. Wait 60 seconds and try again — the cloud server may be waking up.'
+          : 'Cannot reach server. Check VITE_API_BASE_URL / backend.',
+      };
+    }
+  };
+
+  const verifyResetCode = async (
+    email: string,
+    code: string,
+  ): Promise<{ success: boolean; error?: string; resetToken?: string }> => {
+    try {
+      const res = await apiFetch('/api/auth/verify-reset-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim().toLowerCase(), code: code.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.resetToken) {
+        return { success: false, error: data.error || 'Invalid or expired code.' };
+      }
+      return { success: true, resetToken: data.resetToken };
+    } catch {
+      return { success: false, error: 'Cannot reach server.' };
+    }
+  };
+
+  const completePasswordReset = async (opts: {
+    email: string;
+    code: string;
+    resetToken: string;
+    action: 'change' | 'keep';
+    newPassword?: string;
+  }): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const res = await apiFetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: opts.email.trim().toLowerCase(),
+          code: opts.code.trim(),
+          resetToken: opts.resetToken,
+          action: opts.action,
+          newPassword: opts.newPassword,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.token) {
+        return { success: false, error: data.error || 'Could not complete password reset.' };
+      }
+      const profile = applyBackendSession(data.token, data.user);
+      await refreshDirectory(profile);
+      await refreshPayments(data.token, profile.role);
+      await refreshFavorites(data.token);
+      await syncMyDirectoryProfile(data.token, profile.email, profile.role);
+      return { success: true };
     } catch {
       return { success: false, error: 'Cannot reach server.' };
     }
@@ -1439,7 +1512,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // ── Provider ──────────────────────────────────────────────────────────────
   return (
     <DirectoryContext.Provider value={{
-      authReady, isAuthenticated, currentUser, apiToken, apiLogin, signInWithGoogle, signInWithApple, oauthAvailable: isSupabaseConfigured, registerAccount, verifyEmailCode, resendVerificationCode, deleteAccount, blockListingOwner, signOut, updateUserProfile,
+      authReady, isAuthenticated, currentUser, apiToken, apiLogin, signInWithGoogle, signInWithApple, oauthAvailable: isSupabaseConfigured, registerAccount, verifyEmailCode, resendVerificationCode, requestPasswordReset, verifyResetCode, completePasswordReset, deleteAccount, blockListingOwner, signOut, updateUserProfile,
       language, theme, setTheme,
       categories, addCategory, removeCategory, refreshCategories,
       businesses, addBusiness, updateBusiness, removeBusiness, refreshDirectory,
