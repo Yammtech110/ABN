@@ -9,15 +9,18 @@ const express  = require('express');
 const bcrypt   = require('bcryptjs');
 const jwt      = require('jsonwebtoken');
 const { stableId } = require('../lib/memoryStore');
-const { findByEmail, findById, createUser, updateUser, listAllUsers, setUserBlocked } = require('../lib/userStore');
+const { findByEmail, findById, createUser, updateUser, deleteUser, listAllUsers, setUserBlocked } = require('../lib/userStore');
 const { createNotification } = require('../lib/notificationStore');
 const { userOwnsDirectoryProfile, findProfileForUser, findProfileByEmail } = require('../lib/profileStore');
 const { authenticate, requireRole } = require('../middleware/authMiddleware');
+const { createCode, verifyCode } = require('../lib/emailVerify');
+const { listBlockedUserIds, blockUser, unblockUser } = require('../lib/blockStore');
 
 const router         = express.Router();
 const { JWT_SECRET } = require('../config/security');
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 const HASH_ROUNDS    = 12;
+const SUPPORT_EMAIL  = process.env.SUPPORT_EMAIL || 'support@ahlebaitnetwork.com';
 
 const VALID_ROLES = ['customer', 'business', 'service_provider', 'admin'];
 
@@ -36,6 +39,7 @@ const mapUser = (u) => ({
   role:              u.role,
   preferredLanguage: u.preferredLanguage,
   isBlocked:         Boolean(u.isBlocked),
+  emailVerified:     u.emailVerified !== false,
 });
 
 const ROLE_LABELS = {
@@ -106,22 +110,92 @@ router.post('/register', async (req, res, next) => {
       role,
       passwordHash,
       preferredLanguage: 'en',
+      emailVerified: false,
     });
 
-    const token = jwt.sign({ id, email: key, role, name: trimmedName }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+    const demoCode = createCode(key);
 
     try {
       await createNotification({
         userId: id,
         receiverRole: role,
-        title: 'Welcome to ABN',
-        message: `Assalamu Alaykum, ${trimmedName}. Your account was created successfully.`,
+        title: 'Verify your email',
+        message: `Assalamu Alaykum, ${trimmedName}. Enter the 6-digit code to verify your ABN account.`,
       });
     } catch {
       // non-fatal
     }
 
-    res.status(201).json(await buildAuthResponse(record, token));
+    // No session token until email is verified
+    const payload = {
+      needsEmailVerification: true,
+      email: key,
+      message: `We sent a verification code. If you do not receive email, contact ${SUPPORT_EMAIL}.`,
+    };
+    // Expose code when SMTP is not configured (common on free Render) so QA / reviewers can finish signup
+    if (process.env.NODE_ENV !== 'production' || process.env.EXPOSE_VERIFY_CODE === 'true' || !process.env.SMTP_HOST) {
+      payload.verificationCode = demoCode;
+    }
+
+    res.status(201).json(payload);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── POST /api/auth/verify-email ───────────────────────────────────────────
+router.post('/verify-email', async (req, res, next) => {
+  try {
+    const { email, code } = req.body || {};
+    if (!email || !code) {
+      return res.status(400).json({ error: 'email and code are required.' });
+    }
+    const key = String(email).toLowerCase().trim();
+    const user = await findByEmail(key);
+    if (!user) return res.status(404).json({ error: 'Account not found.' });
+
+    if (user.emailVerified !== false) {
+      const token = jwt.sign(
+        { id: user.id, email: user.email, role: user.role, name: user.name },
+        JWT_SECRET,
+        { expiresIn: JWT_EXPIRES_IN },
+      );
+      return res.json(await buildAuthResponse(user, token));
+    }
+
+    if (!verifyCode(key, code)) {
+      return res.status(400).json({ error: 'Invalid or expired verification code.' });
+    }
+
+    const updated = await updateUser(user.id, { emailVerified: true });
+    const token = jwt.sign(
+      { id: updated.id, email: updated.email, role: updated.role, name: updated.name },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN },
+    );
+    res.json(await buildAuthResponse(updated, token));
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── POST /api/auth/resend-verification ────────────────────────────────────
+router.post('/resend-verification', async (req, res, next) => {
+  try {
+    const { email } = req.body || {};
+    if (!email) return res.status(400).json({ error: 'email is required.' });
+    const key = String(email).toLowerCase().trim();
+    const user = await findByEmail(key);
+    if (!user) return res.status(404).json({ error: 'Account not found.' });
+    if (user.emailVerified !== false) {
+      return res.json({ message: 'Email already verified.' });
+    }
+    const demoCode = createCode(key);
+    const body = { message: `Verification code resent. Contact ${SUPPORT_EMAIL} if needed.` };
+    if (process.env.NODE_ENV !== 'production' || process.env.EXPOSE_VERIFY_CODE === 'true' || !process.env.SMTP_HOST) {
+      body.verificationCode = demoCode;
+    }
+    res.json(body);
   } catch (err) {
     next(err);
   }
@@ -149,6 +223,7 @@ router.post('/oauth-sync', authenticate, async (req, res, next) => {
         role: 'customer',
         passwordHash,
         preferredLanguage: 'en',
+        emailVerified: true,
       });
     }
 
@@ -175,12 +250,25 @@ router.post('/login', async (req, res, next) => {
     }
 
     if (user.isBlocked) {
-      return res.status(403).json({ error: 'This account has been blocked. Contact support for assistance.' });
+      return res.status(403).json({ error: `This account has been blocked. Contact ${SUPPORT_EMAIL}.` });
     }
 
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) {
       return res.status(401).json({ error: 'Invalid email or password.' });
+    }
+
+    if (user.emailVerified === false) {
+      const demoCode = createCode(key);
+      const body = {
+        needsEmailVerification: true,
+        email: key,
+        error: 'Email not verified. Enter the code sent to your email.',
+      };
+      if (process.env.NODE_ENV !== 'production' || process.env.EXPOSE_VERIFY_CODE === 'true' || !process.env.SMTP_HOST) {
+        body.verificationCode = demoCode;
+      }
+      return res.status(403).json(body);
     }
 
     const token = jwt.sign(
@@ -246,6 +334,45 @@ router.patch('/users/:id/block', authenticate, requireRole('admin'), async (req,
   }
 });
 
+// ── Peer block list ───────────────────────────────────────────────────────
+router.get('/blocks', authenticate, async (req, res, next) => {
+  try {
+    const ids = await listBlockedUserIds(req.user.id);
+    res.json({ blockedUserIds: ids });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/blocks', authenticate, async (req, res, next) => {
+  try {
+    const { userId, email } = req.body || {};
+    let targetId = typeof userId === 'string' ? userId : '';
+    if (!targetId && typeof email === 'string' && email.trim()) {
+      const u = await findByEmail(email.trim().toLowerCase());
+      if (!u) return res.status(404).json({ error: 'User not found for that listing owner.' });
+      targetId = u.id;
+    }
+    if (!targetId) {
+      return res.status(400).json({ error: 'userId or email is required.' });
+    }
+    const ids = await blockUser(req.user.id, targetId);
+    res.status(201).json({ blockedUserIds: ids, blockedUserId: targetId });
+  } catch (err) {
+    if (err.status) return res.status(err.status).json({ error: err.message });
+    next(err);
+  }
+});
+
+router.delete('/blocks/:userId', authenticate, async (req, res, next) => {
+  try {
+    const ids = await unblockUser(req.user.id, req.params.userId);
+    res.json({ blockedUserIds: ids });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // ── GET /api/auth/me ──────────────────────────────────────────────────────
 router.get('/me', authenticate, async (req, res, next) => {
   try {
@@ -264,6 +391,20 @@ router.put('/me', authenticate, async (req, res, next) => {
     const user = await updateUser(req.user.id, { name, phone, preferredLanguage });
     if (!user) return res.status(404).json({ error: 'User not found.' });
     res.json(mapUser(user));
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── DELETE /api/auth/me — self-serve account deletion (Apple 5.1.1v) ───────
+router.delete('/me', authenticate, async (req, res, next) => {
+  try {
+    if (req.user.role === 'admin') {
+      return res.status(400).json({ error: 'Admin accounts cannot be self-deleted. Contact operations.' });
+    }
+    const ok = await deleteUser(req.user.id);
+    if (!ok) return res.status(404).json({ error: 'User not found.' });
+    res.json({ success: true, message: 'Account deleted.' });
   } catch (err) {
     next(err);
   }

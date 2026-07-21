@@ -11,12 +11,21 @@ import {
   ChevronRight,
   Eye,
   Zap,
+  FileText,
+  HelpCircle,
+  Mail,
+  Trash2,
+  ScrollText,
+  BookOpen,
+  CreditCard,
 } from 'lucide-react';
 import { EditProfileModal } from './EditProfileModal';
 import { NotificationCenterModal } from './NotificationCenterModal';
+import { LegalDocModal } from './LegalDocModal';
 import { canManageListing, canPostJobs, getUserListing, listingKind } from '../utils/listingAccess';
 import { countUnreadNotifications, filterNotificationsForUser } from '../utils/notifications';
 import { isNativeApp } from '../lib/oauth';
+import { LegalDocId, SUPPORT_MAILTO } from '../data/legalContent';
 
 interface AccountTabProps {
   onSwitchTab: (tabId: string) => void;
@@ -29,6 +38,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab }) => {
     setTheme,
     currentUser,
     signOut,
+    deleteAccount,
     businesses,
     hiringActive,
     setHiringActive,
@@ -42,8 +52,9 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab }) => {
   const t = TRANSLATIONS[language];
 
   const [showNotificationsModal, setShowNotificationsModal] = useState(false);
-  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [legalDoc, setLegalDoc] = useState<LegalDocId | null>(null);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [deleteBusy, setDeleteBusy] = useState(false);
 
   const myListing = getUserListing(currentUser, businesses);
   const canManage = canManageListing(myListing);
@@ -88,6 +99,25 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab }) => {
 
   const handleSignOut = () => {
     void signOut();
+  };
+
+  const handleDeleteAccount = async () => {
+    if (isAdmin) {
+      alert('Admin accounts cannot be self-deleted.');
+      return;
+    }
+    const ok = confirm(
+      'Permanently delete your ABN account and personal data? This cannot be undone.',
+    );
+    if (!ok) return;
+    const confirmWord = prompt('Type DELETE to confirm:');
+    if (confirmWord !== 'DELETE') return;
+    setDeleteBusy(true);
+    const result = await deleteAccount();
+    setDeleteBusy(false);
+    if (!result.success) {
+      alert(result.error || 'Could not delete account.');
+    }
   };
 
   const handleHiringToggle = async () => {
@@ -310,21 +340,46 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab }) => {
           <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-white" />
         </button>
 
-        {/* Privacy modal trigger */}
-        <button
-          onClick={() => setShowPrivacyModal(true)}
+        {/* Legal & support */}
+        {(
+          [
+            { id: 'privacy' as const, label: 'Privacy Policy', Icon: Lock },
+            { id: 'terms' as const, label: 'Terms & Conditions', Icon: FileText },
+            { id: 'guidelines' as const, label: 'Community Guidelines', Icon: BookOpen },
+            { id: 'subscription' as const, label: 'Subscription Terms', Icon: CreditCard },
+            { id: 'disclaimers' as const, label: 'Business & Job Disclaimers', Icon: ScrollText },
+            { id: 'faq' as const, label: 'FAQ', Icon: HelpCircle },
+          ] as const
+        ).map(({ id, label, Icon }) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => setLegalDoc(id)}
+            className="w-full flex items-center justify-between p-4 hover:bg-stone-900/10 transition-colors group"
+            id={`row-legal-${id}`}
+          >
+            <span className="flex items-center gap-3 text-xs text-gray-300 font-semibold">
+              <Icon className="w-4.5 h-4.5 text-[#FFA048]" />
+              {label}
+            </span>
+            <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-white" />
+          </button>
+        ))}
+
+        <a
+          href={SUPPORT_MAILTO}
           className="w-full flex items-center justify-between p-4 hover:bg-stone-900/10 transition-colors group"
-          id="row-privacy-trigger"
+          id="row-contact-support"
         >
           <span className="flex items-center gap-3 text-xs text-gray-300 font-semibold">
-            <Lock className="w-4.5 h-4.5 text-[#FFA048]" />
-            {t.privacy}
+            <Mail className="w-4.5 h-4.5 text-[#FFA048]" />
+            Contact Support
           </span>
           <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-white" />
-        </button>
+        </a>
       </div>
 
-      {/* SIGN OUT LINK (As printed in Screenshot #5) */}
+      {/* SIGN OUT */}
       <button
           onClick={handleSignOut}
           className="w-full flex items-center gap-3 p-4 px-5 rounded-2xl border border-red-500/10 bg-red-950/15 hover:bg-red-950/25 text-red-400 font-semibold text-xs transition-colors"
@@ -334,7 +389,19 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab }) => {
           {t.signOut}
         </button>
 
-      {/* SUB-MODAL 1: SYSTEM NOTIFICATIONS POPUP */}
+      {!isAdmin && (
+        <button
+          type="button"
+          onClick={handleDeleteAccount}
+          disabled={deleteBusy}
+          className="w-full flex items-center gap-3 p-4 px-5 rounded-2xl border border-red-500/20 bg-red-950/25 hover:bg-red-950/40 text-red-300 font-semibold text-xs transition-colors disabled:opacity-60"
+          id="btn-account-delete"
+        >
+          <Trash2 className="w-4 h-4 text-red-400" />
+          {deleteBusy ? 'Deleting…' : 'Delete Account'}
+        </button>
+      )}
+
       {showNotificationsModal && (
         <NotificationCenterModal
           notifications={activeNotifs}
@@ -346,35 +413,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab }) => {
         />
       )}
 
-      {/* SUB-MODAL 2: PRIVACY GUIDELINE STATEMENT */}
-      {showPrivacyModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="relative w-full max-w-md rounded-3xl bg-[#13110E] border border-[#2D2319] p-6 text-[#F4E3D7]">
-            <button
-              onClick={() => setShowPrivacyModal(false)}
-              className="absolute top-4 right-4 p-1 rounded-full text-xs text-gray-500 hover:text-white"
-            >
-              ✕
-            </button>
-
-            <h3 className="text-sm font-black uppercase tracking-wider text-[#FFA048] mb-3 flex items-center gap-2">
-              <Lock className="w-5 h-5 text-[#FFA048]" /> Privacy & Security Policy
-            </h3>
-
-            <div className="text-xs text-gray-400 leading-relaxed font-sans space-y-3.5 max-h-[300px] overflow-y-auto pr-1">
-              <p>
-                <strong>Community Directory Model:</strong> The Ahle Bait Network (ABN) Business Directory application strictly operates as an index to discover verified local Shia-owned shops and professionals.
-              </p>
-              <p>
-                <strong>No Intermediary Transactions:</strong> To guarantee absolute security, the system does not processes credit cards for services or collect direct user transaction streams. All communication happens outside the platform (direct calling or WhatsApp deep-linking).
-              </p>
-              <p>
-                <strong>Data Encryption:</strong> All account emails and telephone details are protected using browser key hashes. Your listings are protected and can only be altered by you or platform administrators.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+      {legalDoc && <LegalDocModal docId={legalDoc} onClose={() => setLegalDoc(null)} />}
 
     </div>
   );

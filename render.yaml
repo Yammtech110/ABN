@@ -1,19 +1,50 @@
-# Render Blueprint — Static Website only (frontend)
-# API stays separate: https://abn-2-0.onrender.com
+# Render Blueprint — Web Service (API) + Static Site (Admin / Web app)
+# Repo: https://github.com/Syed-Irtiza89/ABN-2.0
 #
-# Deploy:
-#   Render Dashboard → New → Blueprint → connect repo → this render.yaml
+# New account deploy:
+#   1) New → Blueprint → connect ABN-2.0 → this render.yaml
+#   OR create the two services manually (see comments below)
 #
-# Or manual:
-#   New → Static Site
-#   Name: abn-community-web
-#   Root Directory: (leave blank / repo root)
-#   Build Command: npm install && npm run build
-#   Publish Directory: dist
+# After first deploy:
+#   - Copy API URL (e.g. https://abn-api-xxxx.onrender.com)
+#   - Set Static Site env VITE_API_BASE_URL to that API URL → Redeploy static
+#   - Set Web Service FRONTEND_URL + CORS_ORIGINS to the Static Site URL
 
 services:
+  # ── 1) Backend API ───────────────────────────────────────────────────────
   - type: web
-    name: abn-community-web
+    name: abn-api
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: STORAGE_MODE
+        value: supabase
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: PORT
+        value: 10000
+      # Fill these in Dashboard (or Blueprint prompt) — do not leave blank
+      - key: JWT_SECRET
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+
+  # ── 2) Website + Admin panel (Static) ────────────────────────────────────
+  - type: web
+    name: abn-web
     runtime: static
     plan: free
     buildCommand: npm install && npm run build
@@ -23,9 +54,10 @@ services:
         source: /*
         destination: /index.html
     envVars:
+      # After API is live, set this to your API URL and redeploy static
       - key: VITE_API_BASE_URL
-        value: https://abn-2-0.onrender.com
+        sync: false
       - key: VITE_SUPABASE_URL
-        value: https://zxyofmljbxqqmgwbfkcm.supabase.co
+        sync: false
       - key: VITE_SUPABASE_ANON_KEY
-        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4eW9mbWxqYnhxcW1nd2Jma2NtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2ODcwNjgsImV4cCI6MjA5OTI2MzA2OH0.WTVXuC2xrg1HNkOh7lFKsAdcgBdIZ_CpsfDJEJ4G2c4
+        sync: false

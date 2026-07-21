@@ -1309,9 +1309,15 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                 </div>
                 <p className="text-[11px] text-gray-400 leading-relaxed">
                   {language === 'en'
-                    ? `Your listing stays active and visible to all community members for 30 days. Auto-renews monthly.`
+                    ? `Your listing stays active and visible to all community members for 30 days. Auto-renews monthly unless cancelled in your Apple ID or Google Play subscription settings at least 24 hours before renewal.`
                     : 'يبقى إدراجك نشطاً وظاهراً لجميع أفراد المجتمع لمدة 30 يوماً. يتجدد تلقائياً كل شهر.'}
                 </p>
+                <a href="/legal/subscription.html" target="_blank" rel="noopener noreferrer" className="text-[10px] text-[#FFA048] font-bold hover:underline">
+                  Read Subscription Terms
+                </a>
+                <a href="/legal/privacy.html" target="_blank" rel="noopener noreferrer" className="block text-[10px] text-gray-500 hover:text-[#FFA048]">
+                  Privacy Policy
+                </a>
               </div>
 
               {/* HOW PAYMENT WORKS — clarity box */}

@@ -16,6 +16,7 @@ import { JobBoardScreen } from './components/JobBoardScreen';
 import { Business } from './types';
 import { getUserListing, canPostJobs } from './utils/listingAccess';
 import { isNativeApp } from './lib/oauth';
+import { AbnLogo } from './components/AbnLogo';
 import {
   Home,
   Search,
@@ -381,7 +382,7 @@ function DirectoryAppContent() {
       <header className="border-b border-[#2D2319] bg-[#0A0705]/80 backdrop-blur-md p-4 sticky top-0 z-40 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-black text-[#FFA048] tracking-widest uppercase">ABN</h1>
+            <AbnLogo size="sm" />
             <div className="hidden sm:block min-w-0">
               <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest truncate">{t.tagline}</p>
             </div>

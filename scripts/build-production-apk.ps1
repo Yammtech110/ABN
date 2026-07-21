@@ -1,4 +1,4 @@
-# Production APK build — backend must be live on Render first
+# Production APK build - backend must be live on Render first
 # Usage: .\scripts\build-production-apk.ps1
 #        .\scripts\build-production-apk.ps1 -ApiUrl "https://your-api.onrender.com"
 
@@ -27,25 +27,29 @@ if ($ApiUrl) {
 }
 
 if (-not (Test-Path (Join-Path $Root ".env.production"))) {
-  Write-Error "Missing .env.production — copy .env.production.example and set VITE_API_BASE_URL"
+  Write-Error "Missing .env.production - copy .env.production.example and set VITE_API_BASE_URL"
 }
 
 Write-Host "Building web bundle (production)..."
 npm run build
+if ($LASTEXITCODE -ne 0) { throw "npm run build failed" }
 
 Write-Host "Syncing Capacitor (production mode)..."
 $env:CAPACITOR_PRODUCTION = "true"
 npx cap sync android
+if ($LASTEXITCODE -ne 0) { throw "cap sync failed" }
 
 Write-Host "Building APK..."
 $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
+$env:ANDROID_HOME = "C:\Users\hp\AppData\Local\Android\Sdk"
 Set-Location (Join-Path $Root "android")
 .\gradlew.bat assembleDebug
+if ($LASTEXITCODE -ne 0) { throw "gradle assembleDebug failed" }
 
 $apkSrc = Join-Path $Root "android\app\build\outputs\apk\debug\app-debug.apk"
 $apkDst = Join-Path $env:USERPROFILE "Desktop\ABN-Community-App-Global.apk"
 Copy-Item -Force $apkSrc $apkDst
 
 Write-Host ""
-Write-Host "Done! Global APK:" $apkDst
-Write-Host "Share this APK with clients in any country — they all hit your cloud backend."
+Write-Host "Done! Global APK: $apkDst"
+Write-Host "Share this APK with clients - they all hit your cloud backend."

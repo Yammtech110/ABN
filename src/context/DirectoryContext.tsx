@@ -150,11 +150,15 @@ interface DirectoryContextType {
   isAuthenticated:  boolean;
   currentUser:      UserProfile | null;
   apiToken:         string | null;
-  apiLogin:         (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  apiLogin:         (email: string, password: string) => Promise<{ success: boolean; error?: string; needsEmailVerification?: boolean; email?: string; verificationCode?: string }>;
   signInWithGoogle: () => Promise<{ success: boolean; error?: string }>;
   signInWithApple:  () => Promise<{ success: boolean; error?: string }>;
   oauthAvailable:   boolean;
-  registerAccount:  (payload: { name: string; email: string; password: string; phone: string }) => Promise<{ success: boolean; error?: string }>;
+  registerAccount:  (payload: { name: string; email: string; password: string; phone: string }) => Promise<{ success: boolean; error?: string; needsEmailVerification?: boolean; email?: string; verificationCode?: string }>;
+  verifyEmailCode:  (email: string, code: string) => Promise<{ success: boolean; error?: string }>;
+  resendVerificationCode: (email: string) => Promise<{ success: boolean; error?: string; verificationCode?: string }>;
+  deleteAccount:    () => Promise<{ success: boolean; error?: string }>;
+  blockListingOwner: (ownerEmailOrId: string) => Promise<{ success: boolean; error?: string }>;
   signOut:          () => Promise<void>;
   updateUserProfile: (updates: Partial<Pick<UserProfile, 'name' | 'phone' | 'preferredLanguage'>>) => Promise<{ success: boolean; error?: string }>;
 
@@ -725,7 +729,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const signInWithApple = () => signInWithOAuth('apple');
 
   /** Sign in — backend JWT first (roles), Supabase fallback for OAuth-only accounts */
-  const apiLogin = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+  const apiLogin = async (email: string, password: string): Promise<{ success: boolean; error?: string; needsEmailVerification?: boolean; email?: string; verificationCode?: string }> => {
     const trimmedEmail = email.trim().toLowerCase();
 
     try {
@@ -735,6 +739,16 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         body: JSON.stringify({ email: trimmedEmail, password }),
       });
       const data = await res.json();
+
+      if (data.needsEmailVerification) {
+        return {
+          success: false,
+          needsEmailVerification: true,
+          email: data.email || trimmedEmail,
+          verificationCode: data.verificationCode,
+          error: data.error || 'Email not verified.',
+        };
+      }
 
       if (res.ok && data.token) {
         const user = data.user as { id: string; email: string; phone: string; name: string; role: string; preferredLanguage?: string };
@@ -793,32 +807,13 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     email: string;
     password: string;
     phone: string;
-  }): Promise<{ success: boolean; error?: string }> => {
+  }): Promise<{ success: boolean; error?: string; needsEmailVerification?: boolean; email?: string; verificationCode?: string }> => {
     const trimmedEmail = payload.email.trim().toLowerCase();
     const trimmedName = payload.name.trim();
     const trimmedPhone = payload.phone.trim();
 
     if (!trimmedName || !trimmedEmail || !trimmedPhone || !payload.password) {
       return { success: false, error: 'All fields are required.' };
-    }
-
-    // Web: optional Supabase sign-up. Native APK uses backend only (Supabase is server-side).
-    if (supabase && !isNativeApp()) {
-      const { error } = await supabase.auth.signUp({
-        email: trimmedEmail,
-        password: payload.password,
-        options: {
-          data: {
-            name: trimmedName,
-            phone: trimmedPhone,
-            role: 'customer',
-            preferredLanguage: 'en',
-          },
-        },
-      });
-      if (error) {
-        return { success: false, error: error.message };
-      }
     }
 
     try {
@@ -836,19 +831,26 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       const data = await res.json();
 
       if (!res.ok) {
-        const exists = res.status === 409;
-        if (isNativeApp() || !supabase || !exists) {
-          return { success: false, error: data.error || 'Registration failed.' };
-        }
-      } else {
-        safeSetItem('shia_dir_token', data.token);
-        setApiToken(data.token);
-        const user = data.user as { id: string; email: string; phone: string; name: string; role: string };
-        applyBackendSession(data.token, user);
+        return { success: false, error: data.error || 'Registration failed.' };
+      }
+
+      if (data.needsEmailVerification) {
+        return {
+          success: true,
+          needsEmailVerification: true,
+          email: data.email || trimmedEmail,
+          verificationCode: data.verificationCode,
+        };
+      }
+
+      if (data.token && data.user) {
+        applyBackendSession(data.token, data.user);
         await refreshDirectory();
         await refreshFavorites(data.token);
         return { success: true };
       }
+
+      return { success: true };
     } catch {
       return {
         success: false,
@@ -857,15 +859,83 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           : 'Cannot reach server. Make sure the backend is running.',
       };
     }
+  };
 
-    if (supabase && !isNativeApp()) {
-      const loginResult = await apiLogin(trimmedEmail, payload.password);
-      return loginResult.success
-        ? { success: true }
-        : { success: false, error: loginResult.error || 'Account created. Please sign in.' };
+  const verifyEmailCode = async (email: string, code: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const res = await apiFetch('/api/auth/verify-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim().toLowerCase(), code: code.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.token) {
+        return { success: false, error: data.error || 'Verification failed.' };
+      }
+      applyBackendSession(data.token, data.user);
+      await refreshDirectory();
+      await refreshFavorites(data.token);
+      return { success: true };
+    } catch {
+      return { success: false, error: 'Cannot reach server.' };
     }
+  };
 
-    return { success: true };
+  const resendVerificationCode = async (email: string): Promise<{ success: boolean; error?: string; verificationCode?: string }> => {
+    try {
+      const res = await apiFetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+      });
+      const data = await res.json();
+      if (!res.ok) return { success: false, error: data.error || 'Could not resend code.' };
+      return { success: true, verificationCode: data.verificationCode };
+    } catch {
+      return { success: false, error: 'Cannot reach server.' };
+    }
+  };
+
+  const deleteAccount = async (): Promise<{ success: boolean; error?: string }> => {
+    if (!apiToken) return { success: false, error: 'Not signed in.' };
+    try {
+      const res = await apiFetch('/api/auth/me', {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${apiToken}` },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) return { success: false, error: data.error || 'Could not delete account.' };
+      await signOut();
+      return { success: true };
+    } catch {
+      return { success: false, error: 'Cannot reach server.' };
+    }
+  };
+
+  const blockListingOwner = async (ownerEmailOrId: string): Promise<{ success: boolean; error?: string }> => {
+    if (!apiToken) return { success: false, error: 'Sign in to block.' };
+    try {
+      const looksLikeEmail = ownerEmailOrId.includes('@');
+      const res = await apiFetch('/api/auth/blocks', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(
+          looksLikeEmail ? { email: ownerEmailOrId } : { userId: ownerEmailOrId },
+        ),
+      });
+      const data = await res.json();
+      if (!res.ok) return { success: false, error: data.error || 'Could not block.' };
+      // Hide their listings locally
+      setBusinesses((prev) =>
+        prev.filter((b) => b.ownerId !== ownerEmailOrId && b.ownerId !== data.blockedUserId),
+      );
+      return { success: true };
+    } catch {
+      return { success: false, error: 'Cannot reach server.' };
+    }
   };
 
   const signOut = async (): Promise<void> => {
@@ -1369,7 +1439,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // ── Provider ──────────────────────────────────────────────────────────────
   return (
     <DirectoryContext.Provider value={{
-      authReady, isAuthenticated, currentUser, apiToken, apiLogin, signInWithGoogle, signInWithApple, oauthAvailable: isSupabaseConfigured, registerAccount, signOut, updateUserProfile,
+      authReady, isAuthenticated, currentUser, apiToken, apiLogin, signInWithGoogle, signInWithApple, oauthAvailable: isSupabaseConfigured, registerAccount, verifyEmailCode, resendVerificationCode, deleteAccount, blockListingOwner, signOut, updateUserProfile,
       language, theme, setTheme,
       categories, addCategory, removeCategory, refreshCategories,
       businesses, addBusiness, updateBusiness, removeBusiness, refreshDirectory,

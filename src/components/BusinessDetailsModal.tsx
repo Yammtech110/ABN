@@ -59,6 +59,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
   const {
     language, reviews, currentUser, favorites, toggleFavorite,
     fetchReviewsForBusiness, submitReview, apiToken, isAuthenticated,
+    blockListingOwner,
   } = useDirectory();
   const t = TRANSLATIONS[language];
 
@@ -75,6 +76,8 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
   const [reportError, setReportError] = useState('');
   const [reportSuccess, setReportSuccess] = useState('');
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+  const [blockBusy, setBlockBusy] = useState(false);
+  const [blockMsg, setBlockMsg] = useState('');
 
   useEffect(() => {
     fetchReviewsForBusiness(business.id);
@@ -86,6 +89,22 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
   const isFav = favorites.includes(business.id);
   const isListingOwner = currentUser?.id === business.ownerId;
   const canReportListing = isAuthenticated && !isListingOwner && currentUser?.role !== 'admin';
+
+  const handleBlockOwner = async () => {
+    if (!business.ownerId) return;
+    const ok = confirm('Block this listing owner? Their listings will be hidden for you.');
+    if (!ok) return;
+    setBlockBusy(true);
+    setBlockMsg('');
+    const result = await blockListingOwner(business.ownerId);
+    setBlockBusy(false);
+    if (!result.success) {
+      setBlockMsg(result.error || 'Could not block.');
+      return;
+    }
+    setBlockMsg('Owner blocked. Closing…');
+    setTimeout(() => onClose(), 800);
+  };
 
   const handleToggleFavorite = async () => {
     const result = await toggleFavorite(business.id);
@@ -478,6 +497,10 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                   {language === 'en' ? 'Report This Listing' : 'الإبلاغ عن هذا النشاط'}
                 </h3>
               </div>
+              <p className="text-[10px] text-gray-500 leading-relaxed">
+                ABN is a directory only — not an endorsement. See Community Guidelines in Account. Deals happen outside the app.
+              </p>
+              {blockMsg && <p className="text-[10px] text-amber-400">{blockMsg}</p>}
 
               {!isAuthenticated ? (
                 <p className="text-xs text-gray-500">
@@ -515,6 +538,15 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                     {isSubmittingReport
                       ? (language === 'en' ? 'Submitting...' : 'جاري الإرسال...')
                       : (language === 'en' ? 'Submit Report to Admin' : 'إرسال البلاغ للإدارة')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleBlockOwner}
+                    disabled={blockBusy}
+                    className="w-full py-2.5 rounded-xl text-xs font-bold border border-red-900/40 text-red-300 hover:bg-red-950/30 disabled:opacity-50"
+                    id="btn-block-owner"
+                  >
+                    {blockBusy ? 'Blocking…' : 'Block This Owner'}
                   </button>
                 </form>
               )}

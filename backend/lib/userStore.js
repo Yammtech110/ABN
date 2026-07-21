@@ -109,6 +109,8 @@ async function updateUser(id, updates) {
   if (updates.name !== undefined) patch.name = updates.name;
   if (updates.phone !== undefined) patch.phone = updates.phone;
   if (updates.preferredLanguage !== undefined) patch.preferred_language = updates.preferredLanguage;
+  if (updates.emailVerified !== undefined) patch.email_verified = Boolean(updates.emailVerified);
+  if (updates.passwordHash !== undefined) patch.password_hash = updates.passwordHash;
 
   const { data, error } = await getAdmin()
     .from('app_users')
@@ -197,6 +199,7 @@ async function seedDemoAccounts() {
       role:              d.role,
       passwordHash,
       preferredLanguage: 'en',
+      emailVerified:     true,
     };
     await createUser(record);
   }
@@ -205,11 +208,29 @@ async function seedDemoAccounts() {
   console.log(`[db] Auth ready (${mode}) — ${users.size} accounts loaded`);
 }
 
+async function deleteUser(id) {
+  const existing = await findById(id);
+  if (!existing) return false;
+
+  if (!isSupabaseStorage()) {
+    users.delete(existing.email);
+    memoryBlockedById.delete(id);
+    return true;
+  }
+
+  const { error } = await getAdmin().from('app_users').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+  users.delete(existing.email);
+  memoryBlockedById.delete(id);
+  return true;
+}
+
 module.exports = {
   findByEmail,
   findById,
   createUser,
   updateUser,
+  deleteUser,
   listAllUsers,
   setUserBlocked,
   seedDemoAccounts,

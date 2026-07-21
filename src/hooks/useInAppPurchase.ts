@@ -30,14 +30,20 @@ const isNativeApp = (): boolean => {
 /**
  * Initiate a subscription purchase.
  * On native (Android/iOS): opens the Google Play / Apple payment sheet.
- * On web: simulates success so you can test the flow in the browser.
+ * On web production: blocked (memberships must use store billing on device).
+ * On web dev: simulates success for local testing only.
  */
 export const purchaseSubscription = async (
   productId: IAPProductId
 ): Promise<PurchaseResult> => {
   if (!isNativeApp()) {
-    // Web / dev fallback — simulate a successful purchase
-    await new Promise((r) => setTimeout(r, 1500)); // simulate network delay
+    if (import.meta.env.PROD) {
+      return {
+        success: false,
+        error: 'Subscriptions must be purchased in the iOS or Android app via App Store / Google Play.',
+      };
+    }
+    await new Promise((r) => setTimeout(r, 1500));
     return {
       success: true,
       transactionId: `WEB-SIM-${Date.now()}`,

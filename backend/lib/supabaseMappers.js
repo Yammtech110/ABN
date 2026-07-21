@@ -131,6 +131,10 @@ const mapUserFromDb = (row) => ({
   passwordHash:      row.password_hash,
   preferredLanguage: row.preferred_language || 'en',
   isBlocked:         Boolean(row.is_blocked),
+  // Missing column / legacy rows → treat as verified
+  emailVerified:     row.email_verified === undefined || row.email_verified === null
+    ? true
+    : Boolean(row.email_verified),
 });
 
 const mapUserToDb = (user) => ({
@@ -141,6 +145,8 @@ const mapUserToDb = (user) => ({
   role:               user.role,
   password_hash:      user.passwordHash,
   preferred_language: user.preferredLanguage || 'en',
+  ...(user.emailVerified !== undefined ? { email_verified: Boolean(user.emailVerified) } : {}),
+  ...(user.isBlocked !== undefined ? { is_blocked: Boolean(user.isBlocked) } : {}),
 });
 
 module.exports = {

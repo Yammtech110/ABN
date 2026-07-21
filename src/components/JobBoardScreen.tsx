@@ -80,6 +80,10 @@ export const JobBoardScreen: React.FC<JobBoardScreenProps> = ({ onBack, initialJ
           </h2>
         </div>
 
+        <div className="p-3.5 rounded-2xl bg-[#1C130D]/75 border border-[#3D2C1E]/50 text-[11px] text-amber-400/90 leading-relaxed" id="job-board-disclaimer">
+          Job posts are provided by third-party businesses. ABN is not the employer or recruiter and does not guarantee outcomes. Contact employers directly.
+        </div>
+
         <div className="p-5 rounded-3xl bg-[#13110E] border border-[#2D2319] space-y-5">
           {/* Business identity header */}
           <div className="flex items-center gap-3">
@@ -167,6 +171,10 @@ export const JobBoardScreen: React.FC<JobBoardScreenProps> = ({ onBack, initialJ
             {publicJobs.length} {language === 'en' ? `active posting${publicJobs.length !== 1 ? 's' : ''} across the directory` : 'إعلان نشط في الدليل'}
           </p>
         </div>
+      </div>
+
+      <div className="p-3.5 rounded-2xl bg-[#1C130D]/75 border border-[#3D2C1E]/50 text-[11px] text-amber-400/90 leading-relaxed" id="job-board-list-disclaimer">
+        Job posts are provided by third-party businesses. ABN is not the employer or recruiter and does not guarantee outcomes.
       </div>
 
       {/* Category filter pills */}
