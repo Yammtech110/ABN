@@ -16,6 +16,7 @@ import { EditProfileModal } from './EditProfileModal';
 import { NotificationCenterModal } from './NotificationCenterModal';
 import { canManageListing, canPostJobs, getUserListing, listingKind } from '../utils/listingAccess';
 import { countUnreadNotifications, filterNotificationsForUser } from '../utils/notifications';
+import { isNativeApp } from '../lib/oauth';
 
 interface AccountTabProps {
   onSwitchTab: (tabId: string) => void;
@@ -131,6 +132,17 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab }) => {
             </div>
           </div>
         </div>
+
+        {isAdmin && isNativeApp() && (
+          <div className="p-3.5 rounded-2xl bg-[#1C130D]/75 border border-[#3D2C1E]/50" id="admin-web-only-note">
+            <p className="text-[11px] text-amber-400 leading-relaxed flex items-start gap-2">
+              <Shield className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+              <span>
+                Admin tools are available on the web app only. Changes you make there sync to Android and iOS automatically.
+              </span>
+            </p>
+          </div>
+        )}
 
         {!isAdmin && (
           <>

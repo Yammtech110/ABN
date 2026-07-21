@@ -14,7 +14,8 @@ import { AdminPanelTab } from './components/AdminPanelTab';
 import { JobManagementScreen } from './components/JobManagementScreen';
 import { JobBoardScreen } from './components/JobBoardScreen';
 import { Business } from './types';
-import { getUserListing, canPostJobs } from '../utils/listingAccess';
+import { getUserListing, canPostJobs } from './utils/listingAccess';
+import { isNativeApp } from './lib/oauth';
 import {
   Home,
   Search,
@@ -141,10 +142,10 @@ function TabContent({
         </TabView>
       )}
 
-      {activeTab === 'admin' && (
+      {/* Admin panel — web browser only (hidden on Android/iOS native builds) */}
+      {activeTab === 'admin' && !isNativeApp() && (
         <TabView tabKey="admin">
           <div className="space-y-5">
-            {/* Prominent back button header */}
             <div className="flex items-center gap-3 pb-3 border-b border-[#2D2319]">
               <button
                 onClick={() => setActiveTab('account')}
@@ -169,20 +170,21 @@ function BottomNav({
   setActiveTab,
   setSearchQueryText,
   t,
-  isAdmin,
+  showAdminPanel,
 }: {
   activeTab: string;
   setActiveTab: (t: string) => void;
   setSearchQueryText: (q: string) => void;
   t: Record<string, string>;
-  isAdmin?: boolean;
+  /** Admin tab only on web — never on Android/iOS native builds */
+  showAdminPanel?: boolean;
 }) {
   const isAccountActive = activeTab === 'account' || activeTab === 'portal-management' || activeTab === 'job-management';
 
   return (
     <nav className="flex justify-between items-center h-full px-2">
 
-      {!isAdmin && (
+      {!showAdminPanel && (
         <>
           <button
             onClick={() => { setSearchQueryText(''); setActiveTab('home'); }}
@@ -211,7 +213,7 @@ function BottomNav({
         </>
       )}
 
-      {isAdmin && (
+      {showAdminPanel && (
         <button
           onClick={() => setActiveTab('admin')}
           className={`flex flex-col items-center justify-center flex-1 py-2 transition-all ${activeTab === 'admin' ? 'text-[#FFA048] scale-110 font-black' : 'text-gray-500 hover:text-white'}`}
@@ -225,7 +227,7 @@ function BottomNav({
       {/* Account tab — always visible; highlights for account, portal-management, and admin sub-pages */}
       <button
         onClick={() => setActiveTab('account')}
-        className={`flex flex-col items-center justify-center flex-1 py-2 transition-all ${isAccountActive ? 'text-[#FFA048] scale-110 font-black' : 'text-gray-500 hover:text-white'}`}
+        className={`flex flex-col items-center justify-center flex-1 py-2 transition-all ${isAccountActive || activeTab === 'admin' ? 'text-[#FFA048] scale-110 font-black' : 'text-gray-500 hover:text-white'}`}
         id="tab-btn-account"
       >
         <User className="w-5 h-5 mb-0.5" />
@@ -258,13 +260,15 @@ function DirectoryAppContent() {
   }, []);
 
   const isAdmin = currentUser?.role === 'admin';
+  // Admin controls stay on the web app only; native apps still receive synced directory data.
+  const showAdminPanel = isAdmin && !isNativeApp();
   const myListing = getUserListing(currentUser, businesses);
 
   const prevRoleRef = useRef(currentUser?.role);
   useEffect(() => {
     const prev = prevRoleRef.current;
     const next = currentUser?.role;
-    if (next === 'admin' && prev !== 'admin') {
+    if (next === 'admin' && prev !== 'admin' && !isNativeApp()) {
       setActiveTab('admin');
     }
     prevRoleRef.current = next;
@@ -274,6 +278,13 @@ function DirectoryAppContent() {
     document.documentElement.setAttribute('dir', 'ltr');
     document.documentElement.setAttribute('lang', 'en');
   }, []);
+
+  // Native builds never open the admin panel — send admins to the consumer home feed.
+  useEffect(() => {
+    if (isNativeApp() && activeTab === 'admin') {
+      setActiveTab('home');
+    }
+  }, [activeTab]);
 
   // Job management is only for approved business listings
   useEffect(() => {
@@ -343,7 +354,7 @@ function DirectoryAppContent() {
               setActiveTab={setActiveTab}
               setSearchQueryText={setSearchQueryText}
               t={t as unknown as Record<string, string>}
-              isAdmin={isAdmin}
+              showAdminPanel={showAdminPanel}
             />
           </div>
         </div>
@@ -417,7 +428,7 @@ function DirectoryAppContent() {
                     setActiveTab={setActiveTab}
                     setSearchQueryText={setSearchQueryText}
                     t={t as unknown as Record<string, string>}
-                    isAdmin={isAdmin}
+                    showAdminPanel={showAdminPanel}
                   />
             </div>
 

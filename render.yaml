@@ -1,0 +1,31 @@
+# Render Blueprint — Static Website only (frontend)
+# API stays separate: https://abn-2-0.onrender.com
+#
+# Deploy:
+#   Render Dashboard → New → Blueprint → connect repo → this render.yaml
+#
+# Or manual:
+#   New → Static Site
+#   Name: abn-community-web
+#   Root Directory: (leave blank / repo root)
+#   Build Command: npm install && npm run build
+#   Publish Directory: dist
+
+services:
+  - type: web
+    name: abn-community-web
+    runtime: static
+    plan: free
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://abn-2-0.onrender.com
+      - key: VITE_SUPABASE_URL
+        value: https://zxyofmljbxqqmgwbfkcm.supabase.co
+      - key: VITE_SUPABASE_ANON_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4eW9mbWxqYnhxcW1nd2Jma2NtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM2ODcwNjgsImV4cCI6MjA5OTI2MzA2OH0.WTVXuC2xrg1HNkOh7lFKsAdcgBdIZ_CpsfDJEJ4G2c4

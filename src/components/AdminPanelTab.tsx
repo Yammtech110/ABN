@@ -32,6 +32,7 @@ import {
   listingNeedsPayment,
 } from '../utils/platformStats';
 import { isPendingSubmission } from '../utils/listingAccess';
+import { isNativeApp } from '../lib/oauth';
 
 export const AdminPanelTab: React.FC = () => {
   const {
@@ -562,6 +563,18 @@ export const AdminPanelTab: React.FC = () => {
       return a.name.localeCompare(b.name);
     });
   }, [businesses, vendorSearch, bizFilter, payments]);
+
+  if (isNativeApp()) {
+    return (
+      <div className="p-8 text-center rounded-3xl bg-[#13110E] border border-[#2D2319] text-gray-400" id="admin-web-only-state">
+        <ShieldAlert className="w-12 h-12 text-[#FFA048] mx-auto mb-3" />
+        <h3 className="text-sm font-black text-[#FFA048] uppercase tracking-widest">{t.adminPanel}</h3>
+        <p className="text-xs text-gray-500 mt-2 max-w-sm mx-auto leading-relaxed">
+          The admin panel is available only on the web app. Approvals and changes you make there appear automatically in the Android and iOS apps.
+        </p>
+      </div>
+    );
+  }
 
   if (!isAdmin) {
     return (
