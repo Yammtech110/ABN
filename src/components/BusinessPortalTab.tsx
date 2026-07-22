@@ -1497,7 +1497,17 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                 {/* Print confirmation simulation */}
                 <button
                   type="button"
-                  onClick={() => alert(language === 'en' ? 'Receipt generated & copied to community ledger successfully!' : 'تم تحضير إيصال الفاتورة وحفظ المعلومات بنجاح!')}
+                  onClick={() => {
+                    const lines = [
+                      'ABN Membership Receipt',
+                      `Business: ${myBusiness?.name || ''}`,
+                      `Plan: $${planAmount}/mo`,
+                      `Date: ${new Date().toISOString().slice(0, 10)}`,
+                      `Expiry: ${myBusiness?.membershipExpiryDate || ''}`,
+                    ].join('\n');
+                    void navigator.clipboard?.writeText(lines).catch(() => undefined);
+                    window.print();
+                  }}
                   className="mt-5 w-full py-2 bg-[#FFA048] hover:bg-opacity-95 text-black font-extrabold text-xs rounded-xl shadow transition-all active:scale-95"
                 >
                   {language === 'en' ? 'Print Receipt Record' : 'طباعة وحفظ المستند'}

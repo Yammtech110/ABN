@@ -198,7 +198,7 @@ router.get('/:id', async (req, res, next) => {
 });
 
 // ── POST /api/directory ───────────────────────────────────────────────────
-router.post('/', authenticate, requireRole('customer', 'admin'), async (req, res, next) => {
+router.post('/', authenticate, requireRole('customer', 'business', 'service_provider', 'admin'), async (req, res, next) => {
   try {
     const {
       businessName, category, description,
@@ -447,7 +447,7 @@ router.delete('/:id', authenticate, async (req, res, next) => {
 });
 
 // ── PUT /api/directory/:id/hiring ─────────────────────────────────────────
-router.put('/:id/hiring', authenticate, requireRole('customer', 'admin'), async (req, res, next) => {
+router.put('/:id/hiring', authenticate, requireRole('customer', 'business', 'service_provider', 'admin'), async (req, res, next) => {
   try {
     const { isActive } = req.body;
     if (typeof isActive !== 'boolean') {

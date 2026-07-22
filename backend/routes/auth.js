@@ -452,9 +452,8 @@ router.get('/users', authenticate, requireRole('admin'), async (_req, res, next)
   try {
     const allUsers = await listAllUsers();
     const rows = await Promise.all(allUsers.map(async (user) => {
-      const profile = userOwnsDirectoryProfile(user.role)
-        ? await findProfileByEmail(user.email)
-        : null;
+      // Customers can own a directory listing after "Register as Business/Service"
+      const profile = await findProfileByEmail(user.email);
 
       const roleLabel = ROLE_LABELS[user.role] || user.role;
       const listingName = profile?.businessName?.trim() || null;
