@@ -2,9 +2,9 @@ import { Capacitor } from '@capacitor/core';
 
 /**
  * API base URL resolution:
- * - Web production (Vercel Services): same-origin `/api` when VITE_API_BASE_URL is unset.
+ * - Web production: same-origin `/api` when VITE_API_BASE_URL is unset.
  * - Native APK: set VITE_API_BASE_URL in .env.production to your public HTTPS API.
- * - Dev browser: Vite proxy or LAN fallback below.
+ * - Dev browser: Vite proxy.
  */
 function normalizeBaseUrl(raw: string): string {
   let url = raw.trim().replace(/\/+$/, '');
@@ -21,12 +21,10 @@ function resolveApiBaseUrl(): string {
     return normalizeBaseUrl(fromEnv);
   }
 
-  // Dev browser: same-origin /api via Vite proxy (localhost:3000 → backend)
   if (!import.meta.env.PROD && !Capacitor.isNativePlatform()) {
     return '';
   }
 
-  // Production web: Vercel rewrites /api → backend on the same origin
   if (import.meta.env.PROD && !Capacitor.isNativePlatform()) {
     return '';
   }
@@ -47,6 +45,8 @@ export const apiUrl = (path: string): string => {
   return API_BASE_URL ? `${API_BASE_URL}${segment}` : segment;
 };
 
+const DEFAULT_TIMEOUT_MS = 90_000;
+
 export const apiFetch = async (path: string, init?: RequestInit): Promise<Response> => {
   if (!API_BASE_URL && Capacitor.isNativePlatform()) {
     throw new Error(
@@ -54,10 +54,30 @@ export const apiFetch = async (path: string, init?: RequestInit): Promise<Respon
     );
   }
   const url = apiUrl(path);
+  const attempt = async (): Promise<Response> => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
+    try {
+      const externalSignal = init?.signal;
+      if (externalSignal) {
+        if (externalSignal.aborted) controller.abort();
+        else externalSignal.addEventListener('abort', () => controller.abort(), { once: true });
+      }
+      return await fetch(url, { ...init, signal: controller.signal });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  };
+
   try {
-    return await fetch(url, init);
+    return await attempt();
   } catch (err) {
-    console.error(`[api] Network error for ${url}`, err);
-    throw err;
+    console.warn(`[api] First attempt failed for ${url}, retrying…`, err);
+    try {
+      return await attempt();
+    } catch (err2) {
+      console.error(`[api] Network error for ${url}`, err2);
+      throw err2;
+    }
   }
 };
