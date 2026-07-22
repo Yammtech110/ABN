@@ -846,7 +846,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       return {
         success: false,
         error: isNativeApp()
-          ? 'Cannot reach server. Wait 60 seconds and try again — the cloud server may be waking up.'
+          ? 'Cannot reach server. Check mobile data/Wi‑Fi, then try again.'
           : 'Cannot reach server. Make sure the backend is running.',
       };
     }
