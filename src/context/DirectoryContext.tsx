@@ -116,11 +116,33 @@ const normaliseRole = (r: string): UserRole => {
 const AUTH_SOURCE_KEY = 'shia_dir_auth_source';
 const BACKEND_AUTH_SOURCE = 'backend';
 
+/** True when a JWT is missing, malformed, or past exp (30s clock skew). */
+const isJwtUnusable = (token: string | null | undefined): boolean => {
+  if (!token || typeof token !== 'string') return true;
+  const parts = token.split('.');
+  if (parts.length !== 3) return true;
+  try {
+    const json = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const pad = json + '='.repeat((4 - (json.length % 4)) % 4);
+    const payload = JSON.parse(atob(pad)) as { exp?: number };
+    if (typeof payload.exp === 'number' && Date.now() >= payload.exp * 1000 - 30_000) {
+      return true;
+    }
+    return false;
+  } catch {
+    return true;
+  }
+};
+
 const restoreBackendSessionFromStorage = (): { token: string; user: UserProfile } | null => {
-  if (safeGetItem(AUTH_SOURCE_KEY) !== BACKEND_AUTH_SOURCE) return null;
   const token = safeGetItem('shia_dir_token');
   const saved = safeGetItem('shia_dir_user');
   if (!token || !saved) return null;
+  // Prefer explicit backend marker; also accept legacy installs that only stored token+user.
+  const markedBackend = safeGetItem(AUTH_SOURCE_KEY) === BACKEND_AUTH_SOURCE;
+  const looksLikeAppJwt = token.split('.').length === 3 && !isJwtUnusable(token);
+  if (!markedBackend && !looksLikeAppJwt) return null;
+  if (isJwtUnusable(token)) return null;
   try {
     return { token, user: JSON.parse(saved) as UserProfile };
   } catch {
@@ -543,79 +565,124 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) return;
-      const data = await res.json() as { user: { id: string; email: string; phone: string; name: string; role: string; preferredLanguage?: string }; isNewUser?: boolean };
-      setCurrentUser((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          id:                data.user.id || prev.id,
-          name:              data.user.name || prev.name,
-          phone:             data.user.phone || prev.phone,
-          role:              normaliseRole(data.user.role),
-          preferredLanguage: 'en',
-        };
-      });
+      const data = await res.json() as {
+        user: { id: string; email: string; phone: string; name: string; role: string; preferredLanguage?: string };
+        token?: string;
+        isNewUser?: boolean;
+      };
+
+      // Prefer app JWT from oauth-sync (stable for directory/API calls).
+      const apiAuthToken = data.token || token;
+      if (data.token) {
+        applyBackendSession(data.token, data.user);
+      } else {
+        setCurrentUser((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            id:                data.user.id || prev.id,
+            name:              data.user.name || prev.name,
+            phone:             data.user.phone || prev.phone,
+            role:              normaliseRole(data.user.role),
+            preferredLanguage: 'en',
+          };
+        });
+      }
+
       if (data.isNewUser) {
-        if (token) {
-          try {
-            await apiFetch('/api/notifications', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({
-                title: 'Welcome to ABN',
-                message: 'Your account was created successfully.',
-                receiverRole: 'customer',
-              }),
-            });
-          } catch { /**/ }
-        }
+        try {
+          await apiFetch('/api/notifications', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${apiAuthToken}`,
+            },
+            body: JSON.stringify({
+              title: 'Welcome to ABN',
+              message: 'Your account was created successfully.',
+              receiverRole: 'customer',
+            }),
+          });
+        } catch { /**/ }
       }
       await refreshDirectory();
-      await refreshPayments(token, normaliseRole(data.user.role));
-      await refreshFavorites(token);
+      await refreshPayments(apiAuthToken, normaliseRole(data.user.role));
+      await refreshFavorites(apiAuthToken);
     } catch {
       console.warn('[ABN Directory] OAuth user sync failed.');
     }
-  }, [language]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [applyBackendSession, language]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Supabase session listener — auth gateway source of truth ───────────────
   useEffect(() => {
-    // Native APK: email/password uses Render backend JWT; restore it immediately.
+    let active = true;
+
+    const validateBackendSession = async (session: { token: string; user: UserProfile }) => {
+      try {
+        const res = await apiFetch('/api/auth/me', {
+          headers: { Authorization: `Bearer ${session.token}` },
+        });
+        if (!active) return;
+        if (res.ok) {
+          const data = await res.json() as { user?: { id: string; email: string; phone?: string; name: string; role: string; preferredLanguage?: string } };
+          if (data.user) {
+            applyBackendSession(session.token, data.user);
+          } else {
+            setApiToken(session.token);
+            setCurrentUser(session.user);
+          }
+          return;
+        }
+        // Stale/invalid JWT (secret rotated, expired, etc.) — force re-login
+        clearAuthState();
+      } catch {
+        // Offline / cold start — keep local session; API calls will re-check
+        if (!active) return;
+        setApiToken(session.token);
+        setCurrentUser(session.user);
+      }
+    };
+
+    // Native APK: email/password uses Render backend JWT; validate before trusting it.
     if (isNativeApp()) {
       const backendSession = restoreBackendSessionFromStorage();
       if (backendSession) {
-        setApiToken(backendSession.token);
-        setCurrentUser(backendSession.user);
+        void validateBackendSession(backendSession).finally(() => {
+          if (active) setAuthReady(true);
+        });
+      } else {
+        clearAuthState();
+        setAuthReady(true);
       }
-      setAuthReady(true);
-      return;
+      return () => { active = false; };
     }
 
     if (!isSupabaseConfigured || !supabase) {
-      setAuthReady(true);
-      return;
+      const backendSession = restoreBackendSessionFromStorage();
+      if (backendSession) {
+        void validateBackendSession(backendSession).finally(() => {
+          if (active) setAuthReady(true);
+        });
+      } else {
+        setAuthReady(true);
+      }
+      return () => { active = false; };
     }
-
-    let active = true;
 
     supabase.auth.getSession()
       .then(async ({ data: { session } }) => {
         if (!active) return;
         const backendSession = restoreBackendSessionFromStorage();
         if (backendSession) {
-          setApiToken(backendSession.token);
-          setCurrentUser(backendSession.user);
-          setAuthReady(true);
+          await validateBackendSession(backendSession);
+          if (active) setAuthReady(true);
           return;
         }
         applySupabaseSession(session);
         if (session?.access_token) {
           await syncOAuthUser(session.access_token);
         }
-        setAuthReady(true);
+        if (active) setAuthReady(true);
       })
       .catch((err) => {
         // Never leave the app stuck on the session-check screen
@@ -641,7 +708,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       active = false;
       subscription.unsubscribe();
     };
-  }, [applySupabaseSession, syncOAuthUser]);
+  }, [applySupabaseSession, applyBackendSession, clearAuthState, syncOAuthUser]);
 
   const isAuthenticated = isNativeApp()
     ? Boolean(currentUser && apiToken)

@@ -233,7 +233,15 @@ router.post('/oauth-sync', authenticate, async (req, res, next) => {
       });
     }
 
-    res.json({ user: mapUser(user), isNewUser });
+    // Exchange Supabase OAuth session for an app JWT so later API calls
+    // do not depend on supabase.auth.getUser succeeding on every request.
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role, name: user.name },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN },
+    );
+
+    res.json({ user: mapUser(user), token, isNewUser });
   } catch (err) {
     next(err);
   }
