@@ -115,7 +115,7 @@ router.post('/register', async (req, res, next) => {
     });
 
     const demoCode = createCode(key, 'verify');
-    await sendOtpEmail({ to: key, code: demoCode, purpose: 'verify' });
+    const mail = await sendOtpEmail({ to: key, code: demoCode, purpose: 'verify' });
 
     try {
       await createNotification({
@@ -132,10 +132,12 @@ router.post('/register', async (req, res, next) => {
     const payload = {
       needsEmailVerification: true,
       email: key,
-      message: `We sent a verification code. If you do not receive email, contact ${SUPPORT_EMAIL}.`,
+      message: mail.sent
+        ? `We sent a verification code. If you do not receive email, contact ${SUPPORT_EMAIL}.`
+        : `Email delivery failed (${mail.reason || 'smtp'}). Use the on-screen code or contact ${SUPPORT_EMAIL}.`,
     };
-    // Expose code when SMTP is not configured (common on free Render) so QA / reviewers can finish signup
-    if (shouldExposeOtp()) {
+    // Expose when SMTP missing, EXPOSE_VERIFY_CODE=true, or send failed
+    if (shouldExposeOtp() || !mail.sent) {
       payload.verificationCode = demoCode;
     }
 
@@ -193,9 +195,13 @@ router.post('/resend-verification', async (req, res, next) => {
       return res.json({ message: 'Email already verified.' });
     }
     const demoCode = createCode(key, 'verify');
-    await sendOtpEmail({ to: key, code: demoCode, purpose: 'verify' });
-    const body = { message: `Verification code resent. Contact ${SUPPORT_EMAIL} if needed.` };
-    if (shouldExposeOtp()) {
+    const mail = await sendOtpEmail({ to: key, code: demoCode, purpose: 'verify' });
+    const body = {
+      message: mail.sent
+        ? `Verification code resent. Contact ${SUPPORT_EMAIL} if needed.`
+        : `Email delivery failed (${mail.reason || 'smtp'}). Use the on-screen code if shown.`,
+    };
+    if (shouldExposeOtp() || !mail.sent) {
       body.verificationCode = demoCode;
     }
     res.json(body);
@@ -263,13 +269,15 @@ router.post('/login', async (req, res, next) => {
 
     if (user.emailVerified === false) {
       const demoCode = createCode(key, 'verify');
-      await sendOtpEmail({ to: key, code: demoCode, purpose: 'verify' });
+      const mail = await sendOtpEmail({ to: key, code: demoCode, purpose: 'verify' });
       const body = {
         needsEmailVerification: true,
         email: key,
-        error: 'Email not verified. Enter the code sent to your email.',
+        error: mail.sent
+          ? 'Email not verified. Enter the code sent to your email.'
+          : 'Email not verified. Delivery failed — use the on-screen code.',
       };
-      if (shouldExposeOtp()) {
+      if (shouldExposeOtp() || !mail.sent) {
         body.verificationCode = demoCode;
       }
       return res.status(403).json(body);
@@ -452,9 +460,8 @@ router.get('/users', authenticate, requireRole('admin'), async (_req, res, next)
   try {
     const allUsers = await listAllUsers();
     const rows = await Promise.all(allUsers.map(async (user) => {
-      const profile = userOwnsDirectoryProfile(user.role)
-        ? await findProfileByEmail(user.email)
-        : null;
+      // Customers can own a directory listing after "Register as Business/Service"
+      const profile = await findProfileByEmail(user.email);
 
       const roleLabel = ROLE_LABELS[user.role] || user.role;
       const listingName = profile?.businessName?.trim() || null;

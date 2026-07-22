@@ -118,7 +118,7 @@ async function activateListing(profile, amount) {
 }
 
 // ── POST /api/payments/renew ──────────────────────────────────────────────
-router.post('/renew', authenticate, requireRole('customer', 'admin'), async (req, res, next) => {
+router.post('/renew', authenticate, requireRole('customer', 'business', 'service_provider', 'admin'), async (req, res, next) => {
   try {
     const { businessId, amount } = req.body;
 
@@ -200,7 +200,7 @@ router.post('/renew', authenticate, requireRole('customer', 'admin'), async (req
         userId: req.user.id,
         receiverRole: req.user.role,
         title: 'Subscription Renewed ✓',
-        message: `Membership for ${profile.businessName || 'your listing'} renewed for $${parsedAmount}/month. Ref ${refNo}. Active until ${expiry}.`,
+        message: `Membership for ${profile.businessName || 'your listing'} renewed for $${parsedAmount}/month. Ref ${refNo}. Active until ${activated.membershipExpiry}.`,
       });
     } catch {
       // non-fatal

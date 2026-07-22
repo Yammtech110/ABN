@@ -93,6 +93,12 @@ router.post('/', authenticate, async (req, res, next) => {
     if (!isSupabaseStorage()) {
       reviews.unshift(record);
       const stats = aggregateForBusiness(reviews, businessId);
+      const { directoryProfiles } = require('../db');
+      const profile = directoryProfiles.find((p) => p.id === businessId);
+      if (profile) {
+        profile.rating = stats.avg;
+        profile.reviewsCount = stats.count;
+      }
       return res.status(201).json({ review: mapReview(record), aggregate: stats });
     }
 
@@ -113,6 +119,11 @@ router.post('/', authenticate, async (req, res, next) => {
 
     const all = await fetchReviewsForBusiness(businessId);
     const stats = aggregateForBusiness(all, businessId);
+
+    await supabaseAdmin
+      .from('profiles_directory')
+      .update({ rating: stats.avg, reviews_count: stats.count })
+      .eq('id', businessId);
 
     res.status(201).json({
       review: mapReview(mapReviewFromDb(data)),

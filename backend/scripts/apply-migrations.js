@@ -18,6 +18,13 @@ const MIGRATIONS_DIR = path.join(__dirname, '..', 'migrations');
 const MIGRATION_FILES = [
   '001_init_supabase.sql',
   '003_persistence_extras.sql',
+  '004_payments.sql',
+  '005_user_favorites.sql',
+  '006_user_blocked.sql',
+  '007_listing_reports.sql',
+  '008_categories.sql',
+  '009_notifications.sql',
+  '010_compliance.sql',
 ];
 
 function resolveDatabaseUrl() {

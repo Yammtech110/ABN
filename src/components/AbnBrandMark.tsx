@@ -12,22 +12,14 @@ const TAGLINE_CLASSES: Record<AbnLogoSize, string> = {
 interface AbnBrandMarkProps {
   size?: AbnLogoSize;
   className?: string;
-  /** When false, only the logo mark is shown (no tagline). */
-  showTagline?: boolean;
 }
 
-/** Official logo mark + AHLE-BAIT NETWORK tagline (ABN letters are in the artwork). */
-export const AbnBrandMark: React.FC<AbnBrandMarkProps> = ({
-  size = 'md',
-  className = '',
-  showTagline = true,
-}) => (
-  <div className={`flex flex-col items-center text-center ${className}`.trim()}>
+/** Gold ABN mark + Ahle-Bait Network tagline (logo already includes ABN letters) */
+export const AbnBrandMark: React.FC<AbnBrandMarkProps> = ({ size = 'md', className = '' }) => (
+  <div className={`flex flex-col items-center text-center bg-transparent ${className}`.trim()}>
     <AbnLogo variant="full" size={size} />
-    {showTagline && (
-      <p className={`${TAGLINE_CLASSES[size]} font-bold text-[#C8925A] tracking-[0.22em] uppercase mt-3`}>
-        AHLE-BAIT NETWORK
-      </p>
-    )}
+    <p className={`${TAGLINE_CLASSES[size]} font-bold text-[#C9A24A] tracking-[0.22em] uppercase mt-3`}>
+      AHLE-BAIT NETWORK
+    </p>
   </div>
 );
