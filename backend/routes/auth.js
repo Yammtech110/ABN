@@ -10,7 +10,6 @@ const bcrypt   = require('bcryptjs');
 const jwt      = require('jsonwebtoken');
 const { stableId } = require('../lib/memoryStore');
 const { findByEmail, findById, createUser, updateUser, deleteUser, listAllUsers, setUserBlocked } = require('../lib/userStore');
-const { createNotification } = require('../lib/notificationStore');
 const { userOwnsDirectoryProfile, findProfileForUser, findProfileByEmail } = require('../lib/profileStore');
 const { authenticate, requireRole } = require('../middleware/authMiddleware');
 const { createCode, verifyCode, clearCode, shouldExposeOtp } = require('../lib/emailVerify');
@@ -125,18 +124,7 @@ router.post('/register', async (req, res, next) => {
       });
     }
 
-    try {
-      await createNotification({
-        userId: id,
-        receiverRole: role,
-        title: 'Verify your email',
-        message: `Assalamu Alaykum, ${trimmedName}. Check your Gmail for the 6-digit ABN verification code.`,
-      });
-    } catch {
-      // non-fatal
-    }
-
-    // No session token until email is verified — code is emailed only (not shown in app)
+    // Code is emailed only — do not create in-app OTP notifications
     const payload = {
       needsEmailVerification: true,
       email: key,
@@ -326,16 +314,7 @@ router.post('/forgot-password', async (req, res, next) => {
     if (user && !user.isBlocked) {
       const code = await createCode(key, 'reset');
       const mail = await sendOtpEmail({ to: key, code, purpose: 'reset' });
-      try {
-        await createNotification({
-          userId: user.id,
-          receiverRole: user.role,
-          title: 'Password reset code',
-          message: 'A password reset code was requested for your ABN account.',
-        });
-      } catch {
-        // non-fatal
-      }
+      // Reset code is emailed only — skip in-app notification
       if (shouldExposeOtp() && mail.sent) {
         payload.resetCode = code;
       }
