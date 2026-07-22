@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, RefreshCw } from 'lucide-react';
+import { Bell, RefreshCw, Trash2, X } from 'lucide-react';
 import { AppNotification } from '../types';
 import {
   classifyNotification,
@@ -17,6 +17,17 @@ interface NotificationCenterModalProps {
   onClearAll: () => void;
 }
 
+/** Hide OTP / password-reset noise from the inbox (email already carries the code). */
+const isSensitiveAuthNoise = (n: AppNotification) => {
+  const t = `${n.title} ${n.message}`.toLowerCase();
+  return (
+    t.includes('verification code') ||
+    t.includes('6-digit') ||
+    t.includes('password reset code') ||
+    t.includes('verify your email')
+  );
+};
+
 export const NotificationCenterModal: React.FC<NotificationCenterModalProps> = ({
   notifications,
   loading = false,
@@ -24,97 +35,117 @@ export const NotificationCenterModal: React.FC<NotificationCenterModalProps> = (
   onClose,
   onRefresh,
   onClearAll,
-}) => (
-  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-    <div className="relative w-full max-w-md rounded-3xl bg-[#13110E] border border-[#2D2319] p-6 text-[#F4E3D7] max-h-[85vh] flex flex-col">
-      <div className="flex items-center justify-between mb-4 shrink-0">
-        <h3 className="text-sm font-black uppercase tracking-wider text-[#FFA048] flex items-center gap-2">
-          <Bell className="w-5 h-5" />
-          Notifications
-          {notifications.length > 0 && (
-            <span className="text-[9px] px-1.5 py-0.5 bg-[#FFA048]/15 text-[#FFA048] rounded-full font-bold">
-              {notifications.length}
-            </span>
-          )}
-        </h3>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={onRefresh}
-            disabled={loading}
-            className="text-[9px] px-2 py-1 text-[#FFA048] font-bold hover:underline disabled:opacity-50 flex items-center gap-1"
-          >
-            <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </button>
-          {notifications.length > 0 && (
+}) => {
+  const visible = notifications.filter((n) => !isSensitiveAuthNoise(n));
+
+  return (
+    <div
+      className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-4 bg-black/75 backdrop-blur-md"
+      role="dialog"
+      aria-modal="true"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-md max-h-[88vh] flex flex-col rounded-[28px] overflow-hidden border border-[#3A2E22] shadow-[0_24px_60px_rgba(0,0,0,0.65)]"
+        style={{ background: 'linear-gradient(180deg, #1A1510 0%, #100C09 100%)' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between gap-3 px-5 pt-5 pb-3 border-b border-[#2D2319]/80">
+          <h3 className="text-sm font-black uppercase tracking-wider text-[#FFA048] flex items-center gap-2">
+            <Bell className="w-4.5 h-4.5" />
+            Notifications
+            {visible.length > 0 && (
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#FFA048]/15 text-[#FFA048] font-bold">
+                {visible.length}
+              </span>
+            )}
+          </h3>
+          <div className="flex items-center gap-0.5">
             <button
               type="button"
-              onClick={onClearAll}
-              className="text-[9px] px-2 py-1 bg-red-950/40 text-red-400 border border-red-900/40 rounded-lg font-bold hover:bg-red-950/70 transition-colors"
+              onClick={onRefresh}
+              disabled={loading}
+              className="p-2 rounded-full text-[#8A7A68] hover:text-[#FFA048] hover:bg-white/5 disabled:opacity-40"
+              aria-label="Refresh"
             >
-              Clear All
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </button>
-          )}
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-[#201B15] text-gray-400 hover:text-[#FFA048] transition-colors"
-            aria-label="Close notifications"
-          >
-            <span className="text-sm">✕</span>
-          </button>
-        </div>
-      </div>
-
-      {error && (
-        <p className="text-xs text-red-400 mb-3 shrink-0">{error}</p>
-      )}
-
-      <div className="overflow-y-auto space-y-2.5 pr-1 scrollbar-thin flex-1 min-h-0" id="notif-modal-list">
-        {loading && notifications.length === 0 && (
-          <p className="text-xs text-gray-500 py-10 text-center">Loading notifications…</p>
-        )}
-
-        {!loading && notifications.length === 0 && !error && (
-          <div className="text-center py-10 px-4">
-            <Bell className="w-8 h-8 text-gray-700 mx-auto mb-2" />
-            <p className="text-xs text-gray-500">No notifications yet.</p>
-            <p className="text-[10px] text-gray-600 mt-2 leading-relaxed">
-              You will see updates here for logins, listing approvals, payments, membership expiry, and admin alerts.
-            </p>
-          </div>
-        )}
-
-        {notifications.map((n) => {
-          const kind = classifyNotification(n);
-          const dotColor = notificationKindColor(kind);
-          return (
-            <div
-              key={n.id}
-              className={`p-3.5 rounded-xl border space-y-1.5 transition-all ${
-                n.isRead ? 'bg-[#0F0E0C] border-[#2D2319]/50' : 'bg-[#191613] border-[#FFA048]/20'
-              }`}
+            {visible.length > 0 && (
+              <button
+                type="button"
+                onClick={onClearAll}
+                className="p-2 rounded-full text-[#8A7A68] hover:text-red-400 hover:bg-red-950/30"
+                aria-label="Clear all"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2 rounded-full text-[#8A7A68] hover:text-white hover:bg-white/5"
+              aria-label="Close"
             >
-              <div className="flex items-center justify-between text-[9px] gap-2">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotColor} ${!n.isRead ? 'animate-pulse' : ''}`} />
-                  <span className="text-gray-500">{n.date || 'Today'}</span>
-                  <span className="text-gray-600">•</span>
-                  <span className="text-[#FFA048] font-bold uppercase tracking-wider truncate">
-                    {notificationKindLabel(kind)}
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {error && (
+          <p className="mx-5 mt-3 text-[11px] text-red-300 bg-red-950/40 border border-red-900/40 rounded-xl px-3 py-2">
+            {error}
+          </p>
+        )}
+
+        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2.5 min-h-0">
+          {loading && visible.length === 0 && (
+            <p className="text-xs text-[#8A7A68] py-12 text-center">Loading notifications…</p>
+          )}
+
+          {!loading && visible.length === 0 && !error && (
+            <div className="text-center py-12 px-4">
+              <div className="mx-auto mb-3 w-12 h-12 rounded-2xl bg-[#FFA048]/10 border border-[#FFA048]/20 flex items-center justify-center">
+                <Bell className="w-6 h-6 text-[#FFA048]/70" />
+              </div>
+              <p className="text-xs text-[#C9A887] font-semibold">No notifications yet</p>
+              <p className="text-[10px] text-[#7A6A5A] mt-2 leading-relaxed">
+                Listing approvals, payments, membership alerts, and admin updates will appear here.
+              </p>
+            </div>
+          )}
+
+          {visible.map((n) => {
+            const kind = classifyNotification(n);
+            const dotColor = notificationKindColor(kind);
+            return (
+              <div
+                key={n.id}
+                className={`rounded-2xl border px-3.5 py-3 transition-colors ${
+                  n.isRead
+                    ? 'bg-black/20 border-[#2D2319]/70'
+                    : 'bg-[#FFA048]/08 border-[#FFA048]/25'
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2 text-[9px] mb-1.5">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotColor}`} />
+                    <span className="text-[#8A7A68]">{n.date || 'Today'}</span>
+                    <span className="text-[#5A4A3A]">•</span>
+                    <span className="text-[#FFA048] font-bold uppercase tracking-wider truncate">
+                      {notificationKindLabel(kind)}
+                    </span>
+                  </div>
+                  <span className="uppercase tracking-wider text-[#7A6A5A] bg-black/30 px-1.5 py-0.5 rounded shrink-0">
+                    {formatNotificationRole(n.receiverRole)}
                   </span>
                 </div>
-                <span className="font-bold uppercase tracking-wider text-gray-500 bg-[#2D2319]/50 px-1.5 py-0.5 rounded shrink-0">
-                  {formatNotificationRole(n.receiverRole)}
-                </span>
+                <h4 className="text-[12px] font-bold text-[#F8EDE3] leading-snug">{n.title}</h4>
+                <p className="text-[11px] text-[#A89888] mt-1 leading-relaxed">{n.message}</p>
               </div>
-              <h4 className="text-xs font-bold text-white">{n.title}</h4>
-              <p className="text-[10px] text-gray-400 leading-relaxed">{n.message}</p>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
