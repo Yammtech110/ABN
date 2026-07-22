@@ -53,16 +53,14 @@ export const AuthScreen: React.FC = () => {
     resetForm();
   };
 
-  const goVerify = (em: string, code?: string) => {
+  const goVerify = (em: string) => {
     setPendingEmail(em);
-    setHintCode(code || '');
-    setVerifyCode(code || '');
+    setHintCode('');
+    setVerifyCode('');
     setAuthMode('verify');
     setError('');
     setRegSuccess(
-      code
-        ? `Enter the verification code for ${em}. (Dev/test code shown below.)`
-        : `Enter the 6-digit code sent for ${em}. Contact ${SUPPORT_EMAIL} if you need help.`,
+      `We emailed a 6-digit code to ${em}. Open Gmail (inbox or Spam), enter the code here, then continue.`,
     );
   };
 
@@ -77,7 +75,7 @@ export const AuthScreen: React.FC = () => {
     const result = await apiLogin(email.trim(), password);
     setIsLoading(false);
     if (result.needsEmailVerification) {
-      goVerify(result.email || email.trim().toLowerCase(), result.verificationCode);
+      goVerify(result.email || email.trim().toLowerCase());
       return;
     }
     if (!result.success) {
@@ -119,7 +117,7 @@ export const AuthScreen: React.FC = () => {
       return;
     }
     if (result.needsEmailVerification) {
-      goVerify(result.email || trimmedEmail, result.verificationCode);
+      goVerify(result.email || trimmedEmail);
       return;
     }
     setRegSuccess(`Welcome, ${trimmedName}! Account created — you are now signed in.`);
@@ -149,11 +147,9 @@ export const AuthScreen: React.FC = () => {
       setError(result.error || 'Could not resend.');
       return;
     }
-    if (result.verificationCode) {
-      setHintCode(result.verificationCode);
-      setVerifyCode(result.verificationCode);
-    }
-    setRegSuccess('A new code was issued.');
+    setHintCode('');
+    setVerifyCode('');
+    setRegSuccess(`A new code was emailed to ${pendingEmail}. Check Gmail inbox and Spam.`);
   };
 
   const handleForgotRequest = async (e: React.FormEvent) => {
@@ -172,16 +168,14 @@ export const AuthScreen: React.FC = () => {
       return;
     }
     setPendingEmail(result.email || trimmedEmail);
-    setHintCode(result.resetCode || '');
-    setVerifyCode(result.resetCode || '');
+    setHintCode('');
+    setVerifyCode('');
     setResetToken('');
     setPassword('');
     setConfirmPassword('');
     setAuthMode('reset-code');
     setRegSuccess(
-      result.resetCode
-        ? `Enter the reset code for ${result.email || trimmedEmail}. (Dev/test code shown below.)`
-        : `If an account exists, a 6-digit code was sent to ${result.email || trimmedEmail}. Contact ${SUPPORT_EMAIL} if needed.`,
+      `If an account exists, a 6-digit code was emailed to ${result.email || trimmedEmail}. Check Gmail inbox and Spam.`,
     );
   };
 
@@ -436,11 +430,9 @@ export const AuthScreen: React.FC = () => {
                     setError(result.error || 'Could not resend.');
                     return;
                   }
-                  if (result.resetCode) {
-                    setHintCode(result.resetCode);
-                    setVerifyCode(result.resetCode);
-                  }
-                  setRegSuccess('A new reset code was issued.');
+                  setHintCode('');
+                  setVerifyCode('');
+                  setRegSuccess('A new reset code was emailed. Check Gmail inbox and Spam.');
                 }}
                 className="w-full mt-3 text-xs text-gray-500 hover:text-[#FFA048]"
               >

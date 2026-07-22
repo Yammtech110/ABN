@@ -25,6 +25,8 @@ const MIGRATION_FILES = [
   '008_categories.sql',
   '009_notifications.sql',
   '010_compliance.sql',
+  '011_remove_demo_seed.sql',
+  '012_email_otp.sql',
 ];
 
 function resolveDatabaseUrl() {
