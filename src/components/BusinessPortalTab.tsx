@@ -95,6 +95,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
     refreshDirectory,
     notifications,
     refreshNotifications,
+    signOut,
   } = useDirectory();
 
   useEffect(() => {
@@ -362,6 +363,12 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
       });
       const data = await res.json();
       if (!res.ok) {
+        const errMsg = String(data.error || '');
+        if (res.status === 401 || /invalid token|log in again|authentication required/i.test(errMsg)) {
+          await signOut();
+          setRegError('Your session expired. Please sign in again, then submit your listing.');
+          return;
+        }
         setRegError(data.error || t.allFieldsRequired);
         return;
       }
