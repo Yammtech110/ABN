@@ -114,30 +114,35 @@ router.post('/register', async (req, res, next) => {
       emailVerified: false,
     });
 
-    const demoCode = createCode(key, 'verify');
+    const demoCode = await createCode(key, 'verify');
     const mail = await sendOtpEmail({ to: key, code: demoCode, purpose: 'verify' });
+
+    if (!mail.sent) {
+      return res.status(503).json({
+        error: `Could not send verification email (${mail.reason || 'smtp'}). Check SMTP settings / Brevo, then try Resend.`,
+        needsEmailVerification: true,
+        email: key,
+      });
+    }
 
     try {
       await createNotification({
         userId: id,
         receiverRole: role,
         title: 'Verify your email',
-        message: `Assalamu Alaykum, ${trimmedName}. Enter the 6-digit code to verify your ABN account.`,
+        message: `Assalamu Alaykum, ${trimmedName}. Check your Gmail for the 6-digit ABN verification code.`,
       });
     } catch {
       // non-fatal
     }
 
-    // No session token until email is verified
+    // No session token until email is verified — code is emailed only (not shown in app)
     const payload = {
       needsEmailVerification: true,
       email: key,
-      message: mail.sent
-        ? `We sent a verification code. If you do not receive email, contact ${SUPPORT_EMAIL}.`
-        : `Email delivery failed (${mail.reason || 'smtp'}). Use the on-screen code or contact ${SUPPORT_EMAIL}.`,
+      message: `We sent a 6-digit code to ${key}. Check Gmail inbox and Spam. Contact ${SUPPORT_EMAIL} if needed.`,
     };
-    // Expose when SMTP missing, EXPOSE_VERIFY_CODE=true, or send failed
-    if (shouldExposeOtp() || !mail.sent) {
+    if (shouldExposeOtp()) {
       payload.verificationCode = demoCode;
     }
 
@@ -167,7 +172,7 @@ router.post('/verify-email', async (req, res, next) => {
       return res.json(await buildAuthResponse(user, token));
     }
 
-    if (!verifyCode(key, code, 'verify')) {
+    if (!(await verifyCode(key, code, 'verify'))) {
       return res.status(400).json({ error: 'Invalid or expired verification code.' });
     }
 
@@ -194,14 +199,18 @@ router.post('/resend-verification', async (req, res, next) => {
     if (user.emailVerified !== false) {
       return res.json({ message: 'Email already verified.' });
     }
-    const demoCode = createCode(key, 'verify');
+    const demoCode = await createCode(key, 'verify');
     const mail = await sendOtpEmail({ to: key, code: demoCode, purpose: 'verify' });
+    if (!mail.sent) {
+      return res.status(503).json({
+        error: `Could not send email (${mail.reason || 'smtp'}). Fix Brevo SMTP on the server, then try again.`,
+        email: key,
+      });
+    }
     const body = {
-      message: mail.sent
-        ? `Verification code resent. Contact ${SUPPORT_EMAIL} if needed.`
-        : `Email delivery failed (${mail.reason || 'smtp'}). Use the on-screen code if shown.`,
+      message: `A new code was sent to ${key}. Check Gmail inbox and Spam.`,
     };
-    if (shouldExposeOtp() || !mail.sent) {
+    if (shouldExposeOtp()) {
       body.verificationCode = demoCode;
     }
     res.json(body);
@@ -268,16 +277,16 @@ router.post('/login', async (req, res, next) => {
     }
 
     if (user.emailVerified === false) {
-      const demoCode = createCode(key, 'verify');
+      const demoCode = await createCode(key, 'verify');
       const mail = await sendOtpEmail({ to: key, code: demoCode, purpose: 'verify' });
       const body = {
         needsEmailVerification: true,
         email: key,
         error: mail.sent
-          ? 'Email not verified. Enter the code sent to your email.'
-          : 'Email not verified. Delivery failed — use the on-screen code.',
+          ? 'Email not verified. Enter the 6-digit code we sent to your Gmail.'
+          : `Email not verified and we could not send mail (${mail.reason || 'smtp'}). Fix SMTP / try Resend.`,
       };
-      if (shouldExposeOtp() || !mail.sent) {
+      if (shouldExposeOtp()) {
         body.verificationCode = demoCode;
       }
       return res.status(403).json(body);
@@ -315,8 +324,8 @@ router.post('/forgot-password', async (req, res, next) => {
     };
 
     if (user && !user.isBlocked) {
-      const code = createCode(key, 'reset');
-      await sendOtpEmail({ to: key, code, purpose: 'reset' });
+      const code = await createCode(key, 'reset');
+      const mail = await sendOtpEmail({ to: key, code, purpose: 'reset' });
       try {
         await createNotification({
           userId: user.id,
@@ -327,7 +336,7 @@ router.post('/forgot-password', async (req, res, next) => {
       } catch {
         // non-fatal
       }
-      if (shouldExposeOtp()) {
+      if (shouldExposeOtp() && mail.sent) {
         payload.resetCode = code;
       }
     }
@@ -355,7 +364,7 @@ router.post('/verify-reset-code', async (req, res, next) => {
     }
 
     // Do not consume yet — final step (reset-password) consumes the code
-    if (!verifyCode(key, code, 'reset', { consume: false })) {
+    if (!(await verifyCode(key, code, 'reset', { consume: false }))) {
       return res.status(400).json({ error: 'Invalid or expired reset code.' });
     }
 
@@ -411,11 +420,11 @@ router.post('/reset-password', async (req, res, next) => {
       if (!user) return res.status(404).json({ error: 'Account not found.' });
 
       if (code) {
-        if (!verifyCode(user.email, code, 'reset', { consume: true })) {
+        if (!(await verifyCode(user.email, code, 'reset', { consume: true }))) {
           return res.status(400).json({ error: 'Invalid or expired reset code.' });
         }
       } else {
-        clearCode(user.email, 'reset');
+        await clearCode(user.email, 'reset');
       }
     } else {
       if (!email || !code) {
@@ -426,7 +435,7 @@ router.post('/reset-password', async (req, res, next) => {
       if (!user) {
         return res.status(400).json({ error: 'Invalid or expired reset code.' });
       }
-      if (!verifyCode(key, code, 'reset', { consume: true })) {
+      if (!(await verifyCode(key, code, 'reset', { consume: true }))) {
         return res.status(400).json({ error: 'Invalid or expired reset code.' });
       }
     }
