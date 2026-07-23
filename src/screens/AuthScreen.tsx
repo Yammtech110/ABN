@@ -329,9 +329,15 @@ export const AuthScreen: React.FC = () => {
             </motion.p>
           </div>
 
-          <div className="rounded-[28px] border border-[#3A2E22]/90 bg-[#13100D]/88 backdrop-blur-xl shadow-[0_24px_60px_rgba(0,0,0,0.55)] p-5 sm:p-6">
+          <div
+            id="auth-form-card"
+            className="rounded-[28px] border border-[#3A2E22]/90 bg-[#13100D]/88 backdrop-blur-xl shadow-[0_24px_60px_rgba(0,0,0,0.55)] p-5 sm:p-6"
+          >
             {showTabs && (
-              <div className="relative mb-5 grid grid-cols-2 gap-1 rounded-2xl bg-black/40 p-1 border border-[#2D2319]">
+              <div
+                id="auth-tab-bar"
+                className="relative mb-5 grid grid-cols-2 gap-1 rounded-2xl bg-black/40 p-1 border border-[#2D2319]"
+              >
                 {(['signin', 'register'] as const).map((mode) => {
                   const active = authMode === mode;
                   return (
@@ -340,7 +346,7 @@ export const AuthScreen: React.FC = () => {
                       type="button"
                       onClick={() => switchMode(mode)}
                       className={`relative z-10 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-colors ${
-                        active ? 'text-black' : 'text-[#9A8A78] hover:text-[#F4E3D7]'
+                        active ? 'text-black' : 'text-[#D4C4B0] hover:text-[#F8EDE3]'
                       }`}
                     >
                       {active && (
@@ -381,7 +387,7 @@ export const AuthScreen: React.FC = () => {
 
                 {authMode === 'signin' && (
                   <>
-                    <p className="text-xs text-center text-[#9A8A78] mb-4">{t.signInPrompt}</p>
+                    <p className="text-xs text-center text-[#C9B8A4] mb-4">{t.signInPrompt}</p>
                     <form onSubmit={handleSignIn} className="space-y-3.5">
                       <div>
                         <label className={labelClass}>{t.email} *</label>

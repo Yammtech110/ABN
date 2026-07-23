@@ -101,8 +101,9 @@ html.light .bg-gradient-to-b {
   background: linear-gradient(to bottom, #FFFFFF, #F4F5F7) !important;
 }
 
-/* Bottom nav bar inside simulator */
-html.light .backdrop-blur-xl {
+/* Bottom nav bar inside simulator — not auth */
+html.light #app-root .backdrop-blur-xl,
+html.light #app-root-mobile .backdrop-blur-xl {
   background-color: rgba(255,255,255,0.88) !important;
   border-color: var(--color-border) !important;
 }
@@ -175,6 +176,7 @@ html.light #home-search-input,
 html.light input[type="text"],
 html.light input[type="tel"],
 html.light input[type="password"],
+html.light input[type="email"],
 html.light textarea,
 html.light select {
   background-color: #FFFFFF !important;
@@ -501,18 +503,73 @@ html.light #account-tab-container .text-white {
   color: #0F172A !important;
 }
 
-/* ─── Auth screen ─────────────────────────────────────────── */
+/* ─── Auth screen — always premium dark (ignore light theme) ─ */
+html.light #auth-screen-root {
+  color: #F8EDE3 !important;
+  background:
+    radial-gradient(120% 80% at 50% -10%, #3A2818 0%, #1A120E 42%, #0A0705 100%) !important;
+}
+html.light #auth-form-card {
+  background-color: rgba(19, 16, 13, 0.94) !important;
+  border-color: rgba(58, 46, 34, 0.95) !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55) !important;
+  backdrop-filter: blur(16px);
+}
 html.light #auth-screen-root input,
 html.light #auth-screen-root select,
 html.light #auth-screen-root textarea,
 html.light #auth-screen-content input,
 html.light #auth-screen-content select,
 html.light #auth-screen-content textarea {
-  color: #0F172A !important;
+  background-color: rgba(0, 0, 0, 0.35) !important;
+  border-color: #3A2E22 !important;
+  color: #F8EDE3 !important;
+}
+html.light #auth-screen-root input::placeholder,
+html.light #auth-screen-content input::placeholder {
+  color: #7A6A5A !important;
 }
 html.light #auth-screen-root label,
 html.light #auth-screen-content label {
-  color: #475569 !important;
+  color: #C9A887 !important;
+}
+html.light #auth-screen-root .text-\[\#F4E3D7\],
+html.light #auth-screen-root .text-\[\#F8EDE3\],
+html.light #auth-screen-root .text-white,
+html.light #auth-screen-content .text-\[\#F4E3D7\],
+html.light #auth-screen-content .text-\[\#F8EDE3\] {
+  color: #F8EDE3 !important;
+}
+html.light #auth-screen-root .text-\[\#9A8A78\],
+html.light #auth-screen-root .text-\[\#B9A28A\],
+html.light #auth-screen-root .text-\[\#8A7A68\],
+html.light #auth-screen-root .text-\[\#C9A887\],
+html.light #auth-screen-content .text-\[\#9A8A78\],
+html.light #auth-screen-content .text-\[\#B9A28A\] {
+  color: #C9B8A4 !important;
+}
+html.light #auth-screen-root .text-\[\#FFA048\],
+html.light #auth-screen-content .text-\[\#FFA048\] {
+  color: #FFA048 !important;
+}
+html.light #auth-screen-root .text-black,
+html.light #auth-screen-content .text-black {
+  color: #0A0705 !important;
+}
+html.light #auth-screen-root .rounded-3xl,
+html.light #auth-screen-root .rounded-\[28px\],
+html.light #auth-screen-root .rounded-\[27px\] {
+  background-color: transparent;
+  box-shadow: none;
+}
+html.light #auth-tab-bar {
+  background-color: rgba(0, 0, 0, 0.45) !important;
+  border-color: #2D2319 !important;
+}
+html.light #auth-screen-root .border-\[\#2D2319\],
+html.light #auth-screen-root .border-\[\#3A2E22\],
+html.light #auth-screen-root .border-\[\#3A2E22\]\/90 {
+  border-color: #3A2E22 !important;
 }
 
 /* ─── Sheet / bottom-sheet cards (Legal, FAQ, Notifications) ─ */
