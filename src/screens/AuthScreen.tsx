@@ -16,7 +16,7 @@ import {
   EyeOff,
   ArrowLeft,
 } from 'lucide-react';
-import { AbnBrandMark } from '../components/AbnBrandMark';
+import { AbnLogo } from '../components/AbnLogo';
 import { SUPPORT_MAILTO } from '../data/legalContent';
 
 type AuthMode = 'signin' | 'register' | 'verify' | 'forgot' | 'reset-code' | 'reset-choice';
@@ -313,11 +313,13 @@ export const AuthScreen: React.FC = () => {
               initial={{ scale: 0.92, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.08, duration: 0.4 }}
-              className="rounded-[28px] p-[1px] bg-gradient-to-b from-[#E8C278]/70 to-[#5A4020]/20 shadow-[0_0_48px_rgba(255,160,72,0.18)]"
+              className="flex flex-col items-center"
+              id="auth-logo"
             >
-              <div className="rounded-[27px] bg-[#100C09]/90 px-6 py-5 backdrop-blur-md border border-white/5">
-                <AbnBrandMark size="hero" />
-              </div>
+              <AbnLogo size="hero" className="drop-shadow-[0_0_28px_rgba(255,160,72,0.25)]" />
+              <p className="text-xs font-bold text-[#C9A24A] tracking-[0.22em] uppercase mt-3">
+                AHLE-BAIT NETWORK
+              </p>
             </motion.div>
             <motion.p
               initial={{ opacity: 0 }}
