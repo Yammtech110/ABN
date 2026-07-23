@@ -7,7 +7,8 @@ const LEGACY_MOCK_IMAGE_RE =
 const isHttpUrl = (value: string) => /^https?:\/\//i.test(value);
 const isDataImage = (value: string) => value.startsWith('data:image/');
 const isApiMediaPath = (value: string) =>
-  typeof value === 'string' && value.includes('/api/directory/');
+  typeof value === 'string' &&
+  (value.includes('/api/directory/') || value.includes('/api/jobsboard/'));
 const isLegacyMock = (value: string) => LEGACY_MOCK_IMAGE_RE.test(value);
 
 const initialsFromName = (name: string): string => {
@@ -134,6 +135,16 @@ export const businessCoverUrl = (biz: {
   coverUrl?: string;
 }): string => resolveListingCoverUrl(biz.coverUrl ?? '', biz.logoUrl ?? '', biz.id, biz.name);
 
+/** Job poster image — absolute URL for img tags */
+export const resolveJobImageUrl = (imageUrl: string, jobId: string): string => {
+  const cleaned = clean(imageUrl);
+  if (!cleaned) return '';
+  if (isHttpUrl(cleaned)) return cleaned;
+  if (isApiMediaPath(cleaned) || cleaned.startsWith('/api/jobsboard/')) return mediaUrl(cleaned);
+  if (jobId && (isDataImage(cleaned) || cleaned)) return mediaUrl(`/api/jobsboard/${jobId}/image`);
+  return cleaned;
+};
+
 /** Job card logo — always resolves to the posting business listing image */
 export const jobBusinessLogoUrl = (job: {
   businessId: string;
@@ -146,6 +157,20 @@ export const jobBusinessLogoUrl = (job: {
     job.businessId,
     job.businessName || job.businessId,
   );
+
+/** Prefer job poster, else business logo */
+export const jobDisplayImageUrl = (job: {
+  id: string;
+  businessId: string;
+  businessName?: string;
+  businessLogoUrl?: string;
+  imageUrl?: string;
+  title?: string;
+}): string => {
+  const poster = resolveJobImageUrl(String(job.imageUrl ?? ''), job.id);
+  if (poster) return poster;
+  return jobBusinessLogoUrl(job);
+};
 
 /** Logo + cover (+ optional gallery) for admin / detail views */
 export const businessPhotoUrls = (biz: {

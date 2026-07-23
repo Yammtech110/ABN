@@ -11,7 +11,7 @@ import {
   INITIAL_BUSINESSES, INITIAL_REVIEWS,
   INITIAL_PAYMENTS, INITIAL_JOBS, INITIAL_HIRING_ACTIVE,
 } from '../data/mockData';
-import { resolveListingCoverUrl, resolveListingLogoUrl } from '../utils/listingImages';
+import { resolveListingCoverUrl, resolveListingLogoUrl, resolveJobImageUrl } from '../utils/listingImages';
 
 // ── Safe storage helpers ────────────────────────────────────────────────────
 // localStorage can throw (private browsing, quota exceeded, storage disabled).
@@ -90,11 +90,15 @@ const mapDirectoryProfile = (p: Record<string, unknown>): Business => ({
 const mapApiJob = (j: Record<string, unknown>): Job => {
   const businessId = String(j.businessId ?? '');
   const rawLogo = String(j.businessLogoUrl ?? '');
+  const rawImage = String(j.imageUrl ?? '');
   return {
     id:               String(j.id ?? ''),
     businessId,
     businessName:     String(j.businessName ?? ''),
     businessLogoUrl:  resolveListingLogoUrl(rawLogo, '', businessId, String(j.businessName ?? '')),
+    imageUrl:         rawImage
+      ? resolveJobImageUrl(rawImage, String(j.id ?? ''))
+      : undefined,
     title:            String(j.title ?? ''),
     category:         String(j.category ?? 'Others') as JobCategory,
     requirements:     String(j.requirements ?? ''),

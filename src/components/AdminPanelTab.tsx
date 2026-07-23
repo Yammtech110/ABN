@@ -4,6 +4,7 @@ import { apiFetch } from '../lib/api';
 import { TRANSLATIONS } from '../data/translations';
 import { BusinessThumbnail } from './BusinessThumbnail';
 import { AdminListingPhotos } from './AdminListingPhotos';
+import { listingMediaUrl, resolveJobImageUrl } from '../utils/listingImages';
 import {
   ShieldAlert,
   Settings,
@@ -186,6 +187,7 @@ export const AdminPanelTab: React.FC = () => {
           businessId:      String(j.businessId ?? ''),
           businessName:    String(j.businessName ?? ''),
           businessLogoUrl: String(j.businessLogoUrl ?? ''),
+          imageUrl:        j.imageUrl ? String(j.imageUrl) : undefined,
           title:           String(j.title ?? ''),
           category:        String(j.category ?? 'Others') as Job['category'],
           requirements:    String(j.requirements ?? ''),
@@ -1264,18 +1266,35 @@ export const AdminPanelTab: React.FC = () => {
             {filteredAdminJobs.map((job) => {
               const isBusy = actionBusyId === job.id;
               const biz = businesses.find((b) => b.id === job.businessId);
+              const jobPoster = resolveJobImageUrl(job.imageUrl || '', job.id);
               return (
                 <div
                   key={job.id}
                   className="p-4 rounded-3xl bg-[#13110E] border border-[#2D2319] space-y-3"
                 >
+                  {jobPoster ? (
+                    <div className="relative h-28 rounded-xl overflow-hidden border border-[#2D2319] bg-[#0F0E0C]">
+                      <img
+                        src={listingMediaUrl(jobPoster) || jobPoster}
+                        alt={job.title}
+                        className="w-full h-full object-cover"
+                        loading="eager"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                      <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-wider bg-black/70 text-[#FFA048]">
+                        Job image
+                      </span>
+                    </div>
+                  ) : null}
                   <div className="flex justify-between items-start gap-3">
                     <div className="flex gap-3 min-w-0 flex-1">
                       <BusinessThumbnail
                         business={{
                           id: job.businessId,
                           name: job.businessName,
-                          logoUrl: job.businessLogoUrl,
+                          logoUrl: jobPoster || job.businessLogoUrl,
                         }}
                         eager
                         className="w-11 h-11 rounded-lg object-cover bg-[#1C1914] border border-[#2D2319] shrink-0"

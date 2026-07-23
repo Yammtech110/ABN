@@ -11,7 +11,7 @@ import {
 interface ImageUploadGridProps {
   images: string[];
   onChange: (images: string[]) => void;
-  language: 'en';
+  language: 'en' | 'ar';
   label?: string;
   hint?: string;
   id?: string;

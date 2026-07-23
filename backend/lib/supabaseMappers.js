@@ -69,6 +69,7 @@ const mapJobFromDb = (row) => ({
   businessId:      String(row.business_id),
   businessName:    row.business_name || '',
   businessLogoUrl: row.business_logo_url || '',
+  imageUrl:        row.image_url || '',
   title:           row.title || '',
   category:        row.category || 'Others',
   requirements:    row.requirements || '',
@@ -86,6 +87,7 @@ const mapJobToDb = (api) => {
   if (api.businessId !== undefined) row.business_id = api.businessId;
   if (api.businessName !== undefined) row.business_name = api.businessName;
   if (api.businessLogoUrl !== undefined) row.business_logo_url = api.businessLogoUrl;
+  if (api.imageUrl !== undefined) row.image_url = api.imageUrl;
   if (api.title !== undefined) row.title = api.title;
   if (api.category !== undefined) row.category = api.category;
   if (api.requirements !== undefined) row.requirements = api.requirements;

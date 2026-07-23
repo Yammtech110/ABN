@@ -9,7 +9,7 @@ const { supabaseAdmin } = require('../supabase');
 const { isSupabaseStorage, directoryProfiles, jobsBoard, newId, newUuid, today } = require('../db');
 const { mapJobFromDb, mapJobToDb, mapProfileFromDb } = require('../lib/supabaseMappers');
 const { authenticate, requireRole } = require('../middleware/authMiddleware');
-const { publicMediaPath, jobLogoFromProfile } = require('../lib/listingMedia');
+const { publicMediaPath, jobLogoFromProfile, streamStoredImage, sanitizeStoredImage, normalizeIncomingImage } = require('../lib/listingMedia');
 
 const router = express.Router();
 
@@ -63,13 +63,22 @@ const assertJobPostingAllowed = (profile, userRole) => {
 
 const mapJob = (row) => ({ ...row });
 
-/** Always resolve job thumbnails from the live listing media endpoint */
-const withLiveLogo = (job) => ({
-  ...job,
-  businessLogoUrl: job.businessId
-    ? publicMediaPath(job.businessId, 'logo')
-    : (job.businessLogoUrl || ''),
-});
+/** Public job payload: live business logo + job poster image endpoint */
+const withPublicJobMedia = (job) => {
+  const rawImage = sanitizeStoredImage(job.imageUrl);
+  let imageUrl = '';
+  if (rawImage) {
+    if (/^https?:\/\//i.test(rawImage)) imageUrl = rawImage;
+    else if (job.id) imageUrl = `/api/jobsboard/${job.id}/image`;
+  }
+  return {
+    ...job,
+    businessLogoUrl: job.businessId
+      ? publicMediaPath(job.businessId, 'logo')
+      : (job.businessLogoUrl || ''),
+    imageUrl,
+  };
+};
 
 async function fetchAllJobs() {
   if (!isSupabaseStorage()) return jobsBoard.map(mapJob);
@@ -140,7 +149,7 @@ router.get('/', async (req, res, next) => {
     }
 
     results.sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
-    res.json(results.map((job) => withLiveLogo(mapJob(job))));
+    res.json(results.map((job) => withPublicJobMedia(mapJob(job))));
   } catch (err) {
     next(err);
   }
@@ -152,7 +161,7 @@ router.get('/all', authenticate, requireRole('admin'), async (req, res, next) =>
   try {
     const allJobs = await fetchAllJobs();
     allJobs.sort((a, b) => String(b.createdAt || b.postedDate || '').localeCompare(String(a.createdAt || a.postedDate || '')));
-    res.json(allJobs.map((job) => withLiveLogo(mapJob(job))));
+    res.json(allJobs.map((job) => withPublicJobMedia(mapJob(job))));
   } catch (err) {
     next(err);
   }
@@ -174,7 +183,22 @@ router.get('/mine', authenticate, requireRole(...JOB_OWNER_ROLES), async (req, r
       .filter((j) => j.businessId === profile.id)
       .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
 
-    res.json(mine.map(mapJob));
+    res.json(mine.map((job) => withPublicJobMedia(mapJob(job))));
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── GET /api/jobsboard/:id/image ──────────────────────────────────────────
+router.get('/:id/image', async (req, res, next) => {
+  try {
+    const job = await findJobById(req.params.id);
+    if (!job) return res.status(404).end();
+    await streamStoredImage(res, job.imageUrl, '', {
+      name: job.title || job.businessName,
+      seed: job.id,
+      wide: false,
+    });
   } catch (err) {
     next(err);
   }
@@ -185,7 +209,7 @@ router.get('/:id', async (req, res, next) => {
   try {
     const job = await findJobById(req.params.id);
     if (!job) return res.status(404).json({ error: 'Job not found.' });
-    res.json(mapJob(job));
+    res.json(withPublicJobMedia(mapJob(job)));
   } catch (err) {
     next(err);
   }
@@ -197,6 +221,7 @@ router.post('/', authenticate, requireRole(...JOB_OWNER_ROLES), async (req, res,
     const {
       title, category, requirements = '',
       salaryMin, salaryMax, hiringEmail,
+      imageUrl = '',
     } = req.body;
 
     if (!title) return res.status(400).json({ error: 'title is required.' });
@@ -218,12 +243,14 @@ router.post('/', authenticate, requireRole(...JOB_OWNER_ROLES), async (req, res,
     }
 
     const logoForJob = jobLogoFromProfile(profile);
+    const storedImage = normalizeIncomingImage(imageUrl, '') || '';
 
     const job = {
       id:              isSupabaseStorage() ? newUuid() : newId('job'),
       businessId:      profile.id,
       businessName:    profile.businessName,
       businessLogoUrl: logoForJob,
+      imageUrl:        storedImage,
       title,
       category,
       requirements,
@@ -237,7 +264,7 @@ router.post('/', authenticate, requireRole(...JOB_OWNER_ROLES), async (req, res,
 
     if (!isSupabaseStorage()) {
       jobsBoard.unshift(job);
-      return res.status(201).json(withLiveLogo(mapJob(job)));
+      return res.status(201).json(withPublicJobMedia(mapJob(job)));
     }
 
     const { data, error } = await supabaseAdmin
@@ -251,7 +278,7 @@ router.post('/', authenticate, requireRole(...JOB_OWNER_ROLES), async (req, res,
     const memIdx = jobsBoard.findIndex((j) => j.id === saved.id);
     if (memIdx >= 0) jobsBoard[memIdx] = saved;
     else jobsBoard.unshift(saved);
-    res.status(201).json(withLiveLogo(saved));
+    res.status(201).json(withPublicJobMedia(saved));
   } catch (err) {
     next(err);
   }
@@ -273,7 +300,7 @@ router.put('/:id', authenticate, requireRole(...JOB_OWNER_ROLES), async (req, re
       }
     }
 
-    const { title, category, requirements, salaryMin, salaryMax, hiringEmail, isActive } = req.body;
+    const { title, category, requirements, salaryMin, salaryMax, hiringEmail, isActive, imageUrl } = req.body;
 
     if (category && !VALID_CATEGORIES.includes(category)) {
       return res.status(400).json({ error: `category must be one of: ${VALID_CATEGORIES.join(', ')}` });
@@ -286,6 +313,13 @@ router.put('/:id', authenticate, requireRole(...JOB_OWNER_ROLES), async (req, re
     if (hiringEmail  !== undefined) updated.hiringEmail  = hiringEmail;
     if (salaryMin    !== undefined) updated.salaryMin    = parseFloat(salaryMin);
     if (salaryMax    !== undefined) updated.salaryMax    = parseFloat(salaryMax);
+    if (imageUrl     !== undefined) {
+      const next = String(imageUrl ?? '').trim();
+      // Empty string clears the poster; API media paths keep the stored blob
+      updated.imageUrl = next
+        ? (normalizeIncomingImage(next, job.imageUrl) || '')
+        : '';
+    }
     if (isActive     !== undefined && req.user.role === 'admin') {
       updated.isActive = Boolean(isActive);
     }
@@ -293,7 +327,7 @@ router.put('/:id', authenticate, requireRole(...JOB_OWNER_ROLES), async (req, re
     if (!isSupabaseStorage()) {
       const idx = jobsBoard.findIndex((j) => j.id === req.params.id);
       jobsBoard[idx] = updated;
-      return res.json(mapJob(updated));
+      return res.json(withPublicJobMedia(mapJob(updated)));
     }
 
     const { data, error } = await supabaseAdmin
@@ -307,7 +341,7 @@ router.put('/:id', authenticate, requireRole(...JOB_OWNER_ROLES), async (req, re
     const saved = mapJob(mapJobFromDb(data));
     const memIdx = jobsBoard.findIndex((j) => j.id === saved.id);
     if (memIdx >= 0) jobsBoard[memIdx] = saved;
-    res.json(saved);
+    res.json(withPublicJobMedia(saved));
   } catch (err) {
     next(err);
   }

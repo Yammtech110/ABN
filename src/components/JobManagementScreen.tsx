@@ -15,6 +15,7 @@ import {
   AlertCircle,
   Loader2,
 } from 'lucide-react';
+import { ImageUploadGrid } from './ImageUploadGrid';
 
 const JOB_CATEGORIES: JobCategory[] = ['IT', 'Graphic Designing', 'Developer', 'Chef', 'Maid', 'Others'];
 
@@ -61,6 +62,7 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
   const [formSalaryMin,    setFormSalaryMin]    = useState('');
   const [formSalaryMax,    setFormSalaryMax]    = useState('');
   const [formEmail,        setFormEmail]        = useState('');
+  const [formImages,       setFormImages]       = useState<string[]>([]);
   const [formSuccess,      setFormSuccess]      = useState('');
   const [formError,        setFormError]        = useState('');
   const [hiringBusy,       setHiringBusy]       = useState(false);
@@ -78,13 +80,14 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
   const openNewForm = () => {
     setEditingJob(null); setFormTitle(''); setFormCategory('Others');
     setFormRequirements(''); setFormSalaryMin(''); setFormSalaryMax('');
-    setFormEmail(''); setFormSuccess(''); setFormError(''); setView('form');
+    setFormEmail(''); setFormImages([]); setFormSuccess(''); setFormError(''); setView('form');
   };
 
   const openEditForm = (job: Job) => {
     setEditingJob(job); setFormTitle(job.title); setFormCategory(job.category);
     setFormRequirements(job.requirements); setFormSalaryMin(String(job.salaryMin));
     setFormSalaryMax(String(job.salaryMax)); setFormEmail(job.hiringEmail);
+    setFormImages(job.imageUrl ? [job.imageUrl] : []);
     setFormSuccess(''); setFormError(''); setView('form');
   };
 
@@ -133,6 +136,7 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
             requirements: formRequirements.trim(),
             salaryMin: min, salaryMax: max,
             hiringEmail: formEmail.trim(),
+            imageUrl: formImages[0] || '',
           }),
         });
         if (res.ok) {
@@ -142,6 +146,7 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
             businessId:       String(saved.businessId ?? activeBusiness.id),
             businessName:     String(saved.businessName ?? activeBusiness.name),
             businessLogoUrl:  String(saved.businessLogoUrl ?? activeBusiness.logoUrl),
+            imageUrl:         saved.imageUrl ? String(saved.imageUrl) : undefined,
             title:            String(saved.title ?? formTitle.trim()),
             category:         (saved.category ?? formCategory) as JobCategory,
             requirements:     String(saved.requirements ?? formRequirements.trim()),
@@ -266,6 +271,20 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
           {formError && (
             <p className="p-3 bg-red-950/45 border border-red-900 text-red-300 text-xs rounded-xl">{formError}</p>
           )}
+
+          <ImageUploadGrid
+            id="job-form-image-upload"
+            images={formImages}
+            onChange={setFormImages}
+            language={language}
+            maxImages={1}
+            label={language === 'en' ? 'Job image' : 'صورة الوظيفة'}
+            hint={
+              language === 'en'
+                ? 'Optional poster shown on the job card and in Admin.'
+                : 'صورة اختيارية تظهر في بطاقة الوظيفة ولوحة الإدارة.'
+            }
+          />
 
           <div className="grid grid-cols-1 gap-4">
             <div>
@@ -467,6 +486,16 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
               className="p-4 rounded-2xl bg-[#13110E] border border-[#2D2319] space-y-2.5"
               id={`job-card-mgmt-${job.id}`}
             >
+              {job.imageUrl && (
+                <div className="h-24 rounded-xl overflow-hidden border border-[#2D2319] bg-[#0F0E0C]">
+                  <img
+                    src={job.imageUrl}
+                    alt={job.title}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+              )}
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <h3 className="text-xs font-extrabold text-white truncate">{job.title}</h3>

@@ -6,7 +6,9 @@ const DEFAULT_COVER = '';
 
 const isDataImage = (url) => typeof url === 'string' && url.startsWith('data:image/');
 const isRemoteImage = (url) => typeof url === 'string' && /^https?:\/\//i.test(url.trim());
-const isApiMediaPath = (url) => typeof url === 'string' && url.includes('/api/directory/');
+const isApiMediaPath = (url) =>
+  typeof url === 'string' &&
+  (url.includes('/api/directory/') || url.includes('/api/jobsboard/'));
 
 /** Known seed / legacy mock URLs that must not masquerade as every listing's photo */
 const LEGACY_MOCK_IMAGE_RE =

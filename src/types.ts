@@ -111,6 +111,8 @@ export interface Job {
   businessId: string;
   businessName: string;
   businessLogoUrl: string;
+  /** Optional job poster image (shown on cards / admin) */
+  imageUrl?: string;
   title: string;
   category: JobCategory;
   requirements: string;

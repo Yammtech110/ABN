@@ -89,7 +89,7 @@ export const JobBoardScreen: React.FC<JobBoardScreenProps> = ({ onBack, initialJ
           <div className="flex items-center gap-3">
             <div className="w-14 h-14 rounded-2xl overflow-hidden bg-[#0F0E0C] border border-[#2D2319] flex-shrink-0">
               <BusinessThumbnail
-                business={{ id: selectedJob.businessId, name: selectedJob.businessName, logoUrl: selectedJob.businessLogoUrl }}
+                business={{ id: selectedJob.businessId, name: selectedJob.businessName, logoUrl: selectedJob.imageUrl || selectedJob.businessLogoUrl }}
                 className="w-full h-full object-cover"
                 eager
               />
@@ -225,7 +225,7 @@ export const JobBoardScreen: React.FC<JobBoardScreenProps> = ({ onBack, initialJ
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-xl overflow-hidden bg-[#0F0E0C] border border-[#2D2319] flex-shrink-0">
                   <BusinessThumbnail
-                    business={{ id: job.businessId, name: job.businessName, logoUrl: job.businessLogoUrl }}
+                    business={{ id: job.businessId, name: job.businessName, logoUrl: job.imageUrl || job.businessLogoUrl }}
                     className="w-full h-full object-cover"
                     eager
                   />
