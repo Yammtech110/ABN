@@ -1,6 +1,6 @@
 import React from 'react';
-import { LEGAL_DOCS, LEGAL_PATHS, LegalDocId, SUPPORT_EMAIL } from '../data/legalContent';
-import { ExternalLink, Lock, FileText, X } from 'lucide-react';
+import { LEGAL_DOCS, LegalDocId, SUPPORT_EMAIL } from '../data/legalContent';
+import { Lock, FileText, X } from 'lucide-react';
 
 interface LegalDocModalProps {
   docId: LegalDocId;
@@ -9,7 +9,6 @@ interface LegalDocModalProps {
 
 export const LegalDocModal: React.FC<LegalDocModalProps> = ({ docId, onClose }) => {
   const doc = LEGAL_DOCS[docId];
-  const publicPath = LEGAL_PATHS[docId];
 
   return (
     <div
@@ -62,16 +61,7 @@ export const LegalDocModal: React.FC<LegalDocModalProps> = ({ docId, onClose }) 
           ))}
         </div>
 
-        <div className="px-5 py-4 border-t border-[#2D2319]/80 space-y-2 sheet-panel-footer">
-          <a
-            href={publicPath}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="sheet-panel-cta flex items-center justify-center gap-2 w-full py-2.5 rounded-2xl border text-[10px] font-bold uppercase tracking-wide"
-          >
-            <ExternalLink className="w-3.5 h-3.5" />
-            Open full page
-          </a>
+        <div className="px-5 py-4 border-t border-[#2D2319]/80 sheet-panel-footer">
           <p className="sheet-panel-meta text-[9px] text-center">{SUPPORT_EMAIL}</p>
         </div>
       </div>

@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
-import { ArrowLeft, ExternalLink, FileText, Lock } from 'lucide-react';
-import { LEGAL_DOCS, LEGAL_PATHS, LegalDocId, SUPPORT_EMAIL } from '../data/legalContent';
+import { ArrowLeft, FileText, Lock } from 'lucide-react';
+import { LEGAL_DOCS, LegalDocId, SUPPORT_EMAIL } from '../data/legalContent';
 import { useBackHandler } from '../context/BackNavigationContext';
 
 interface LegalDocScreenProps {
@@ -11,7 +11,6 @@ interface LegalDocScreenProps {
 /** Full-page legal / FAQ content (not a bottom sheet). */
 export const LegalDocScreen: React.FC<LegalDocScreenProps> = ({ docId, onBack }) => {
   const doc = LEGAL_DOCS[docId];
-  const publicPath = LEGAL_PATHS[docId];
 
   const handleBack = useCallback((): boolean => {
     onBack();
@@ -52,16 +51,7 @@ export const LegalDocScreen: React.FC<LegalDocScreenProps> = ({ docId, onBack })
           </section>
         ))}
 
-        <a
-          href={publicPath}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="page-cta flex items-center justify-center gap-2 w-full py-3 rounded-2xl text-[10px] font-bold uppercase tracking-wide"
-        >
-          <ExternalLink className="w-3.5 h-3.5" />
-          Open full page
-        </a>
-        <p className="page-meta text-[9px] text-center">{SUPPORT_EMAIL}</p>
+        <p className="page-meta text-[9px] text-center pt-2">{SUPPORT_EMAIL}</p>
       </div>
     </div>
   );
