@@ -21,6 +21,12 @@ import {
 import { apiFetch } from '../lib/api';
 import { businessLogoUrl, listingPlaceholderDataUrl, resolveListingCoverUrl } from '../utils/listingImages';
 import { BusinessThumbnail } from './BusinessThumbnail';
+import {
+  buildBusinessMapQuery,
+  googleMapsEmbedUrl,
+  openBusinessInMaps,
+  openExternalUrl,
+} from '../utils/maps';
 
 interface BusinessDetailsModalProps {
   business: Business;
@@ -164,17 +170,17 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
     }
   };
 
+  const mapQuery = useMemo(() => buildBusinessMapQuery(business), [business]);
+  const mapEmbedSrc = useMemo(() => googleMapsEmbedUrl(mapQuery), [mapQuery]);
+
   const handleActionClick = (actionType: 'phone' | 'whatsapp' | 'maps') => {
     if (actionType === 'phone') {
-      window.open(`tel:${business.phone}`, '_self');
+      openExternalUrl(`tel:${business.phone}`);
     } else if (actionType === 'whatsapp') {
       const prefilledText = encodeURIComponent(t.whatsappMessage);
-      const url = `https://wa.me/${business.whatsapp}?text=${prefilledText}`;
-      window.open(url, '_blank');
+      openExternalUrl(`https://wa.me/${business.whatsapp}?text=${prefilledText}`);
     } else if (actionType === 'maps') {
-      // Open Google Maps with the business address
-      const query = encodeURIComponent(`${business.name}, ${business.address}, ${business.city}, USA`);
-      window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
+      openBusinessInMaps(mapQuery);
     }
   };
 
@@ -595,13 +601,28 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
               <div className="relative aspect-video rounded-xl overflow-hidden border border-[#2D2319] bg-stone-900" id="details-mini-map">
                 <iframe
                   title="Google Maps"
-                  className="w-full h-full border-0"
-                  src={`https://www.google.com/maps?q=${encodeURIComponent(`${business.name}, ${business.address}, ${business.city}, USA`)}&output=embed`}
+                  className="w-full h-full border-0 pointer-events-none"
+                  src={mapEmbedSrc}
                   allowFullScreen
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
-                ></iframe>
+                />
+                {/* Overlay so tap always opens native / external Maps (WebView-safe) */}
+                <button
+                  type="button"
+                  onClick={() => openBusinessInMaps(mapQuery)}
+                  className="absolute inset-0 z-10 flex items-end justify-center pb-3 bg-gradient-to-t from-black/50 via-transparent to-transparent"
+                  aria-label={t.openMap}
+                  id="details-map-open-overlay"
+                >
+                  <span className="px-3 py-1.5 rounded-full bg-[#1A73E8] text-white text-[10px] font-bold shadow-lg">
+                    {t.openMap}
+                  </span>
+                </button>
               </div>
+              <p className="text-[9px] text-gray-500 leading-relaxed truncate" title={mapQuery}>
+                {mapQuery || (language === 'en' ? 'No address on file' : 'لا يوجد عنوان')}
+              </p>
             </div>
 
           </div>
