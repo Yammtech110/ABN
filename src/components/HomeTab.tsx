@@ -14,6 +14,7 @@ import {
   Search,
   MapPin,
   Bell,
+  RefreshCw,
   CheckCircle,
   ArrowRight,
   Sparkles,
@@ -126,6 +127,8 @@ export const HomeTab: React.FC<HomeTabProps> = ({
     categories,
     currentUser,
     notifications,
+    refreshDirectory,
+    refreshJobs,
     refreshNotifications,
     markNotificationsAsRead,
     jobs,
@@ -138,6 +141,23 @@ export const HomeTab: React.FC<HomeTabProps> = ({
   }, [currentUser?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const unreadCount = countUnreadNotifications(notifications, currentUser);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefreshApp = useCallback(async () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    try {
+      await Promise.all([
+        refreshDirectory(currentUser),
+        refreshJobs(),
+        currentUser ? refreshNotifications() : Promise.resolve(),
+      ]);
+    } catch (err) {
+      console.warn('[ABN Home] Refresh failed:', err);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [isRefreshing, refreshDirectory, refreshJobs, refreshNotifications, currentUser]);
 
   const [inputSearch, setInputSearch] = useState('');
   const [selectedCity, setSelectedCity] = useState<string>('all');
@@ -349,25 +369,39 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         {/* Header — premium orange wordmark */}
         <div className="pt-1 pb-0.5 flex items-center justify-between gap-3">
           <h1 className="text-3xl font-black text-[#FFA048] tracking-widest uppercase">ABN</h1>
-          {currentUser && (
+          <div className="flex items-center gap-2" id="home-header-actions">
             <button
               type="button"
-              onClick={() => {
-                void refreshNotifications();
-                void markNotificationsAsRead();
-                onSwitchTab('notifications');
-              }}
-              className="relative p-2 rounded-xl bg-[#13110E] border border-[#2D2319] hover:border-[#FFA048]/40 transition-colors"
-              aria-label="Notifications"
+              onClick={() => void handleRefreshApp()}
+              disabled={isRefreshing}
+              className="relative p-2 rounded-xl bg-[#13110E] border border-[#2D2319] hover:border-[#FFA048]/40 transition-colors disabled:opacity-60"
+              aria-label="Refresh"
+              title="Refresh"
+              id="btn-home-refresh"
             >
-              <Bell className="w-4 h-4 text-[#FFA048]" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[8px] font-black flex items-center justify-center">
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
-              )}
+              <RefreshCw className={`w-4 h-4 text-[#FFA048] ${isRefreshing ? 'animate-spin' : ''}`} />
             </button>
-          )}
+            {currentUser && (
+              <button
+                type="button"
+                onClick={() => {
+                  void refreshNotifications();
+                  void markNotificationsAsRead();
+                  onSwitchTab('notifications');
+                }}
+                className="relative p-2 rounded-xl bg-[#13110E] border border-[#2D2319] hover:border-[#FFA048]/40 transition-colors"
+                aria-label="Notifications"
+                id="btn-home-notifications"
+              >
+                <Bell className="w-4 h-4 text-[#FFA048]" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[8px] font-black flex items-center justify-center">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Search Bar (Relocated) */}
