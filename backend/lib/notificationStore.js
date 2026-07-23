@@ -30,6 +30,8 @@ const isMissingNotificationsTable = (err) => {
 };
 
 async function createNotification({ userId = null, receiverRole = 'all', title, message }) {
+  const { enqueuePush } = require('./pushSender');
+
   const record = {
     id:           `notif-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
     userId,
@@ -41,31 +43,35 @@ async function createNotification({ userId = null, receiverRole = 'all', title, 
     createdAt:    new Date().toISOString(),
   };
 
+  let saved = record;
+
   if (!isSupabaseStorage()) {
     appNotifications.unshift(record);
-    return record;
+  } else {
+    try {
+      const { data, error } = await getAdmin()
+        .from('app_notifications')
+        .insert({
+          user_id:       userId,
+          receiver_role: receiverRole,
+          title,
+          message,
+          is_read:       false,
+        })
+        .select('*')
+        .single();
+
+      if (error) throw new Error(error.message);
+      saved = mapNotificationFromDb(data);
+    } catch (err) {
+      if (!isMissingNotificationsTable(err)) throw err;
+      appNotifications.unshift(record);
+    }
   }
 
-  try {
-    const { data, error } = await getAdmin()
-      .from('app_notifications')
-      .insert({
-        user_id:       userId,
-        receiver_role: receiverRole,
-        title,
-        message,
-        is_read:       false,
-      })
-      .select('*')
-      .single();
-
-    if (error) throw new Error(error.message);
-    return mapNotificationFromDb(data);
-  } catch (err) {
-    if (!isMissingNotificationsTable(err)) throw err;
-    appNotifications.unshift(record);
-    return record;
-  }
+  // Also deliver as real device push (FCM) when Firebase is configured
+  enqueuePush(saved);
+  return saved;
 }
 
 async function listNotificationsForUser(user) {

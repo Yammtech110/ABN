@@ -20,6 +20,7 @@ import { NotificationsScreen } from './components/NotificationsScreen';
 import { Business } from './types';
 import { LegalDocId } from './data/legalContent';
 import { getUserListing, canPostJobs } from './utils/listingAccess';
+import { useOpenNotificationsOnPush, usePushNotifications } from './hooks/usePushNotifications';
 import {
   Home,
   Search,
@@ -277,7 +278,7 @@ function BottomNav({
 }
 
 function DirectoryAppContent() {
-  const { language, currentUser, businesses, authReady, isAuthenticated } = useDirectory();
+  const { language, currentUser, businesses, authReady, isAuthenticated, apiToken } = useDirectory();
   const t = TRANSLATIONS[language];
   const liveTime = useLiveClock();
   const isMobile = useIsMobile();
@@ -289,6 +290,11 @@ function DirectoryAppContent() {
   const [showSplash, setShowSplash] = useState(true);
   const [splashFading, setSplashFading] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+
+  // Real FCM / APNs registration when signed in on native APK
+  usePushNotifications(apiToken, Boolean(isAuthenticated && apiToken));
+  const openNotificationsFromPush = useCallback(() => setActiveTab('notifications'), []);
+  useOpenNotificationsOnPush(openNotificationsFromPush);
 
   const handleRootBack = useCallback(() => {
     if (showExitConfirm) {

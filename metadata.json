@@ -1,6 +1,5 @@
 {
   "name": "Shia Business Directory",
   "description": "A digital directory connecting Shia community members securely with Shia-owned businesses, professionals, and home service providers.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "requestFramePermissions": []
 }
