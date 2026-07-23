@@ -13,57 +13,6 @@ type AdminListingPhotosProps = {
   language: 'en' | 'ar';
 };
 
-/** Prefer direct <img> for API media; blob fetch only when helpful for same-origin proxy. */
-function useAdminImage(url: string, fallback: string) {
-  const [src, setSrc] = useState(url || fallback);
-  const [loading, setLoading] = useState(Boolean(url));
-
-  useEffect(() => {
-    let objectUrl: string | null = null;
-    let cancelled = false;
-    setLoading(true);
-
-    if (!url) {
-      setSrc(fallback);
-      setLoading(false);
-      return;
-    }
-
-    // Data URLs and remote https can be used directly
-    if (url.startsWith('data:') || /^https?:\/\//i.test(url)) {
-      setSrc(url);
-      setLoading(false);
-      return;
-    }
-
-    // API media paths: try blob (handles auth-less streaming); fall back to direct URL
-    fetch(url)
-      .then((res) => (res.ok ? res.blob() : null))
-      .then((blob) => {
-        if (cancelled) return;
-        if (blob && blob.size > 0) {
-          objectUrl = URL.createObjectURL(blob);
-          setSrc(objectUrl);
-        } else {
-          setSrc(url || fallback);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setSrc(url || fallback);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
-    };
-  }, [url, fallback]);
-
-  return { src, loading };
-}
-
 type PhotoTileProps = {
   url: string;
   fallback: string;
@@ -72,7 +21,11 @@ type PhotoTileProps = {
 };
 
 const PhotoTile: React.FC<PhotoTileProps> = ({ url, fallback, label, onExpand }) => {
-  const { src, loading } = useAdminImage(url, fallback);
+  const [src, setSrc] = useState(url || fallback);
+
+  useEffect(() => {
+    setSrc(url || fallback);
+  }, [url, fallback]);
 
   return (
     <button
@@ -86,12 +39,9 @@ const PhotoTile: React.FC<PhotoTileProps> = ({ url, fallback, label, onExpand })
         alt={label}
         loading="eager"
         decoding="async"
-        className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${
-          loading ? 'opacity-60' : 'opacity-100'
-        }`}
-        onError={(e) => {
-          (e.target as HTMLImageElement).src = fallback;
-        }}
+        referrerPolicy="no-referrer"
+        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+        onError={() => setSrc(fallback)}
       />
       <span className="absolute bottom-0 inset-x-0 px-2 py-1 text-[8px] font-bold uppercase tracking-wider bg-black/70 text-gray-300">
         {label}
@@ -111,12 +61,17 @@ export const AdminListingPhotos: React.FC<AdminListingPhotosProps> = ({ business
   const fallbackCover = listingPlaceholderDataUrl(business.name || business.id, { wide: true });
   const logoUrl = businessLogoUrl(business);
   const coverUrl = businessCoverUrl(business);
-  const { src: coverSrc, loading: coverLoading } = useAdminImage(coverUrl, fallbackCover);
-  const { src: logoSrc, loading: logoLoading } = useAdminImage(logoUrl, fallbackLogo);
+  const [coverSrc, setCoverSrc] = useState(coverUrl || fallbackCover);
+  const [logoSrc, setLogoSrc] = useState(logoUrl || fallbackLogo);
+
+  useEffect(() => {
+    setCoverSrc(coverUrl || fallbackCover);
+    setLogoSrc(logoUrl || fallbackLogo);
+  }, [coverUrl, logoUrl, fallbackCover, fallbackLogo]);
 
   const photos = useMemo(() => businessPhotoUrls(business), [business]);
-  const lightboxSrc = lightboxIndex !== null ? photos[lightboxIndex] : null;
-  const { src: lightboxDisplaySrc } = useAdminImage(lightboxSrc ?? '', fallbackLogo);
+  const lightboxSrc =
+    lightboxIndex !== null ? photos[lightboxIndex] || fallbackLogo : fallbackLogo;
 
   return (
     <div className="space-y-2" id={`admin-photos-${business.id}`}>
@@ -126,10 +81,9 @@ export const AdminListingPhotos: React.FC<AdminListingPhotosProps> = ({ business
           alt={`${business.name} cover`}
           loading="eager"
           decoding="async"
-          className={`w-full h-full object-cover ${coverLoading ? 'opacity-50' : 'opacity-100'}`}
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = fallbackCover;
-          }}
+          referrerPolicy="no-referrer"
+          className="w-full h-full object-cover"
+          onError={() => setCoverSrc(fallbackCover)}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
         <div className="absolute bottom-2 left-2 flex items-end gap-2">
@@ -139,10 +93,9 @@ export const AdminListingPhotos: React.FC<AdminListingPhotosProps> = ({ business
               alt={`${business.name} logo`}
               loading="eager"
               decoding="async"
-              className={`w-full h-full object-cover ${logoLoading ? 'opacity-50' : 'opacity-100'}`}
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = fallbackLogo;
-              }}
+              referrerPolicy="no-referrer"
+              className="w-full h-full object-cover"
+              onError={() => setLogoSrc(fallbackLogo)}
             />
           </div>
           <span className="text-[8px] font-bold uppercase tracking-wider text-gray-300 pb-0.5">
@@ -205,10 +158,14 @@ export const AdminListingPhotos: React.FC<AdminListingPhotosProps> = ({ business
             <X className="w-5 h-5" />
           </button>
           <img
-            src={lightboxDisplaySrc}
+            src={lightboxSrc}
             alt={business.name}
+            referrerPolicy="no-referrer"
             className="max-w-full max-h-[85vh] rounded-xl object-contain"
             onClick={(e) => e.stopPropagation()}
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = fallbackLogo;
+            }}
           />
         </div>
       )}

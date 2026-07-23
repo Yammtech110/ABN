@@ -1,4 +1,3 @@
-import { Capacitor } from '@capacitor/core';
 import { apiUrl } from '../lib/api';
 
 /** Legacy shared grocery mock — never use as a live listing thumbnail */
@@ -51,15 +50,13 @@ export const listingPlaceholderDataUrl = (
 export const DEFAULT_LISTING_LOGO = listingPlaceholderDataUrl('BN');
 export const DEFAULT_LISTING_COVER = listingPlaceholderDataUrl('BN', { wide: true });
 
-/** Always return an absolute, loadable URL (required for Capacitor APK). */
+/** Always return an absolute, loadable URL (required for Capacitor APK + Static Site). */
 export const listingMediaUrl = (path: string): string => {
   const normalized = toMediaPath(path);
   if (!normalized) return '';
   if (isHttpUrl(normalized)) return normalized;
-  if (Capacitor.isNativePlatform()) return apiUrl(normalized);
-  if (typeof window !== 'undefined' && window.location?.origin) {
-    return `${window.location.origin}${normalized.startsWith('/') ? normalized : `/${normalized}`}`;
-  }
+  // Prefer API host (VITE_API_BASE_URL). Never pin media to the Static Site origin —
+  // abn-1.onrender.com has no /api/directory image routes (would show initials only).
   return apiUrl(normalized);
 };
 
