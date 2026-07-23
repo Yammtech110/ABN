@@ -26,6 +26,7 @@ import {
   Zap,
   Smartphone,
   BadgeCheck,
+  Trash2,
 } from 'lucide-react';
 import { Business, PaymentRecord } from '../types';
 import { US_STATES } from '../data/usStates';
@@ -90,6 +91,8 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
     payments,
     addBusiness,
     updateBusiness,
+    removeBusiness,
+    deleteMyListing,
     renewMembership,
     apiToken,
     refreshDirectory,
@@ -119,6 +122,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
 
   // Find business registered to current owner
   const [isSavingManage, setIsSavingManage] = useState(false);
+  const [isDeletingListing, setIsDeletingListing] = useState(false);
 
   // Registration Flow State
   const [registrationType, setRegistrationType] = useState<'business' | 'service' | null>(null);
@@ -586,6 +590,25 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
   // Filters payments matching current business
   const businessPayments = payments.filter((p) => p.businessId === (myBusiness?.id || ''));
   const isManageForm = Boolean(manageMode && myBusiness && canManageListing(myBusiness));
+  const listingKindLabel = listingKind(myBusiness) === 'service' ? 'service provider' : 'business';
+
+  const handleDeleteListing = async () => {
+    if (!myBusiness) return;
+    const ok = confirm(
+      `Delete your ${listingKindLabel} listing "${myBusiness.name}"? Related job posts will also be removed. This cannot be undone.`,
+    );
+    if (!ok) return;
+    const confirmWord = prompt('Type DELETE to confirm:');
+    if (confirmWord !== 'DELETE') return;
+    setIsDeletingListing(true);
+    const result = await deleteMyListing(myBusiness.id);
+    setIsDeletingListing(false);
+    if (!result.success) {
+      alert(result.error || 'Could not delete listing.');
+      return;
+    }
+    onBack?.();
+  };
 
   const approvalNoticeModal = showApprovalNotice ? (
     <div
@@ -1043,6 +1066,23 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                 ? (isSavingManage ? (language === 'en' ? 'Saving…' : 'جاري الحفظ…') : (language === 'en' ? 'Save Changes' : 'حفظ التغييرات'))
                 : (isSubmittingReg ? (language === 'en' ? 'Submitting…' : 'جارٍ الإرسال…') : t.submitApplication)}
             </button>
+
+            {isManageForm && (
+              <button
+                type="button"
+                onClick={handleDeleteListing}
+                disabled={isDeletingListing}
+                className="w-full py-3 mt-2 rounded-2xl border border-red-500/30 bg-red-950/30 hover:bg-red-950/45 text-red-300 font-extrabold text-xs tracking-wider uppercase transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                id="btn-delete-listing"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                {isDeletingListing
+                  ? (language === 'en' ? 'Deleting…' : 'جاري الحذف…')
+                  : listingKind(myBusiness) === 'service'
+                    ? (language === 'en' ? 'Delete Service Provider' : 'حذف مزود الخدمة')
+                    : (language === 'en' ? 'Delete Business' : 'حذف النشاط')}
+              </button>
+            )}
           </form>
         </div>
         )

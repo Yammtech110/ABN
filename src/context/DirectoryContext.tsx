@@ -218,6 +218,8 @@ interface DirectoryContextType {
   addBusiness:    (business: Business) => void;
   updateBusiness: (updated: Business) => void;
   removeBusiness: (id: string) => void;
+  /** Owner deletes their business/service listing (+ cascaded jobs on server). */
+  deleteMyListing: (listingId: string) => Promise<{ success: boolean; error?: string }>;
   refreshDirectory: (actingUser?: UserProfile | null) => Promise<void>;
 
   reviews:        Review[];
@@ -1194,6 +1196,37 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const removeBusiness = (id: string) =>
     setBusinesses((p) => p.filter((b) => b.id !== id));
 
+  const deleteMyListing = async (listingId: string): Promise<{ success: boolean; error?: string }> => {
+    if (!apiToken) return { success: false, error: 'You must be signed in.' };
+    if (!listingId) return { success: false, error: 'Listing not found.' };
+    try {
+      const res = await apiFetch(`/api/directory/${listingId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${apiToken}` },
+      });
+      if (!res.ok && res.status !== 204) {
+        let message = 'Could not delete listing.';
+        try {
+          const data = await res.json();
+          if (data?.error) message = String(data.error);
+        } catch { /* empty body */ }
+        return { success: false, error: message };
+      }
+      removeBusiness(listingId);
+      setJobs((prev) => prev.filter((j) => j.businessId !== listingId));
+      setHiringActiveState((prev) => {
+        const next = { ...prev };
+        delete next[listingId];
+        return next;
+      });
+      await refreshDirectory();
+      await refreshJobs(apiToken);
+      return { success: true };
+    } catch {
+      return { success: false, error: 'Cannot reach server. Try again.' };
+    }
+  };
+
   // ── Review helpers ────────────────────────────────────────────────────────
   const addReview = (review: Review) => {
     setReviews((prevR) => {
@@ -1599,7 +1632,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       authReady, isAuthenticated, currentUser, apiToken, apiLogin, signInWithGoogle, signInWithApple, oauthAvailable: isSupabaseConfigured, registerAccount, verifyEmailCode, resendVerificationCode, requestPasswordReset, verifyResetCode, completePasswordReset, deleteAccount, blockListingOwner, signOut, updateUserProfile,
       language, theme, setTheme,
       categories, addCategory, removeCategory, refreshCategories,
-      businesses, addBusiness, updateBusiness, removeBusiness, refreshDirectory,
+      businesses, addBusiness, updateBusiness, removeBusiness, deleteMyListing, refreshDirectory,
       reviews, addReview, fetchReviewsForBusiness, submitReview,
       favorites, favoritesLoading, favoritesError, refreshFavorites, toggleFavorite,
       payments, refreshPayments, renewMembership,

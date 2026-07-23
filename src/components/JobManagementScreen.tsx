@@ -518,10 +518,13 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
                   </button>
                   <button
                     onClick={() => handleDelete(job.id)}
-                    className="p-1.5 rounded-lg bg-[#191613] border border-[#2D2319] hover:border-red-500/40 transition-all"
+                    className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-red-950/30 border border-red-500/30 hover:bg-red-950/50 transition-all"
                     aria-label="Delete job"
+                    title="Delete job"
+                    id={`btn-delete-job-${job.id}`}
                   >
                     <Trash2 className="w-3 h-3 text-red-400" />
+                    <span className="text-[9px] font-bold text-red-300">Delete</span>
                   </button>
                 </div>
               </div>

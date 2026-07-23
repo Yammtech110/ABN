@@ -38,6 +38,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
     currentUser,
     signOut,
     deleteAccount,
+    deleteMyListing,
     businesses,
     hiringActive,
     setHiringActive,
@@ -49,6 +50,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
 
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteListingBusy, setDeleteListingBusy] = useState(false);
 
   const myListing = getUserListing(currentUser, businesses);
   const canManage = canManageListing(myListing);
@@ -105,6 +107,25 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
     if (!result.success) {
       alert(result.error || 'Could not delete account.');
     }
+  };
+
+  const handleDeleteListing = async () => {
+    if (!myListing) return;
+    const label = kind === 'service' ? 'service provider listing' : 'business listing';
+    const ok = confirm(
+      `Delete your ${label} "${myListing.name}"? This also removes its job postings from the directory. This cannot be undone.`,
+    );
+    if (!ok) return;
+    const confirmWord = prompt('Type DELETE to confirm:');
+    if (confirmWord !== 'DELETE') return;
+    setDeleteListingBusy(true);
+    const result = await deleteMyListing(myListing.id);
+    setDeleteListingBusy(false);
+    if (!result.success) {
+      alert(result.error || 'Could not delete listing.');
+      return;
+    }
+    alert(kind === 'service' ? 'Service listing deleted.' : 'Business listing deleted.');
   };
 
   if (isEditingProfile && !isAdmin) {
@@ -323,6 +344,23 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
           <LogOut className="w-4 h-4 text-red-500" />
           {t.signOut}
         </button>
+
+      {myListing && (
+        <button
+          type="button"
+          onClick={handleDeleteListing}
+          disabled={deleteListingBusy}
+          className="w-full flex items-center gap-3 p-4 px-5 rounded-2xl border border-red-500/20 bg-red-950/25 hover:bg-red-950/40 text-red-300 font-semibold text-xs transition-colors disabled:opacity-60"
+          id="btn-account-delete-listing"
+        >
+          <Trash2 className="w-4 h-4 text-red-400" />
+          {deleteListingBusy
+            ? 'Deleting…'
+            : kind === 'service'
+              ? 'Delete Service Provider'
+              : 'Delete Business'}
+        </button>
+      )}
 
       {!isAdmin && (
         <button
