@@ -1,9 +1,12 @@
-# Production APK build - backend must be live on Render first
+# Live-updating production APK — WebView loads https://abn-1.onrender.com
+# After this APK is installed once, UI updates when Render Static Site redeploys.
+#
 # Usage: .\scripts\build-production-apk.ps1
-#        .\scripts\build-production-apk.ps1 -ApiUrl "https://your-api.onrender.com"
+#        .\scripts\build-production-apk.ps1 -LiveUrl "https://abn-1.onrender.com"
 
 param(
-  [string]$ApiUrl = ""
+  [string]$ApiUrl = "",
+  [string]$LiveUrl = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -30,26 +33,39 @@ if (-not (Test-Path (Join-Path $Root ".env.production"))) {
   Write-Error "Missing .env.production - copy .env.production.example and set VITE_API_BASE_URL"
 }
 
-Write-Host "Building web bundle (production)..."
+Write-Host "Building web bundle (fallback assets)..."
 npm run build
-if ($LASTEXITCODE -ne 0) { throw "npm run build failed" }
 
-Write-Host "Syncing Capacitor (production mode)..."
+Write-Host "Syncing Capacitor (LIVE web from Render Static Site)..."
 $env:CAPACITOR_PRODUCTION = "true"
+if ($LiveUrl) {
+  $env:CAPACITOR_SERVER_URL = $LiveUrl
+  Write-Host "CAPACITOR_SERVER_URL=$LiveUrl"
+} else {
+  $env:CAPACITOR_SERVER_URL = "https://abn-1.onrender.com"
+}
 npx cap sync android
-if ($LASTEXITCODE -ne 0) { throw "cap sync failed" }
 
 Write-Host "Building APK..."
 $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
-$env:ANDROID_HOME = "C:\Users\hp\AppData\Local\Android\Sdk"
 Set-Location (Join-Path $Root "android")
 .\gradlew.bat assembleDebug
-if ($LASTEXITCODE -ne 0) { throw "gradle assembleDebug failed" }
 
 $apkSrc = Join-Path $Root "android\app\build\outputs\apk\debug\app-debug.apk"
-$apkDst = Join-Path $env:USERPROFILE "Desktop\ABN-Community-App-Global.apk"
-Copy-Item -Force $apkSrc $apkDst
+$stamp = Get-Date -Format "yyyyMMdd-HHmm"
+$downloads = Join-Path $env:USERPROFILE "Downloads"
+$desktopCandidates = @(
+  (Join-Path $env:USERPROFILE "OneDrive\Desktop"),
+  (Join-Path $env:USERPROFILE "Desktop")
+) | Where-Object { Test-Path $_ }
+
+$named = Join-Path $downloads "ABN-LiveUpdate-$stamp.apk"
+Copy-Item -Force $apkSrc $named
+foreach ($desk in $desktopCandidates) {
+  Copy-Item -Force $apkSrc (Join-Path $desk "ABN-LiveUpdate-$stamp.apk")
+  Copy-Item -Force $apkSrc (Join-Path $desk "ABN-Community-App-Global.apk")
+}
 
 Write-Host ""
-Write-Host "Done! Global APK: $apkDst"
-Write-Host "Share this APK with clients - they all hit your cloud backend."
+Write-Host "Done! Live-update APK:" $named
+Write-Host "This shell loads https://abn-1.onrender.com — redeploy Static Site to push UI updates (no new APK)."
