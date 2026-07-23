@@ -6,6 +6,7 @@ import { TRANSLATIONS } from '../data/translations';
 import { Job, JobCategory } from '../types';
 import { textEn } from '../utils/englishOnly';
 import { isLiveDirectoryListing } from '../utils/listingAccess';
+import { resolveCategoryId } from '../utils/categoryMatch';
 import { resolveListingCoverUrl, resolveListingLogoUrl } from '../utils/listingImages';
 import { BusinessThumbnail } from './BusinessThumbnail';
 import { countUnreadNotifications } from '../utils/notifications';
@@ -181,7 +182,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             logoUrl:              resolveListingLogoUrl(String(p.imageUrl ?? ''), String(p.coverUrl ?? ''), String(p.id ?? ''), String(p.businessName ?? '')),
             coverUrl:             resolveListingCoverUrl(String(p.coverUrl ?? ''), String(p.imageUrl ?? ''), String(p.id ?? ''), String(p.businessName ?? '')),
             description:          { en: String(p.description ?? ''), ar: '' },
-            categoryId:           String(p.category ?? '').toLowerCase().replace(/ /g, '-'),
+            categoryId:           resolveCategoryId(String(p.category ?? ''), categories),
             subcategory:          { en: String(p.category ?? ''), ar: '' },
             address:              String(p.address ?? ''),
             city:                 String(p.city ?? 'New York') as Business['city'],
@@ -209,7 +210,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
     }, 350); // 350ms debounce
 
     return () => { if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current); };
-  }, [inputSearch, selectedCity]);
+  }, [inputSearch, selectedCity, categories]);
 
   // Unread notifications count — shown on bell when signed in
 

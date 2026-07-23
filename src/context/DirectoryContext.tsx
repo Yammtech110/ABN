@@ -11,6 +11,7 @@ import {
   INITIAL_BUSINESSES, INITIAL_REVIEWS,
   INITIAL_PAYMENTS, INITIAL_JOBS, INITIAL_HIRING_ACTIVE,
 } from '../data/mockData';
+import { resolveCategoryId } from '../utils/categoryMatch';
 import { resolveListingCoverUrl, resolveListingLogoUrl, resolveJobImageUrl } from '../utils/listingImages';
 
 // ── Safe storage helpers ────────────────────────────────────────────────────
@@ -54,7 +55,9 @@ if (typeof window !== 'undefined') {
 // ── API helpers ────────────────────────────────────────────────────────────
 
 /** Map a Supabase profiles_directory row → Business shape the UI expects */
-const mapDirectoryProfile = (p: Record<string, unknown>): Business => ({
+const mapDirectoryProfile = (p: Record<string, unknown>, categories: Category[] = []): Business => {
+  const rawCategory = String(p.category ?? '');
+  return {
   id:                   String(p.id ?? ''),
   // Use email as ownerId so it matches currentUser.email across auth systems
   ownerId:              String(p.email ?? ''),
@@ -62,8 +65,10 @@ const mapDirectoryProfile = (p: Record<string, unknown>): Business => ({
   logoUrl:              resolveListingLogoUrl(String(p.imageUrl ?? ''), String(p.coverUrl ?? ''), String(p.id ?? ''), String(p.businessName ?? '')),
   coverUrl:             resolveListingCoverUrl(String(p.coverUrl ?? ''), String(p.imageUrl ?? ''), String(p.id ?? ''), String(p.businessName ?? '')),
   description:          { en: String(p.description ?? ''), ar: '' },
-  categoryId:           String(p.category ?? '').toLowerCase().replace(/ /g, '-'),
-  subcategory:          { en: String(p.category ?? ''), ar: '' },
+  categoryId:           categories.length
+    ? resolveCategoryId(rawCategory, categories)
+    : rawCategory.toLowerCase().replace(/ /g, '-'),
+  subcategory:          { en: rawCategory, ar: '' },
   listingType:          (p.listingType === 'service' ? 'service' : 'business') as Business['listingType'],
   address:              String(p.address ?? ''),
   city:                 (String(p.city || 'New York')) as Business['city'],
@@ -84,7 +89,8 @@ const mapDirectoryProfile = (p: Record<string, unknown>): Business => ({
   gallery:              [],
   rating:               Number(p.rating ?? 0),
   reviewsCount:         Number(p.reviewsCount ?? 0),
-});
+};
+};
 
 /** Map a Supabase jobs_board row → Job shape the UI expects */
 const mapApiJob = (j: Record<string, unknown>): Job => {
@@ -330,7 +336,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (!res.ok) return;
       const profile: Record<string, unknown> | null = await res.json();
       if (!profile?.id) return;
-      const mapped = mapDirectoryProfile(profile);
+      const mapped = mapDirectoryProfile(profile, categories);
       setBusinesses((prev) => {
         const rest = prev.filter((b) =>
           b.ownerId !== mapped.ownerId &&
@@ -345,7 +351,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     } catch {
       console.warn('[ABN Directory] Could not load your directory profile.');
     }
-  }, []);
+  }, [categories]);
 
   const refreshJobs = useCallback(async (token?: string | null): Promise<void> => {
     const authToken = token ?? apiToken;
@@ -412,7 +418,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         const dirData: Record<string, unknown>[] = await dirRes.json();
         if (Array.isArray(dirData)) {
           rawDirData = dirData;
-          listings = dirData.map(mapDirectoryProfile);
+          listings = dirData.map((row) => mapDirectoryProfile(row, categories));
         }
       }
 
@@ -420,7 +426,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (mineRes?.ok) {
         const mineData: Record<string, unknown> | null = await mineRes.json();
         if (mineData?.id) {
-          const mineListing = mapDirectoryProfile(mineData);
+          const mineListing = mapDirectoryProfile(mineData, categories);
           if (!listings.some((b) => b.id === mineListing.id)) {
             listings = [...listings, mineListing];
           }
@@ -472,6 +478,13 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           return (a.name.en || '').localeCompare(b.name.en || '');
         });
         setCategories(cats);
+        // Remap existing listings so category chips match stored names (Accountants → cat-accountant)
+        setBusinesses((prev) =>
+          prev.map((b) => ({
+            ...b,
+            categoryId: resolveCategoryId(b.subcategory?.en || b.categoryId, cats),
+          })),
+        );
       }
     } catch {
       console.warn('[ABN Directory] Could not load categories from API.');
@@ -1418,7 +1431,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setPayments((p) => [payment, ...p.filter((x) => x.id !== payment.id)]);
 
       if (data.profile) {
-        const mapped = mapDirectoryProfile(data.profile as Record<string, unknown>);
+        const mapped = mapDirectoryProfile(data.profile as Record<string, unknown>, categories);
         setBusinesses((prev) => {
           const rest = prev.filter((b) => b.id !== mapped.id);
           return [...rest, mapped];
@@ -1483,7 +1496,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         });
         if (res.ok) {
           const data: Record<string, unknown> = await res.json();
-          const mapped = mapDirectoryProfile(data);
+          const mapped = mapDirectoryProfile(data, categories);
           setBusinesses((prev) => {
             const rest = prev.filter((b) => b.ownerId !== mapped.ownerId);
             return [...rest, mapped];

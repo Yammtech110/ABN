@@ -5,6 +5,7 @@ import { Search, MapPin, ArrowLeft, CheckCircle, Clock } from 'lucide-react';
 import { Business } from '../types';
 import { textEn } from '../utils/englishOnly';
 import { isLiveDirectoryListing } from '../utils/listingAccess';
+import { listingMatchesCategory } from '../utils/categoryMatch';
 import { BusinessThumbnail } from './BusinessThumbnail';
 
 interface SearchTabProps {
@@ -98,9 +99,13 @@ export const SearchTab: React.FC<SearchTabProps> = ({
   // Trigger search filters when input query is passed from Home category clicks
   useEffect(() => {
     if (initialQuery) {
-      const catExists = categories.some((c) => c.id === initialQuery);
-      if (catExists) {
-        setSelectedCategory(initialQuery);
+      const catById = categories.find((c) => c.id === initialQuery);
+      const catByName = categories.find(
+        (c) => c.name.en.toLowerCase() === initialQuery.toLowerCase(),
+      );
+      const matchedCat = catById || catByName;
+      if (matchedCat) {
+        setSelectedCategory(matchedCat.id);
         setSearchQuery('');
         setDebouncedQuery('');
       } else if (['New York', 'Los Angeles', 'Chicago', 'Houston', 'Miami', 'Dearborn', 'Dallas', 'All'].includes(initialQuery)) {
@@ -140,11 +145,11 @@ export const SearchTab: React.FC<SearchTabProps> = ({
         biz.address.toLowerCase().includes(q);
 
       const matchCity = selectedCity === 'All' || biz.city === selectedCity;
-      const matchCategory = selectedCategory === 'All' || biz.categoryId === selectedCategory;
+      const matchCategory = listingMatchesCategory(biz, selectedCategory, categories);
 
       return matchQuery && matchCity && matchCategory;
     });
-  }, [businesses, debouncedQuery, selectedCity, selectedCategory, language]);
+  }, [businesses, debouncedQuery, selectedCity, selectedCategory, categories, language]);
 
 
   return (

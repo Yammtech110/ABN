@@ -351,7 +351,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
         },
         body: JSON.stringify({
           businessName: regName,
-          category: categoryLabel,
+          category: regCatId || categoryLabel,
           description: regDesc,
           imageUrl: defaultLogo,
           coverUrl: defaultCover,
@@ -493,7 +493,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
       try {
         const body: Record<string, unknown> = {
           businessName: regName,
-          category: categoryLabel,
+          category: regCatId || categoryLabel,
           description: regDesc,
           address: regAddress,
           area: regZipCode,
