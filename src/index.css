@@ -199,13 +199,43 @@ html.light .bg-\[\#201B15\] {
 
 /* ── City filter pills ───────────────────────────────────── */
 html.light .bg-\[\#13110E\].rounded-full,
-html.light button.rounded-full {
+html.light button.rounded-full:not(.app-toggle) {
   background-color: #F8FAFC !important;
   border-color: var(--color-border) !important;
   color: #475569 !important;
 }
-html.light button.rounded-full:hover {
+html.light button.rounded-full:not(.app-toggle):hover {
   border-color: var(--color-primary) !important;
+}
+
+/* Theme-safe on/off switch (Hiring Active, etc.) */
+.app-toggle {
+  border: 2px solid transparent;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+.app-toggle-off {
+  background-color: #3A322C !important;
+  border-color: #5A5048 !important;
+}
+.app-toggle-on {
+  background-color: #FFA048 !important;
+  border-color: #E8913A !important;
+}
+.app-toggle-knob {
+  background-color: #FFFFFF !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+html.light .app-toggle-off {
+  background-color: #CBD5E1 !important;
+  border-color: #94A3B8 !important;
+}
+html.light .app-toggle-on {
+  background-color: #F97316 !important;
+  border-color: #EA580C !important;
+}
+html.light .app-toggle-knob {
+  background-color: #FFFFFF !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.25);
 }
 
 /* ── Category cards ─────────────────────────────────────── */

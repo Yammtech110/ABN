@@ -204,9 +204,18 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
                   await setHiringActive(myListing.id, !hiringEnabled);
                   setHiringBusy(false);
                 }}
-                className={`relative w-11 h-6 rounded-full transition-colors ${hiringEnabled ? 'bg-[#FFA048]' : 'bg-[#2D2319]'}`}
+                className={`app-toggle relative w-11 h-6 rounded-full transition-colors disabled:opacity-50 ${
+                  hiringEnabled ? 'app-toggle-on' : 'app-toggle-off'
+                }`}
+                aria-pressed={hiringEnabled}
+                aria-label="Hiring Active"
+                id="btn-hiring-toggle"
               >
-                <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${hiringEnabled ? 'translate-x-5' : ''}`} />
+                <span
+                  className={`app-toggle-knob absolute top-0.5 left-0.5 w-5 h-5 rounded-full transition-transform ${
+                    hiringEnabled ? 'translate-x-5' : ''
+                  }`}
+                />
               </button>
             </div>
             <button

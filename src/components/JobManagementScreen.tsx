@@ -558,12 +558,13 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
             aria-checked={isHiring}
             disabled={hiringBusy}
             onClick={handleHiringToggle}
-            className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${
-              isHiring ? 'bg-[#FFA048]' : 'bg-stone-700'
-            } ${hiringBusy ? 'opacity-60' : ''}`}
+            className={`app-toggle relative w-11 h-6 rounded-full transition-colors shrink-0 disabled:opacity-50 ${
+              isHiring ? 'app-toggle-on' : 'app-toggle-off'
+            }`}
+            id="btn-hiring-toggle-jobs"
           >
             <span
-              className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+              className={`app-toggle-knob absolute top-0.5 left-0.5 w-5 h-5 rounded-full transition-transform ${
                 isHiring ? 'translate-x-5' : 'translate-x-0'
               }`}
             />
