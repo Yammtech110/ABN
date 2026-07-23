@@ -238,6 +238,24 @@ html.light .app-toggle-knob {
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.25);
 }
 
+/* Account profile role / plan badges — readable in light theme */
+html.light .account-role-badge-service {
+  background-color: #DBEAFE !important;
+  color: #1E3A8A !important;
+  border-color: #93C5FD !important;
+}
+html.light .account-role-badge-user,
+html.light .account-plan-badge {
+  background-color: #F1F5F9 !important;
+  color: #334155 !important;
+  border-color: #CBD5E1 !important;
+}
+html.light .account-role-badge-admin {
+  background-color: #FFF7ED !important;
+  color: #C2410C !important;
+  border-color: #FDBA74 !important;
+}
+
 /* ── Category cards ─────────────────────────────────────── */
 html.light #home-categories-scroll button {
   background: linear-gradient(to bottom, #FFFFFF, #F9FAFB) !important;

@@ -152,17 +152,17 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
             <h3 className="text-sm font-bold text-white truncate">{currentUser.name}</h3>
             <p className="text-[10px] text-gray-500 truncate">{currentUser.email}</p>
             <div className="flex flex-wrap gap-1.5 mt-1.5">
-              <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${
+              <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border account-role-badge ${
                 isAdmin
-                  ? 'bg-[#FFA048]/15 text-[#FFA048] border-[#FFA048]/30'
+                  ? 'account-role-badge-admin bg-[#FFA048]/15 text-[#FFA048] border-[#FFA048]/30'
                   : kind === 'service'
-                    ? 'bg-blue-900/30 text-blue-300 border-blue-700/40'
-                    : 'bg-[#201B15] text-gray-400 border-[#2D2319]'
+                    ? 'account-role-badge-service bg-blue-900/40 text-blue-200 border-blue-600/50'
+                    : 'account-role-badge-user bg-[#201B15] text-gray-400 border-[#2D2319]'
               }`}>
                 {roleBadgeLabel()}
               </span>
               {subscriptionLabel() && (
-                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#201B15] text-gray-400 border border-[#2D2319]">
+                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#201B15] text-gray-400 border border-[#2D2319] account-plan-badge">
                   {subscriptionLabel()}
                 </span>
               )}
