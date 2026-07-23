@@ -889,6 +889,34 @@ html.light #details-modal-container .text-\[\#F4E3D7\]\/80 {
   color: #0F172A !important;
 }
 
+/* City / location chip — readable in both themes */
+.details-city-badge {
+  background-color: #2E2822;
+  color: #E7E5E4;
+  border: 1px solid #3A322C;
+  font-weight: 700;
+}
+.details-city-badge-icon {
+  color: #FFA048;
+}
+html.light .details-city-badge,
+html.light #details-city-badge {
+  background-color: #FFF7ED !important;
+  color: #9A3412 !important;
+  border-color: #FDBA74 !important;
+}
+html.light .details-city-badge-icon,
+html.light #details-city-badge .details-city-badge-icon {
+  color: #EA580C !important;
+}
+
+/* Missed dark surface used by city chip */
+html.light .bg-\[\#2E2822\] {
+  background-color: #FFF7ED !important;
+  color: #9A3412 !important;
+  border-color: #FDBA74 !important;
+}
+
 /* Legacy Call button class (pre-brand colors) — keep readable in light theme */
 html.light #action-btn-call.bg-\[\#2E2822\],
 html.light #details-actions .bg-\[\#2E2822\] {

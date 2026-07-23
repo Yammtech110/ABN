@@ -246,8 +246,11 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                     {t.verified}
                   </span>
                 )}
-                <span className="text-[10px] bg-[#2E2822] text-gray-300 px-2 py-0.5 rounded-full flex items-center gap-0.5">
-                  <MapPin className="w-3 h-3 text-[#FFA048]" />
+                <span
+                  id="details-city-badge"
+                  className="details-city-badge text-[10px] px-2 py-0.5 rounded-full flex items-center gap-0.5"
+                >
+                  <MapPin className="w-3 h-3 details-city-badge-icon" />
                   {(t[business.city.replace(/\s+/g, '').toLowerCase() as keyof typeof t] as string) || business.city}
                 </span>
               </div>
