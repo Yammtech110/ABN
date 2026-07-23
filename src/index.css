@@ -251,6 +251,19 @@ html.light #account-tab-container .rounded-2xl {
   border-color: var(--color-border) !important;
   box-shadow: var(--shadow-card) !important;
 }
+/* Legal / Notifications sheets — high-contrast on light theme */
+html.light #legal-doc-sheet.sheet-panel,
+html.light #notification-center-sheet.sheet-panel {
+  background: #FFFFFF !important;
+  border-color: #E7E5E4 !important;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18) !important;
+}
+html.light #legal-doc-sheet .sheet-card,
+html.light #notification-center-sheet .sheet-card {
+  background-color: #FFFFFF !important;
+  border-color: #E7E5E4 !important;
+  box-shadow: none !important;
+}
 html.light #signedin-profile-card,
 html.light #guest-profile-card {
   background-color: #FFFFFF !important;
@@ -500,6 +513,114 @@ html.light #auth-screen-content textarea {
 html.light #auth-screen-root label,
 html.light #auth-screen-content label {
   color: #475569 !important;
+}
+
+/* ─── Sheet / bottom-sheet cards (Legal, FAQ, Notifications) ─ */
+.sheet-panel-title {
+  color: #FFA048;
+}
+.sheet-panel-icon,
+.sheet-card-icon {
+  color: #FFA048;
+}
+.sheet-panel-meta {
+  color: #8A7A68;
+}
+.sheet-panel-close {
+  color: #8A7A68;
+}
+.sheet-panel-close:hover {
+  color: #F4E3D7;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+.sheet-panel-badge {
+  background-color: rgba(255, 160, 72, 0.15);
+  color: #FFA048;
+}
+.sheet-panel-cta {
+  background: linear-gradient(90deg, rgba(255, 179, 92, 0.15), rgba(255, 143, 46, 0.1));
+  border-color: rgba(255, 160, 72, 0.3);
+  color: #FFA048;
+}
+.sheet-card-title {
+  color: #F8EDE3;
+}
+.sheet-card-body {
+  color: #B9A896;
+}
+.sheet-card-kind {
+  color: #FFA048;
+}
+.sheet-card-read {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-color: rgba(45, 35, 25, 0.7);
+}
+.sheet-card-unread {
+  background-color: rgba(255, 160, 72, 0.08);
+  border-color: rgba(255, 160, 72, 0.25);
+}
+.sheet-empty-icon {
+  background-color: rgba(255, 160, 72, 0.1);
+  border: 1px solid rgba(255, 160, 72, 0.2);
+}
+
+/* Light theme: dark titles / icons on white cards (WCAG-friendly) */
+html.light .sheet-panel-title,
+html.light .sheet-card-title {
+  color: #1C1917 !important;
+}
+html.light .sheet-panel-icon,
+html.light .sheet-card-icon,
+html.light .sheet-card-kind {
+  color: #C2410C !important;
+}
+html.light .sheet-card-body {
+  color: #44403C !important;
+}
+html.light .sheet-panel-meta {
+  color: #78716C !important;
+}
+html.light .sheet-panel-close {
+  color: #78716C !important;
+}
+html.light .sheet-panel-close:hover {
+  color: #1C1917 !important;
+  background-color: #F5F5F4 !important;
+}
+html.light .sheet-panel-badge {
+  background-color: #FFEDD5 !important;
+  color: #C2410C !important;
+}
+html.light .sheet-panel-cta {
+  background: #FFF7ED !important;
+  border-color: #FDBA74 !important;
+  color: #C2410C !important;
+}
+html.light .sheet-panel-header,
+html.light .sheet-panel-footer {
+  border-color: #E7E5E4 !important;
+}
+html.light .sheet-card-read {
+  background-color: #FAFAF9 !important;
+  border-color: #E7E5E4 !important;
+}
+html.light .sheet-card-unread {
+  background-color: #FFF7ED !important;
+  border-color: #FED7AA !important;
+}
+html.light .sheet-empty-icon {
+  background-color: #FFF7ED !important;
+  border-color: #FED7AA !important;
+}
+.sheet-error {
+  color: #FECACA;
+  background-color: rgba(127, 29, 29, 0.4);
+  border-color: rgba(127, 29, 29, 0.4);
+}
+html.light .sheet-error {
+  color: #B91C1C !important;
+  background-color: #FEF2F2 !important;
+  border-color: #FECACA !important;
 }
 
 /* ─── Modals (business details, edit profile) ─────────────── */
