@@ -217,8 +217,8 @@ export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
         >
           <Camera className="w-3.5 h-3.5 text-[#FFA048]" />
           {language === 'en'
-            ? (limit === 1 ? '📸 Upload cover photo (1MB max)' : '📸 Upload Photos (max 5, 1MB each)')
-            : (limit === 1 ? '📸 رفع صورة الغلاف' : '📸 رفع صور (5 كحد أقصى، 1MB لكل صورة)')}
+            ? (limit === 1 ? '📸 Upload cover photo' : '📸 Upload Photos (max 5)')
+            : (limit === 1 ? '📸 رفع صورة الغلاف' : '📸 رفع صور (5 كحد أقصى)')}
         </button>
       )}
 
@@ -226,11 +226,11 @@ export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
         <p className="mt-1.5 text-[9px] text-gray-600">
           {language === 'en'
             ? (limit === 1
-              ? 'Wide banner for the top of your public listing · 1MB max.'
-              : 'Up to 5 images · 1MB max each · First image is used as the listing thumbnail.')
+              ? 'Wide banner for the top of your public listing.'
+              : 'Up to 5 images · First image is used as the listing thumbnail.')
             : (limit === 1
-              ? 'بانر عريض أعلى صفحة النشاط · 1MB كحد أقصى.'
-              : 'حتى 5 صور · 1MB كحد أقصى · الصورة الأولى تُستخدم كصورة العرض.')}
+              ? 'بانر عريض أعلى صفحة النشاط.'
+              : 'حتى 5 صور · الصورة الأولى تُستخدم كصورة العرض.')}
         </p>
       )}
 

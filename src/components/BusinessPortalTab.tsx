@@ -827,8 +827,8 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
               }
               hint={
                 language === 'en'
-                  ? 'Up to 5 images · 1MB max each · First image is your profile logo.'
-                  : 'حتى 5 صور · 1 ميجابايت كحد أقصى · الصورة الأولى هي الشعار.'
+                  ? 'Up to 5 images · First image is your profile logo.'
+                  : 'حتى 5 صور · الصورة الأولى هي الشعار.'
               }
             />
 

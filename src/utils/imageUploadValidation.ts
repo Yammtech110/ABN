@@ -1,8 +1,10 @@
 export const MAX_UPLOAD_IMAGES = 5;
-export const MAX_IMAGE_BYTES = 1 * 1024 * 1024; // 1 MB
+
+/** Soft ceiling only to avoid browser/OOM crashes — not shown as a user “MB limit”. */
+export const MAX_IMAGE_BYTES = 50 * 1024 * 1024; // 50 MB safety
 
 export const MAX_COUNT_MESSAGE = 'You can upload a maximum of 5 images.';
-export const MAX_SIZE_MESSAGE = 'Each image must be smaller than 1MB.';
+export const MAX_SIZE_MESSAGE = 'This image is too large to upload on this device.';
 
 export function isImageWithinSizeLimit(file: File): boolean {
   return file.size <= MAX_IMAGE_BYTES;
