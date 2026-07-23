@@ -110,12 +110,15 @@ html.light #app-root-mobile .backdrop-blur-xl {
 
 /* ── Cards, surfaces, panels ─────────────────────────────── */
 html.light .bg-\[\#0F0E0C\],
+html.light .bg-\[\#0F0E0C\]\/95,
+html.light .bg-\[\#0F0E0C\]\/90,
 html.light .bg-\[\#13110E\],
 html.light .bg-\[\#191613\],
 html.light .bg-\[\#1A1612\],
 html.light .bg-\[\#201B15\],
 html.light .bg-\[\#1C1914\],
-html.light .bg-\[\#0A0705\]\/80 {
+html.light .bg-\[\#0A0705\]\/80,
+html.light .bg-\[\#0A0705\]\/90 {
   background-color: #FFFFFF !important;
   box-shadow: var(--shadow-card) !important;
 }
@@ -712,6 +715,153 @@ html.light .sheet-error {
   color: #B91C1C !important;
   background-color: #FEF2F2 !important;
   border-color: #FECACA !important;
+}
+
+/* ─── Full pages (legal, notifications, etc.) ─────────────── */
+.page-header {
+  background-color: #0F0E0C;
+  border-bottom: 1px solid #2D2319;
+  backdrop-filter: blur(12px);
+}
+.page-title {
+  color: #F4E3D7;
+}
+.page-title-icon {
+  color: #FFA048;
+}
+.page-meta {
+  color: #78716C;
+}
+.page-back-btn {
+  background-color: #191613;
+  border: 1px solid #2D2319;
+}
+.page-back-btn:hover {
+  border-color: rgba(255, 160, 72, 0.4);
+}
+.page-icon-btn {
+  color: #78716C;
+}
+.page-icon-btn:hover {
+  color: #FFA048;
+}
+.page-icon-btn-danger:hover {
+  color: #F87171;
+}
+.page-card {
+  background-color: #13110E;
+  border: 1px solid #2D2319;
+}
+.page-card-read {
+  background-color: #13110E;
+  border-color: rgba(45, 35, 25, 0.7);
+}
+.page-card-unread {
+  background-color: rgba(255, 160, 72, 0.08);
+  border-color: rgba(255, 160, 72, 0.25);
+}
+.page-card-title {
+  color: #F4E3D7;
+}
+.page-card-body {
+  color: #A8A29A;
+}
+.page-cta {
+  background-color: rgba(255, 160, 72, 0.15);
+  border: 1px solid rgba(255, 160, 72, 0.35);
+  color: #FFA048;
+}
+.page-badge {
+  background-color: rgba(255, 160, 72, 0.15);
+  color: #FFA048;
+}
+.page-chip {
+  color: #78716C;
+  background-color: rgba(0, 0, 0, 0.3);
+}
+.page-empty-icon {
+  background-color: rgba(255, 160, 72, 0.1);
+  border: 1px solid rgba(255, 160, 72, 0.2);
+}
+.page-error {
+  color: #FECACA;
+  background-color: rgba(127, 29, 29, 0.4);
+  border: 1px solid rgba(127, 29, 29, 0.4);
+}
+
+/* Light theme: white header + readable dark text */
+html.light .page-header {
+  background-color: #FFFFFF !important;
+  border-bottom-color: #E7E5E4 !important;
+  box-shadow: 0 1px 0 rgba(28, 25, 23, 0.04);
+}
+html.light .page-title,
+html.light .page-shell .page-title,
+html.light .page-shell h1.page-title,
+html.light .page-shell h2.page-card-title,
+html.light .page-card-title {
+  color: #1C1917 !important;
+}
+html.light .page-title-icon {
+  color: #C2410C !important;
+}
+html.light .page-meta {
+  color: #78716C !important;
+}
+html.light .page-back-btn {
+  background-color: #F5F5F4 !important;
+  border-color: #E7E5E4 !important;
+}
+html.light .page-icon-btn {
+  color: #78716C !important;
+}
+html.light .page-icon-btn:hover {
+  color: #C2410C !important;
+}
+html.light .page-card,
+html.light .page-card-read {
+  background-color: #FFFFFF !important;
+  border-color: #E7E5E4 !important;
+  box-shadow: 0 2px 8px rgba(28, 25, 23, 0.06) !important;
+}
+html.light .page-card-unread {
+  background-color: #FFF7ED !important;
+  border-color: #FED7AA !important;
+}
+html.light .page-card-body {
+  color: #44403C !important;
+}
+html.light .page-cta {
+  background-color: #FFF7ED !important;
+  border-color: #FDBA74 !important;
+  color: #C2410C !important;
+}
+html.light .page-badge {
+  background-color: #FFEDD5 !important;
+  color: #C2410C !important;
+}
+html.light .page-chip {
+  color: #57534E !important;
+  background-color: #F5F5F4 !important;
+}
+html.light .page-empty-icon {
+  background-color: #FFF7ED !important;
+  border-color: #FED7AA !important;
+}
+html.light .page-error {
+  color: #B91C1C !important;
+  background-color: #FEF2F2 !important;
+  border-color: #FECACA !important;
+}
+html.light .page-shell p.page-card-body,
+html.light .page-shell p.page-meta {
+  color: inherit;
+}
+html.light .page-shell p.page-card-body {
+  color: #44403C !important;
+}
+html.light .page-shell p.page-meta {
+  color: #78716C !important;
 }
 
 /* ─── Modals (business details, edit profile) ─────────────── */
