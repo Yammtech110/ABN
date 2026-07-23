@@ -136,6 +136,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
   const [regWeb, setRegWeb] = useState('');
   const [regHours, setRegHours] = useState('8:00 AM - 10:00 PM');
   const [regImages, setRegImages] = useState<string[]>([]);
+  const [regCoverImages, setRegCoverImages] = useState<string[]>([]);
   const [regSuccess, setRegSuccess] = useState('');
   const [regError, setRegError] = useState('');
   const [regPhotoError, setRegPhotoError] = useState('');
@@ -168,6 +169,11 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
     setRegWeb(myBusiness.website || '');
     setRegHours(textEn(myBusiness.workingHours) || '');
     setRegImages(buildListingImages(myBusiness.gallery, myBusiness.logoUrl));
+    setRegCoverImages(
+      myBusiness.coverUrl && isUsableUploadSrc(myBusiness.coverUrl)
+        ? [myBusiness.coverUrl]
+        : (myBusiness.coverUrl && myBusiness.coverUrl !== myBusiness.logoUrl ? [myBusiness.coverUrl] : []),
+    );
     if (listingKindValue === 'service') {
       const serviceCat = categories.find((c) => c.group === 'Services');
       if (serviceCat) setRegCatId(serviceCat.id);
@@ -331,7 +337,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
     setRegError('');
 
     const defaultLogo = regImages[0];
-    const defaultCover = regImages[0];
+    const defaultCover = regCoverImages[0] || regImages[0];
     const gallery = regImages;
     const cat = categories.find((c) => c.id === regCatId);
     const categoryLabel = cat?.name.en || 'General';
@@ -455,6 +461,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
     const cat = categories.find((c) => c.id === regCatId);
     const categoryLabel = cat?.name.en || myBusiness.subcategory.en;
     const uploadedLogo = regImages.find(isUsableUploadSrc);
+    const uploadedCover = regCoverImages.find(isUsableUploadSrc);
     const formattedPhone = isValidUSPhone(regPhone) ? `+${normalizeUSPhone(regPhone)}` : regPhone.trim();
 
     setIsSavingManage(true);
@@ -474,7 +481,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
       website: regWeb,
       workingHours: bilingualEn(regHours),
       logoUrl: uploadedLogo || myBusiness.logoUrl,
-      coverUrl: uploadedLogo || myBusiness.coverUrl,
+      coverUrl: uploadedCover || uploadedLogo || myBusiness.coverUrl,
       gallery: regImages.filter(isUsableUploadSrc).length > 0
         ? regImages.filter(isUsableUploadSrc)
         : myBusiness.gallery,
@@ -498,7 +505,9 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
         };
         if (uploadedLogo) {
           body.imageUrl = uploadedLogo;
-          body.coverUrl = uploadedLogo;
+        }
+        if (uploadedCover || uploadedLogo) {
+          body.coverUrl = uploadedCover || uploadedLogo;
         }
         await apiFetch(`/api/directory/${myBusiness.id}`, {
           method: 'PUT',
@@ -773,6 +782,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                 setRegError('');
                 setRegPhotoError('');
                 setRegSuccess('');
+                setRegCoverImages([]);
               }}
               className="p-1.5 rounded-full bg-[#191613] hover:bg-[#2D251C] transition-colors border border-[#2D2319]"
             >
@@ -799,7 +809,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
             {regSuccess && <p className="p-3 bg-green-950/45 border border-green-900 text-green-300 text-xs rounded-xl">{regSuccess}</p>}
             {regError && <p className="p-3 bg-red-950/45 border border-red-900 text-red-300 text-xs rounded-xl">{regError}</p>}
 
-            {/* ── Mandatory primary photo ── */}
+            {/* ── Logo / profile photos ── */}
             <ImageUploadGrid
               id="reg-image-upload"
               images={regImages}
@@ -812,8 +822,32 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
               errorMessage={regPhotoError}
               label={
                 registrationType === 'business'
-                  ? (language === 'en' ? 'Upload Business Photo' : 'رفع صورة النشاط التجاري')
-                  : (language === 'en' ? 'Upload Service Provider Photo' : 'رفع صورة مزود الخدمة')
+                  ? (language === 'en' ? 'Business logo / photos' : 'شعار / صور النشاط')
+                  : (language === 'en' ? 'Service provider photo' : 'صورة مزود الخدمة')
+              }
+              hint={
+                language === 'en'
+                  ? 'Up to 5 images · 1MB max each · First image is your profile logo.'
+                  : 'حتى 5 صور · 1 ميجابايت كحد أقصى · الصورة الأولى هي الشعار.'
+              }
+            />
+
+            {/* ── Separate cover / background banner ── */}
+            <ImageUploadGrid
+              id="reg-cover-upload"
+              images={regCoverImages}
+              onChange={setRegCoverImages}
+              language={language}
+              maxImages={1}
+              label={
+                language === 'en'
+                  ? 'Background / cover photo (banner)'
+                  : 'صورة الخلفية / الغلاف'
+              }
+              hint={
+                language === 'en'
+                  ? 'Wide banner shown at the top of your listing. Optional — if empty, your logo is used.'
+                  : 'بانر عريض أعلى صفحة نشاطك. اختياري — إن تُرك فارغاً يُستخدم الشعار.'
               }
             />
 
@@ -1241,24 +1275,38 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                   </div>
                 </div>
 
-                {/* ── Image Upload Grid (Edit) ── */}
+                {/* ── Logo / gallery ── */}
                 <ImageUploadGrid
                   id="edit-portal-image-upload"
                   images={editImages}
                   onChange={setEditImages}
                   language={language}
-                  label={language === 'en' ? 'Upload Business/Service Images*' : 'رفع صور النشاط/الخدمة*'}
+                  label={language === 'en' ? 'Business logo / photos*' : 'شعار / صور النشاط*'}
+                  hint={
+                    language === 'en'
+                      ? 'First image is your profile logo.'
+                      : 'الصورة الأولى هي الشعار.'
+                  }
                 />
 
-                <div>
-                  <label className="block text-xs text-gray-450 mb-1">{t.coverUrl}</label>
-                  <input
-                    type="text"
-                    value={editCover}
-                    onChange={(e) => setEditCover(e.target.value)}
-                    className="w-full p-2.5 rounded-xl bg-[#0F0E0C] border border-[#2D2319] text-xs text-[#F4E3D7]"
-                  />
-                </div>
+                {/* ── Separate background / cover banner ── */}
+                <ImageUploadGrid
+                  id="edit-cover-upload"
+                  images={editCover && isUsableUploadSrc(editCover) ? [editCover] : (editCover ? [editCover] : [])}
+                  onChange={(next) => setEditCover(next[0] || '')}
+                  language={language}
+                  maxImages={1}
+                  label={
+                    language === 'en'
+                      ? 'Background / cover photo (banner)'
+                      : 'صورة الخلفية / الغلاف'
+                  }
+                  hint={
+                    language === 'en'
+                      ? 'Wide banner at the top of your listing page.'
+                      : 'بانر عريض أعلى صفحة نشاطك.'
+                  }
+                />
 
                 <div>
                   <label className="block text-xs text-gray-450 mb-1">{t.workingHours}</label>

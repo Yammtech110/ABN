@@ -2,10 +2,10 @@ import React, { useRef, useState, useCallback } from 'react';
 import { Camera, ImageIcon, X, AlertCircle } from 'lucide-react';
 import {
   MAX_UPLOAD_IMAGES,
-  MAX_COUNT_MESSAGE,
   MAX_SIZE_MESSAGE,
   isImageWithinSizeLimit,
   remainingImageSlots,
+  maxCountMessage,
 } from '../utils/imageUploadValidation';
 
 interface ImageUploadGridProps {
@@ -13,9 +13,12 @@ interface ImageUploadGridProps {
   onChange: (images: string[]) => void;
   language: 'en';
   label?: string;
+  hint?: string;
   id?: string;
   required?: boolean;
   errorMessage?: string | null;
+  /** Max images for this grid (default 5). Use 1 for cover/background. */
+  maxImages?: number;
 }
 
 export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
@@ -23,10 +26,14 @@ export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
   onChange,
   language,
   label,
+  hint,
   id = 'image-upload-grid',
   required = false,
   errorMessage = null,
+  maxImages = MAX_UPLOAD_IMAGES,
 }) => {
+  const limit = Math.max(1, Math.min(maxImages, MAX_UPLOAD_IMAGES));
+  const countMessage = maxCountMessage(limit);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const toastTimerRef = useRef<number | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -58,18 +65,18 @@ export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
 
     if (files.length === 0) return;
 
-    const slotsLeft = remainingImageSlots(images.length);
+    const slotsLeft = remainingImageSlots(images.length, limit);
 
     if (slotsLeft === 0) {
-      window.alert(MAX_COUNT_MESSAGE);
-      showToast(MAX_COUNT_MESSAGE);
+      window.alert(countMessage);
+      showToast(countMessage);
       flashAddSlot();
       return;
     }
 
     if (files.length > slotsLeft) {
-      window.alert(MAX_COUNT_MESSAGE);
-      showToast(MAX_COUNT_MESSAGE);
+      window.alert(countMessage);
+      showToast(countMessage);
       flashAddSlot();
     }
 
@@ -79,9 +86,9 @@ export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
     let rejectedSize = false;
 
     for (const file of batch) {
-      if (nextImages.length >= MAX_UPLOAD_IMAGES) {
-        window.alert(MAX_COUNT_MESSAGE);
-        showToast(MAX_COUNT_MESSAGE);
+      if (nextImages.length >= limit) {
+        window.alert(countMessage);
+        showToast(countMessage);
         flashAddSlot();
         break;
       }
@@ -115,8 +122,8 @@ export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
     onChange(images.filter((_, i) => i !== index));
   };
 
-  const slots = Array.from({ length: MAX_UPLOAD_IMAGES }, (_, i) => images[i] ?? null);
-  const canAddMore = images.length < MAX_UPLOAD_IMAGES;
+  const slots = Array.from({ length: limit }, (_, i) => images[i] ?? null);
+  const canAddMore = images.length < limit;
 
   return (
     <div id={id}>
@@ -125,9 +132,13 @@ export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
           {label}
           {required && <span className="text-[#FFA048] ml-0.5">*</span>}
           <span className="ml-1 text-[10px] text-gray-600">
-            ({images.length}/{MAX_UPLOAD_IMAGES})
+            ({images.length}/{limit})
           </span>
         </label>
+      )}
+
+      {hint && (
+        <p className="mb-2 text-[10px] text-gray-500 leading-relaxed">{hint}</p>
       )}
 
       {errorMessage && (
@@ -136,10 +147,11 @@ export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
         </p>
       )}
 
-      <div className="grid grid-cols-5 gap-2" id={`${id}-grid`}>
+      <div className={`grid gap-2 ${limit === 1 ? 'grid-cols-1' : 'grid-cols-5'}`} id={`${id}-grid`}>
         {slots.map((src, index) => {
           const isAddSlot = !src && index === images.length && canAddMore;
           const isEmptySlot = !src && !isAddSlot;
+          const tileAspect = limit === 1 ? 'aspect-[2/1] w-full max-w-md' : 'aspect-square';
 
           if (isAddSlot) {
             return (
@@ -147,7 +159,7 @@ export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
                 key={`add-${index}`}
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className={`aspect-square rounded-xl bg-[#0F0E0C] border-2 border-dashed flex flex-col items-center justify-center gap-1 transition-all ${
+                className={`${tileAspect} rounded-xl bg-[#0F0E0C] border-2 border-dashed flex flex-col items-center justify-center gap-1 transition-all ${
                   addSlotFlash || (required && images.length === 0 && errorMessage)
                     ? 'border-red-500/70 bg-red-950/20'
                     : 'border-[#2D2319] hover:border-[#FFA048]/50'
@@ -156,7 +168,7 @@ export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
               >
                 <Camera className={`w-4 h-4 ${addSlotFlash ? 'text-red-400' : 'text-[#FFA048]'}`} />
                 <span className="text-[8px] text-gray-500 font-bold">
-                  {language === 'en' ? 'Add' : 'إضافة'}
+                  {language === 'en' ? (limit === 1 ? 'Add cover' : 'Add') : 'إضافة'}
                 </span>
               </button>
             );
@@ -166,7 +178,7 @@ export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
             return (
               <div
                 key={`empty-${index}`}
-                className="aspect-square rounded-xl bg-[#0F0E0C]/40 border border-[#2D2319]/40 flex items-center justify-center opacity-40"
+                className={`${tileAspect} rounded-xl bg-[#0F0E0C]/40 border border-[#2D2319]/40 flex items-center justify-center opacity-40`}
               >
                 <ImageIcon className="w-4 h-4 text-gray-700" />
               </div>
@@ -176,7 +188,7 @@ export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
           return (
             <div
               key={`img-${index}`}
-              className="relative aspect-square rounded-xl bg-[#0F0E0C] border border-[#2D2319] overflow-hidden group"
+              className={`relative ${tileAspect} rounded-xl bg-[#0F0E0C] border border-[#2D2319] overflow-hidden group`}
             >
               <img src={src!} alt={`Upload ${index + 1}`} className="w-full h-full object-cover" />
               <button
@@ -189,7 +201,7 @@ export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
               </button>
               {index === 0 && (
                 <span className="absolute bottom-0 inset-x-0 bg-[#FFA048]/90 text-[7px] font-extrabold text-black text-center py-0.5">
-                  {language === 'en' ? 'MAIN' : 'رئيسية'}
+                  {language === 'en' ? (limit === 1 ? 'COVER' : 'MAIN') : (limit === 1 ? 'غلاف' : 'رئيسية')}
                 </span>
               )}
             </div>
@@ -204,21 +216,29 @@ export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
           className="mt-2 w-full py-2 rounded-xl bg-[#191613] border border-[#2D2319] text-xs text-gray-300 hover:text-white hover:border-[#FFA048]/40 transition-all flex items-center justify-center gap-2"
         >
           <Camera className="w-3.5 h-3.5 text-[#FFA048]" />
-          {language === 'en' ? '📸 Upload Photos (max 5, 1MB each)' : '📸 رفع صور (5 كحد أقصى، 1MB لكل صورة)'}
+          {language === 'en'
+            ? (limit === 1 ? '📸 Upload cover photo (1MB max)' : '📸 Upload Photos (max 5, 1MB each)')
+            : (limit === 1 ? '📸 رفع صورة الغلاف' : '📸 رفع صور (5 كحد أقصى، 1MB لكل صورة)')}
         </button>
       )}
 
-      <p className="mt-1.5 text-[9px] text-gray-600">
-        {language === 'en'
-          ? 'Up to 5 images · 1MB max each · First image is used as the listing thumbnail.'
-          : 'حتى 5 صور · 1MB كحد أقصى · الصورة الأولى تُستخدم كصورة العرض.'}
-      </p>
+      {!hint && (
+        <p className="mt-1.5 text-[9px] text-gray-600">
+          {language === 'en'
+            ? (limit === 1
+              ? 'Wide banner for the top of your public listing · 1MB max.'
+              : 'Up to 5 images · 1MB max each · First image is used as the listing thumbnail.')
+            : (limit === 1
+              ? 'بانر عريض أعلى صفحة النشاط · 1MB كحد أقصى.'
+              : 'حتى 5 صور · 1MB كحد أقصى · الصورة الأولى تُستخدم كصورة العرض.')}
+        </p>
+      )}
 
       <input
         ref={fileInputRef}
         type="file"
         accept="image/*"
-        multiple
+        multiple={limit > 1}
         onChange={handleFileChange}
         className="hidden"
         id={`${id}-file-input`}

@@ -511,6 +511,63 @@ html.light .fixed.inset-0 .bg-\[\#13110E\] {
   background-color: #FFFFFF !important;
 }
 
+/* Contact action buttons — keep high contrast in both themes */
+html.light #action-btn-call,
+html.dark #action-btn-call {
+  background-color: #FFA048 !important;
+  border-color: #e8913a !important;
+  color: #0A0705 !important;
+}
+html.light #action-btn-call *,
+html.dark #action-btn-call * {
+  color: #0A0705 !important;
+}
+
+html.light #action-btn-whatsapp,
+html.dark #action-btn-whatsapp {
+  background-color: #128C7E !important;
+  border-color: #0e7a6e !important;
+  color: #FFFFFF !important;
+}
+html.light #action-btn-whatsapp *,
+html.dark #action-btn-whatsapp * {
+  color: #FFFFFF !important;
+}
+
+html.light #action-btn-map,
+html.dark #action-btn-map {
+  background-color: #1A73E8 !important;
+  border-color: #1557b0 !important;
+  color: #FFFFFF !important;
+}
+html.light #action-btn-map *,
+html.dark #action-btn-map * {
+  color: #FFFFFF !important;
+}
+
+/* Details modal body text — readable on light cards (no washed-out gray/white) */
+html.light #details-modal-container strong.text-gray-200,
+html.light #details-modal-container .text-gray-200,
+html.light #details-modal-container .text-gray-300,
+html.light #details-modal-container .text-gray-400,
+html.light #details-modal-container .text-gray-500 {
+  color: #334155 !important;
+}
+html.light #details-modal-container h1,
+html.light #details-modal-container .text-white,
+html.light #details-modal-container .text-\[\#F4E3D7\],
+html.light #details-modal-container .text-\[\#F4E3D7\]\/90,
+html.light #details-modal-container .text-\[\#F4E3D7\]\/80 {
+  color: #0F172A !important;
+}
+
+/* Legacy Call button class (pre-brand colors) — keep readable in light theme */
+html.light #action-btn-call.bg-\[\#2E2822\],
+html.light #details-actions .bg-\[\#2E2822\] {
+  background-color: #FFA048 !important;
+  color: #0A0705 !important;
+}
+
 /* ─── Base Reset & Typography ────────────────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;

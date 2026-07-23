@@ -59,7 +59,6 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
   const {
     language, reviews, currentUser, favorites, toggleFavorite,
     fetchReviewsForBusiness, submitReview, apiToken, isAuthenticated,
-    blockListingOwner,
   } = useDirectory();
   const t = TRANSLATIONS[language];
 
@@ -76,8 +75,6 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
   const [reportError, setReportError] = useState('');
   const [reportSuccess, setReportSuccess] = useState('');
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
-  const [blockBusy, setBlockBusy] = useState(false);
-  const [blockMsg, setBlockMsg] = useState('');
 
   useEffect(() => {
     fetchReviewsForBusiness(business.id);
@@ -89,22 +86,6 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
   const isFav = favorites.includes(business.id);
   const isListingOwner = currentUser?.id === business.ownerId;
   const canReportListing = isAuthenticated && !isListingOwner && currentUser?.role !== 'admin';
-
-  const handleBlockOwner = async () => {
-    if (!business.ownerId) return;
-    const ok = confirm('Block this listing owner? Their listings will be hidden for you.');
-    if (!ok) return;
-    setBlockBusy(true);
-    setBlockMsg('');
-    const result = await blockListingOwner(business.ownerId);
-    setBlockBusy(false);
-    if (!result.success) {
-      setBlockMsg(result.error || 'Could not block.');
-      return;
-    }
-    setBlockMsg('Owner blocked. Closing…');
-    setTimeout(() => onClose(), 800);
-  };
 
   const handleToggleFavorite = async () => {
     const result = await toggleFavorite(business.id);
@@ -316,18 +297,18 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
               </p>
 
               {/* Working Hours with Open/Closed badge */}
-              <div className="mt-5 pt-4 border-t border-[#2D2319]/60 flex items-center gap-3 text-xs text-gray-400">
-                <Clock className="w-4 h-4 text-[#FFA048]" />
-                <div className="flex-1">
+              <div className="mt-5 pt-4 border-t border-[#2D2319]/60 flex items-center gap-3 text-xs text-[#F4E3D7]/90" id="details-working-hours">
+                <Clock className="w-4 h-4 text-[#FFA048] shrink-0" />
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <strong className="text-gray-200">{t.workingHours}:</strong>
+                    <strong className="text-[#F4E3D7]">{t.workingHours}:</strong>
                     {isOpen !== null && (
                       <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider ${isOpen ? 'badge-open' : 'badge-closed'}`}>
                         {isOpen ? '🟢 Open Now' : '🔴 Closed Now'}
                       </span>
                     )}
                   </div>
-                  <span className="block mt-0.5">{textEn(business.workingHours)}</span>
+                  <span className="block mt-0.5 text-[#F4E3D7]/80">{textEn(business.workingHours)}</span>
                 </div>
               </div>
             </div>
@@ -497,10 +478,6 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                   {language === 'en' ? 'Report This Listing' : 'الإبلاغ عن هذا النشاط'}
                 </h3>
               </div>
-              <p className="text-[10px] text-gray-500 leading-relaxed">
-                ABN is a directory only — not an endorsement. See Community Guidelines in Account. Deals happen outside the app.
-              </p>
-              {blockMsg && <p className="text-[10px] text-amber-400">{blockMsg}</p>}
 
               {!isAuthenticated ? (
                 <p className="text-xs text-gray-500">
@@ -539,15 +516,6 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                       ? (language === 'en' ? 'Submitting...' : 'جاري الإرسال...')
                       : (language === 'en' ? 'Submit Report to Admin' : 'إرسال البلاغ للإدارة')}
                   </button>
-                  <button
-                    type="button"
-                    onClick={handleBlockOwner}
-                    disabled={blockBusy}
-                    className="w-full py-2.5 rounded-xl text-xs font-bold border border-red-900/40 text-red-300 hover:bg-red-950/30 disabled:opacity-50"
-                    id="btn-block-owner"
-                  >
-                    {blockBusy ? 'Blocking…' : 'Block This Owner'}
-                  </button>
                 </form>
               )}
             </div>
@@ -562,43 +530,43 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                 {t.contactBusiness}
               </h3>
               
-              {/* Call directly */}
+              {/* Call / WhatsApp / Map — solid brand colors (theme-safe contrast) */}
               <button
                 onClick={() => handleActionClick('phone')}
-                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#2E2822] hover:bg-[#3A332B] transition-all border border-[#3D3328] group"
+                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#FFA048] hover:bg-[#ffb266] transition-all border border-[#e8913a] text-black group"
                 id="action-btn-call"
               >
-                <span className="flex items-center gap-3 text-sm font-semibold">
-                  <Phone className="w-4 h-4 text-[#FFA048]" />
+                <span className="flex items-center gap-3 text-sm font-bold text-black">
+                  <Phone className="w-4 h-4 text-black" />
                   {t.callNow}
                 </span>
-                <ChevronRight className="w-4 h-4 text-gray-500 group-hover:text-white" />
+                <ChevronRight className="w-4 h-4 text-black/70 group-hover:text-black" />
               </button>
 
               {/* Whatsapp */}
               <button
                 onClick={() => handleActionClick('whatsapp')}
-                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-green-500/10 hover:bg-green-500/20 transition-all border border-green-500/25 text-green-300 group"
+                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#128C7E] hover:bg-[#0e7a6e] transition-all border border-[#0e7a6e] text-white group"
                 id="action-btn-whatsapp"
               >
-                <span className="flex items-center gap-3 text-sm font-semibold">
-                  <MessageSquare className="w-4 h-4 text-green-400" />
+                <span className="flex items-center gap-3 text-sm font-bold text-white">
+                  <MessageSquare className="w-4 h-4 text-white" />
                   {t.openWhatsapp}
                 </span>
-                <ChevronRight className="w-4 h-4 text-green-500/60 group-hover:text-green-300" />
+                <ChevronRight className="w-4 h-4 text-white/80 group-hover:text-white" />
               </button>
 
               {/* Map Location — opens Google Maps externally (BRD §5.4: communication outside the app) */}
               <button
                 onClick={() => handleActionClick('maps')}
-                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 transition-all border border-blue-500/25 text-blue-300 group"
+                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#1A73E8] hover:bg-[#1557b0] transition-all border border-[#1557b0] text-white group"
                 id="action-btn-map"
               >
-                <span className="flex items-center gap-3 text-sm font-semibold">
-                  <MapPin className="w-4 h-4 text-blue-400" />
+                <span className="flex items-center gap-3 text-sm font-bold text-white">
+                  <MapPin className="w-4 h-4 text-white" />
                   {t.openMap}
                 </span>
-                <ChevronRight className="w-4 h-4 text-blue-500/60 group-hover:text-blue-300" />
+                <ChevronRight className="w-4 h-4 text-white/80 group-hover:text-white" />
               </button>
 
               {/* Website link */}
@@ -607,14 +575,14 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                   href={business.website}
                   target="_blank"
                   rel="noreferrer"
-                  className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#2E2822] hover:bg-[#3A332B] transition-all border border-[#3D3328] group"
+                  className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#FFA048]/15 hover:bg-[#FFA048]/25 transition-all border border-[#FFA048]/40 group"
                   id="action-link-website"
                 >
-                  <span className="flex items-center gap-3 text-sm font-semibold text-[#F4E3D7]">
+                  <span className="flex items-center gap-3 text-sm font-bold text-[#FFA048]">
                     <Globe className="w-4 h-4 text-[#FFA048]" />
                     {t.openWebsite}
                   </span>
-                  <ChevronRight className="w-4 h-4 text-gray-500 group-hover:text-white" />
+                  <ChevronRight className="w-4 h-4 text-[#FFA048]/70 group-hover:text-[#FFA048]" />
                 </a>
               )}
             </div>

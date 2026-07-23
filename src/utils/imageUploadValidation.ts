@@ -8,10 +8,16 @@ export function isImageWithinSizeLimit(file: File): boolean {
   return file.size <= MAX_IMAGE_BYTES;
 }
 
-export function canAddImages(currentCount: number, incomingCount: number): boolean {
-  return currentCount + incomingCount <= MAX_UPLOAD_IMAGES;
+export function canAddImages(currentCount: number, incomingCount: number, max = MAX_UPLOAD_IMAGES): boolean {
+  return currentCount + incomingCount <= max;
 }
 
-export function remainingImageSlots(currentCount: number): number {
-  return Math.max(0, MAX_UPLOAD_IMAGES - currentCount);
+export function remainingImageSlots(currentCount: number, max = MAX_UPLOAD_IMAGES): number {
+  return Math.max(0, max - currentCount);
+}
+
+export function maxCountMessage(max: number): string {
+  return max === 1
+    ? 'You can upload only 1 image here.'
+    : `You can upload a maximum of ${max} images.`;
 }
