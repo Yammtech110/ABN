@@ -68,4 +68,4 @@ foreach ($desk in $desktopCandidates) {
 
 Write-Host ""
 Write-Host "Done! Live-update APK:" $named
-Write-Host "This shell loads https://abn-1.onrender.com — redeploy Static Site to push UI updates (no new APK)."
+Write-Host "This shell loads https://abn-1.onrender.com - redeploy Static Site to push UI updates (no new APK)."
