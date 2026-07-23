@@ -253,18 +253,50 @@ html.light #account-tab-container .rounded-2xl {
   border-color: var(--color-border) !important;
   box-shadow: var(--shadow-card) !important;
 }
-/* Legal / Notifications sheets — high-contrast on light theme */
+/* Legal / Notifications sheets — warm gray shell so white cards don't look vague */
 html.light #legal-doc-sheet.sheet-panel,
 html.light #notification-center-sheet.sheet-panel {
-  background: #FFFFFF !important;
-  border-color: #E7E5E4 !important;
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18) !important;
+  background: #EDE8E2 !important;
+  border-color: #D6D0C8 !important;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22) !important;
+}
+html.light #legal-doc-sheet .sheet-panel-header,
+html.light #notification-center-sheet .sheet-panel-header,
+html.light #legal-doc-sheet .sheet-panel-footer,
+html.light #notification-center-sheet .sheet-panel-footer {
+  background: #F7F3EE !important;
+  border-color: #DDD6CE !important;
+}
+html.light #legal-doc-sheet .sheet-panel-body,
+html.light #notification-center-sheet .sheet-panel-body {
+  background: #EDE8E2 !important;
+  /* breathing room from sides — cards don't hug the edge */
+  padding-left: 1.125rem !important;
+  padding-right: 1.125rem !important;
 }
 html.light #legal-doc-sheet .sheet-card,
 html.light #notification-center-sheet .sheet-card {
   background-color: #FFFFFF !important;
-  border-color: #E7E5E4 !important;
-  box-shadow: none !important;
+  border: 1px solid #C9C0B5 !important;
+  box-shadow: 0 2px 8px rgba(28, 25, 23, 0.08) !important;
+}
+html.light #legal-doc-sheet .sheet-panel-body,
+html.light #notification-center-sheet .sheet-panel-body {
+  scrollbar-width: thin;
+  scrollbar-color: #C4B8AA transparent;
+}
+html.light #legal-doc-sheet .sheet-panel-body::-webkit-scrollbar,
+html.light #notification-center-sheet .sheet-panel-body::-webkit-scrollbar {
+  width: 4px;
+}
+html.light #legal-doc-sheet .sheet-panel-body::-webkit-scrollbar-thumb,
+html.light #notification-center-sheet .sheet-panel-body::-webkit-scrollbar-thumb {
+  background: #C4B8AA;
+  border-radius: 999px;
+}
+html.light #legal-doc-sheet .sheet-panel-body::-webkit-scrollbar-track,
+html.light #notification-center-sheet .sheet-panel-body::-webkit-scrollbar-track {
+  background: transparent;
 }
 html.light #signedin-profile-card,
 html.light #guest-profile-card {
@@ -655,15 +687,17 @@ html.light .sheet-panel-cta {
 }
 html.light .sheet-panel-header,
 html.light .sheet-panel-footer {
-  border-color: #E7E5E4 !important;
+  border-color: #DDD6CE !important;
 }
 html.light .sheet-card-read {
-  background-color: #FAFAF9 !important;
-  border-color: #E7E5E4 !important;
+  background-color: #FFFFFF !important;
+  border-color: #C9C0B5 !important;
+  box-shadow: 0 2px 8px rgba(28, 25, 23, 0.06) !important;
 }
 html.light .sheet-card-unread {
   background-color: #FFF7ED !important;
-  border-color: #FED7AA !important;
+  border-color: #E8B88A !important;
+  box-shadow: 0 2px 8px rgba(194, 65, 12, 0.08) !important;
 }
 html.light .sheet-empty-icon {
   background-color: #FFF7ED !important;

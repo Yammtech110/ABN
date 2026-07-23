@@ -103,7 +103,7 @@ export const NotificationCenterModal: React.FC<NotificationCenterModalProps> = (
           </p>
         )}
 
-        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2.5 min-h-0">
+        <div className="flex-1 overflow-y-auto px-5 py-3 space-y-3 min-h-0 sheet-panel-body">
           {loading && visible.length === 0 && (
             <p className="sheet-panel-meta text-xs py-12 text-center">Loading notifications…</p>
           )}
@@ -126,7 +126,7 @@ export const NotificationCenterModal: React.FC<NotificationCenterModalProps> = (
             return (
               <div
                 key={n.id}
-                className={`sheet-card rounded-2xl border px-3.5 py-3 transition-colors ${
+                className={`sheet-card rounded-2xl border px-4 py-3.5 transition-colors ${
                   n.isRead ? 'sheet-card-read' : 'sheet-card-unread'
                 }`}
               >

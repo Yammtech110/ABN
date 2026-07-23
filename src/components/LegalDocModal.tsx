@@ -47,11 +47,11 @@ export const LegalDocModal: React.FC<LegalDocModalProps> = ({ docId, onClose }) 
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3 sheet-panel-body">
           {doc.sections.map((s) => (
             <section
               key={s.heading}
-              className="sheet-card rounded-2xl border border-[#2D2319] bg-black/25 px-3.5 py-3"
+              className="sheet-card rounded-2xl border border-[#2D2319] bg-black/25 px-4 py-3.5"
             >
               <h4 className="sheet-card-title text-[12px] font-bold mb-1.5 flex items-center gap-1.5">
                 <FileText className="w-3.5 h-3.5 sheet-card-icon shrink-0" />
