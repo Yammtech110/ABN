@@ -20,8 +20,6 @@ import {
   CreditCard,
 } from 'lucide-react';
 import { EditProfileModal } from './EditProfileModal';
-import { NotificationCenterModal } from './NotificationCenterModal';
-import { LegalDocModal } from './LegalDocModal';
 import { canManageListing, canPostJobs, getUserListing, listingKind } from '../utils/listingAccess';
 import { countUnreadNotifications, filterNotificationsForUser } from '../utils/notifications';
 import { isNativeApp } from '../lib/oauth';
@@ -29,9 +27,10 @@ import { LegalDocId, SUPPORT_MAILTO } from '../data/legalContent';
 
 interface AccountTabProps {
   onSwitchTab: (tabId: string) => void;
+  onOpenLegal: (docId: LegalDocId) => void;
 }
 
-export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab }) => {
+export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal }) => {
   const {
     language,
     theme,
@@ -43,16 +42,11 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab }) => {
     hiringActive,
     setHiringActive,
     notifications,
-    notificationsLoading,
-    notificationsError,
     refreshNotifications,
     markNotificationsAsRead,
-    clearNotifications,
   } = useDirectory();
   const t = TRANSLATIONS[language];
 
-  const [showNotificationsModal, setShowNotificationsModal] = useState(false);
-  const [legalDoc, setLegalDoc] = useState<LegalDocId | null>(null);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [deleteBusy, setDeleteBusy] = useState(false);
 
@@ -64,7 +58,6 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab }) => {
   const hiringEnabled = myListing ? (hiringActive[myListing.id] ?? false) : false;
   const [hiringBusy, setHiringBusy] = useState(false);
 
-  const activeNotifs = filterNotificationsForUser(notifications, currentUser);
   const unreadCount = countUnreadNotifications(notifications, currentUser);
 
   useEffect(() => {
@@ -72,15 +65,9 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab }) => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleOpenNotificationCenter = () => {
-    setShowNotificationsModal(true);
     void refreshNotifications();
     void markNotificationsAsRead();
-  };
-
-  const handleClearNotifications = async () => {
-    if (!confirm('Clear all notifications from your inbox?')) return;
-    await clearNotifications();
-    await refreshNotifications();
+    onSwitchTab('notifications');
   };
 
   const roleBadgeLabel = () => {
@@ -120,141 +107,85 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab }) => {
     }
   };
 
-  const handleHiringToggle = async () => {
-    if (!myListing || !canUseJobs) return;
-    setHiringBusy(true);
-    try {
-      await setHiringActive(myListing.id, !hiringEnabled);
-    } finally {
-      setHiringBusy(false);
-    }
-  };
-
   if (isEditingProfile && !isAdmin) {
     return (
-      <EditProfileModal onClose={() => setIsEditingProfile(false)} />
+      <EditProfileModal
+        onClose={() => setIsEditingProfile(false)}
+      />
     );
   }
 
   return (
     <div className="space-y-6" id="account-tab-container">
-      
-      {/* Title block */}
       <div className="pb-1 border-b border-[#2D2319]" id="account-header">
         <h2 className="text-xl font-extrabold text-[#F4E3D7]">{t.account}</h2>
-        <p className="text-[10px] text-gray-500 font-medium">Manage your profile and preferences</p>
+        <p className="text-[10px] text-gray-500 font-medium">Manage your profile and preferences.</p>
       </div>
 
-      {/* Signed-in profile card */}
       <div className={`flex flex-col ${isAdmin ? 'gap-0' : 'gap-4'}`}>
         <div className="p-4.5 rounded-3xl bg-[#13110E] border border-[#2D2319] flex items-center gap-3" id="signedin-profile-card">
-          <div className="w-12 h-12 rounded-full bg-[#FFA048] text-black font-extrabold flex items-center justify-center border border-[#3A2E22]">
-            {currentUser.name.charAt(0).toUpperCase()}
+          <div className="w-12 h-12 rounded-2xl bg-[#201B15] border border-[#2D2319] flex items-center justify-center text-[#FFA048]">
+            {isAdmin ? <Shield className="w-6 h-6" /> : kind === 'service' ? <Zap className="w-6 h-6 text-blue-400" /> : <User className="w-6 h-6" />}
           </div>
-          <div className="min-w-0 flex-1">
-            <h3 className="text-xs font-black text-white truncate max-w-[160px]">{currentUser.name}</h3>
-            <p className="text-[9px] text-gray-500 truncate max-w-[180px]">{currentUser.email}</p>
-            <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-[9px] text-green-400 font-bold flex items-center gap-1">
-                {currentUser.role === 'admin' && <Shield className="w-2.5 h-2.5 text-red-400" />}
-                Signed in ({roleBadgeLabel()})
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-bold text-white truncate">{currentUser.name}</h3>
+            <p className="text-[10px] text-gray-500 truncate">{currentUser.email}</p>
+            <div className="flex flex-wrap gap-1.5 mt-1.5">
+              <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border ${
+                isAdmin
+                  ? 'bg-[#FFA048]/15 text-[#FFA048] border-[#FFA048]/30'
+                  : kind === 'service'
+                    ? 'bg-blue-900/30 text-blue-300 border-blue-700/40'
+                    : 'bg-[#201B15] text-gray-400 border-[#2D2319]'
+              }`}>
+                {roleBadgeLabel()}
               </span>
+              {subscriptionLabel() && (
+                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#201B15] text-gray-400 border border-[#2D2319]">
+                  {subscriptionLabel()}
+                </span>
+              )}
             </div>
           </div>
         </div>
 
         {isAdmin && isNativeApp() && (
           <div className="p-3.5 rounded-2xl bg-[#1C130D]/75 border border-[#3D2C1E]/50" id="admin-web-only-note">
-            <p className="text-[11px] text-amber-400 leading-relaxed flex items-start gap-2">
-              <Shield className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-              <span>
-                Admin tools are available on the web app only. Changes you make there sync to Android and iOS automatically.
-              </span>
+            <p className="text-[10px] text-[#C9A887] leading-relaxed">
+              Admin tools are available on the web app only. Changes you make there sync to Android and iOS automatically.
             </p>
           </div>
         )}
 
         {!isAdmin && (
-          <>
-        {/* Edit Profile — customer accounts only */}
           <button
+            type="button"
             onClick={() => setIsEditingProfile(true)}
-            className="w-full flex items-center justify-between p-4 rounded-2xl bg-[#13110E] border border-[#2D2319] hover:border-[#FFA048]/40 transition-all group"
+            className="w-full flex items-center justify-between p-4 rounded-2xl bg-[#13110E] border border-[#2D2319] hover:border-[#FFA048]/40 transition-colors"
             id="btn-edit-user-profile"
           >
             <span className="flex items-center gap-3 text-xs text-gray-300 font-semibold">
-              <User className="w-4 h-4 text-[#FFA048]" />
-              {t.editProfile}
+              <Eye className="w-4.5 h-4.5 text-[#FFA048]" />
+              Edit Profile
             </span>
-            <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-[#FFA048]" />
+            <ChevronRight className="w-4 h-4 text-gray-600" />
           </button>
-          
-          {/* Active Business / Service listing metadata */}
-          {myListing && (
-            <div className={`p-4 rounded-3xl bg-[#13110E] border space-y-3 shadow-sm ${
-              kind === 'service' ? 'border-blue-700/40' : 'border-[#2D2319]'
-            }`}>
-              <div className="flex items-center gap-2 mb-1">
-                {kind === 'service'
-                  ? <Zap className="w-4 h-4 text-blue-400" />
-                  : <Briefcase className="w-4 h-4 text-[#FFA048]" />}
-                <h4 className="text-xs font-black text-white">
-                  {kind === 'service' ? 'Service Profile Metadata' : 'Business Profile Metadata'}
-                </h4>
-              </div>
-              <div className="grid grid-cols-2 gap-3 text-[10px]">
-                <div>
-                  <span className="text-gray-500 block mb-0.5">
-                    {kind === 'service' ? 'Service Name' : 'Business Name'}
-                  </span>
-                  <span className="text-white font-bold">{myListing.name}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500 block mb-0.5">Subscription Status</span>
-                  <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold inline-block border ${
-                    canManage
-                      ? kind === 'service'
-                        ? 'bg-blue-900/30 text-blue-300 border-blue-700/40'
-                        : 'bg-[#FFA048]/20 text-[#FFA048] border-[#FFA048]/30'
-                      : 'bg-amber-900/30 text-amber-300 border-amber-700/40'
-                  }`}>
-                    {canManage
-                      ? `${subscriptionLabel()} (Renews ${myListing.membershipExpiryDate})`
-                      : 'Pending Approval'}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-gray-500 block mb-0.5">Reference ID</span>
-                  <span className="text-white font-mono">{myListing.id}</span>
-                </div>
-                <div>
-                  <span className="text-gray-500 block mb-0.5">Category</span>
-                  <span className="text-white font-bold">{myListing.subcategory.en}</span>
-                </div>
-              </div>
-            </div>
-          )}
-            </>
-          )}
-
+        )}
       </div>
 
-      {/* GLOBAL PREFERENCE & ACCESS ROWS — follows header card directly for admins */}
       <div className="py-2.5 rounded-3xl bg-[#13110E] border border-[#2D2319] divide-y divide-[#2D2319]/40" id="account-options-list">
-
         {canManage && (
           <button
+            type="button"
             onClick={() => onSwitchTab('portal-management')}
             className="w-full flex items-center justify-between p-4 hover:bg-stone-900/10 transition-colors group"
             id="row-manage-listing"
           >
             <span className="flex items-center gap-3 text-xs text-gray-300 font-semibold">
-              {kind === 'service'
-                ? <Zap className="w-4.5 h-4.5 text-blue-400" />
-                : <Briefcase className="w-4.5 h-4.5 text-[#FFA048]" />}
-              {kind === 'service' ? t.manageService : t.manageBusiness}
+              {kind === 'service' ? <Zap className="w-4.5 h-4.5 text-blue-400" /> : <Briefcase className="w-4.5 h-4.5 text-[#FFA048]" />}
+              {kind === 'service' ? 'Manage Service' : 'Manage Business'}
             </span>
-            <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-[#FFA048]" />
+            <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-white" />
           </button>
         )}
 
@@ -267,53 +198,51 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab }) => {
               </span>
               <button
                 type="button"
-                role="switch"
-                aria-checked={hiringEnabled}
                 disabled={hiringBusy}
-                onClick={handleHiringToggle}
-                className={`relative w-11 h-6 rounded-full transition-colors ${
-                  hiringEnabled ? 'bg-[#FFA048]' : 'bg-stone-700'
-                } ${hiringBusy ? 'opacity-60' : ''}`}
+                onClick={async () => {
+                  setHiringBusy(true);
+                  await setHiringActive(myListing.id, !hiringEnabled);
+                  setHiringBusy(false);
+                }}
+                className={`relative w-11 h-6 rounded-full transition-colors ${hiringEnabled ? 'bg-[#FFA048]' : 'bg-[#2D2319]'}`}
               >
-                <span
-                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
-                    hiringEnabled ? 'translate-x-5' : 'translate-x-0'
-                  }`}
-                />
+                <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${hiringEnabled ? 'translate-x-5' : ''}`} />
               </button>
             </div>
-
             <button
+              type="button"
               onClick={() => onSwitchTab('job-management')}
               className="w-full flex items-center justify-between p-4 hover:bg-stone-900/10 transition-colors group"
               id="row-manage-jobs"
             >
               <span className="flex items-center gap-3 text-xs text-gray-300 font-semibold">
-                <Briefcase className="w-4.5 h-4.5 text-green-400" />
-                Manage Job Postings
+                <Briefcase className="w-4.5 h-4.5 text-[#FFA048]" />
+                Manage Jobs
               </span>
-              <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-[#FFA048]" />
+              <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-white" />
             </button>
           </>
         )}
-        {/* Theme Selection Bar */}
+
         <div className="flex items-center justify-between p-4" id="row-theme-switch">
           <span className="flex items-center gap-3 text-xs text-gray-300 font-semibold">
             <Eye className="w-4.5 h-4.5 text-[#FFA048]" />
-            Theme Preference
+            Theme
           </span>
-          <div className="flex gap-1.5 p-1 rounded-xl bg-[#0F0E0C] border border-[#2D2319]">
+          <div className="flex rounded-xl bg-[#0F0E0C] border border-[#2D2319] p-0.5">
             <button
+              type="button"
               onClick={() => setTheme('light')}
-              className={`px-2.5 py-1 text-[9px] font-black uppercase rounded ${
+              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold ${
                 theme === 'light' ? 'bg-[#FFA048] text-black' : 'text-gray-400'
               }`}
             >
               Light
             </button>
             <button
+              type="button"
               onClick={() => setTheme('dark')}
-              className={`px-2.5 py-1 text-[9px] font-black uppercase rounded ${
+              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold ${
                 theme === 'dark' ? 'bg-[#FFA048] text-black' : 'text-gray-400'
               }`}
             >
@@ -322,7 +251,6 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab }) => {
           </div>
         </div>
 
-        {/* Notifications list trigger */}
         <button
           onClick={handleOpenNotificationCenter}
           className="w-full flex items-center justify-between p-4 hover:bg-stone-900/10 transition-colors group"
@@ -340,7 +268,6 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab }) => {
           <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-white" />
         </button>
 
-        {/* Legal & support */}
         {(
           [
             { id: 'privacy' as const, label: 'Privacy Policy', Icon: Lock },
@@ -354,7 +281,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab }) => {
           <button
             key={id}
             type="button"
-            onClick={() => setLegalDoc(id)}
+            onClick={() => onOpenLegal(id)}
             className="w-full flex items-center justify-between p-4 hover:bg-stone-900/10 transition-colors group"
             id={`row-legal-${id}`}
           >
@@ -379,7 +306,6 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab }) => {
         </a>
       </div>
 
-      {/* SIGN OUT */}
       <button
           onClick={handleSignOut}
           className="w-full flex items-center gap-3 p-4 px-5 rounded-2xl border border-red-500/10 bg-red-950/15 hover:bg-red-950/25 text-red-400 font-semibold text-xs transition-colors"
@@ -401,20 +327,6 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab }) => {
           {deleteBusy ? 'Deleting…' : 'Delete Account'}
         </button>
       )}
-
-      {showNotificationsModal && (
-        <NotificationCenterModal
-          notifications={activeNotifs}
-          loading={notificationsLoading}
-          error={notificationsError}
-          onClose={() => setShowNotificationsModal(false)}
-          onRefresh={() => refreshNotifications()}
-          onClearAll={handleClearNotifications}
-        />
-      )}
-
-      {legalDoc && <LegalDocModal docId={legalDoc} onClose={() => setLegalDoc(null)} />}
-
     </div>
   );
 };

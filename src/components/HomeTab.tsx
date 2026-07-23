@@ -8,8 +8,7 @@ import { textEn } from '../utils/englishOnly';
 import { isLiveDirectoryListing } from '../utils/listingAccess';
 import { resolveListingCoverUrl, resolveListingLogoUrl } from '../utils/listingImages';
 import { BusinessThumbnail } from './BusinessThumbnail';
-import { NotificationCenterModal } from './NotificationCenterModal';
-import { countUnreadNotifications, filterNotificationsForUser } from '../utils/notifications';
+import { countUnreadNotifications } from '../utils/notifications';
 import {
   Search,
   MapPin,
@@ -126,23 +125,17 @@ export const HomeTab: React.FC<HomeTabProps> = ({
     categories,
     currentUser,
     notifications,
-    notificationsLoading,
-    notificationsError,
     refreshNotifications,
     markNotificationsAsRead,
-    clearNotifications,
     jobs,
     hiringActive,
   } = useDirectory();
   const t = TRANSLATIONS[language];
 
-  const [showNotificationsModal, setShowNotificationsModal] = useState(false);
-
   useEffect(() => {
     if (currentUser) refreshNotifications();
   }, [currentUser?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const activeNotifs = filterNotificationsForUser(notifications, currentUser);
   const unreadCount = countUnreadNotifications(notifications, currentUser);
 
   const [inputSearch, setInputSearch] = useState('');
@@ -252,18 +245,14 @@ export const HomeTab: React.FC<HomeTabProps> = ({
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 
   const handleOverlayBack = useCallback((): boolean => {
-    if (showNotificationsModal) {
-      setShowNotificationsModal(false);
-      return true;
-    }
     if (selectedJob) {
       setSelectedJob(null);
       return true;
     }
     return false;
-  }, [showNotificationsModal, selectedJob]);
+  }, [selectedJob]);
 
-  useBackHandler('home-tab-overlay', handleOverlayBack, showNotificationsModal || Boolean(selectedJob));
+  useBackHandler('home-tab-overlay', handleOverlayBack, Boolean(selectedJob));
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -363,9 +352,9 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             <button
               type="button"
               onClick={() => {
-                setShowNotificationsModal(true);
                 void refreshNotifications();
                 void markNotificationsAsRead();
+                onSwitchTab('notifications');
               }}
               className="relative p-2 rounded-xl bg-[#13110E] border border-[#2D2319] hover:border-[#FFA048]/40 transition-colors"
               aria-label="Notifications"
@@ -644,21 +633,6 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           })}
         </div>
       </div>
-
-      {showNotificationsModal && (
-        <NotificationCenterModal
-          notifications={activeNotifs}
-          loading={notificationsLoading}
-          error={notificationsError}
-          onClose={() => setShowNotificationsModal(false)}
-          onRefresh={() => refreshNotifications()}
-          onClearAll={async () => {
-            if (!confirm('Clear all notifications from your inbox?')) return;
-            await clearNotifications();
-            await refreshNotifications();
-          }}
-        />
-      )}
 
     </div>
   );
