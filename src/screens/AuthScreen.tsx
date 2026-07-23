@@ -461,7 +461,7 @@ export const AuthScreen: React.FC = () => {
 
                 {authMode === 'register' && (
                   <>
-                    <p className="text-xs text-center text-[#9A8A78] mb-4">
+                    <p className="text-xs text-center text-[#C9B8A4] mb-4">
                       Create your ABN account. We will email a code to verify before you sign in.
                     </p>
                     <form onSubmit={handleRegister} className="space-y-3.5">
