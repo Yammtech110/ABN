@@ -20,7 +20,7 @@ const router         = express.Router();
 const { JWT_SECRET } = require('../config/security');
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 const HASH_ROUNDS    = 12;
-const SUPPORT_EMAIL  = process.env.SUPPORT_EMAIL || 'support@ahlebaitnetwork.com';
+const SUPPORT_EMAIL  = process.env.SUPPORT_EMAIL || 'yammtech80@gmail.com';
 
 const VALID_ROLES = ['customer', 'business', 'service_provider', 'admin'];
 

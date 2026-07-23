@@ -8,7 +8,7 @@ export type LegalDocId =
   | 'subscription'
   | 'disclaimers';
 
-export const SUPPORT_EMAIL = 'support@ahlebaitnetwork.com';
+export const SUPPORT_EMAIL = 'yammtech80@gmail.com';
 export const SUPPORT_MAILTO = `mailto:${SUPPORT_EMAIL}?subject=ABN%20Support`;
 
 /** Public paths when the static site is deployed (Render / web). */
