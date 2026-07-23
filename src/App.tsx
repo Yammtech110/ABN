@@ -186,7 +186,7 @@ function TabContent({
       {activeTab === 'admin' && (
         <TabView tabKey="admin">
           <div className="space-y-5">
-            <div className="flex items-center gap-3 pb-3 border-b border-[#2D2319]">
+            <div className="subpage-header flex items-center gap-3 pb-3 border-b border-[#2D2319]">
               <button
                 onClick={() => setActiveTab('account')}
                 className="p-2 rounded-full bg-[#191613] hover:bg-[#2D251C] border border-[#2D2319] transition-colors"

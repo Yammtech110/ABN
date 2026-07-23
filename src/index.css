@@ -341,11 +341,12 @@ html.light #app-root > main .bg-\[\#0F0E0C\] {
 html.light #app-root > main .bg-\[\#191613\] {
   background-color: #F8FAFC !important;
 }
-html.light #app-root > main h1,
-html.light #app-root > main h2 {
+/* Do not force dark slate on every heading — page shells use theme tokens */
+html.light #app-root > main h1:not(.page-title),
+html.light #app-root > main h2:not(.page-card-title) {
   color: #0F172A !important;
 }
-html.light #app-root > main p {
+html.light #app-root > main p:not(.page-card-body):not(.page-meta):not(.page-error) {
   color: #475569 !important;
 }
 
@@ -718,150 +719,85 @@ html.light .sheet-error {
 }
 
 /* ─── Full pages (legal, notifications, etc.) ─────────────── */
+/* Use design tokens so light/dark always stay readable */
 .page-header {
-  background-color: #0F0E0C;
-  border-bottom: 1px solid #2D2319;
+  background-color: var(--color-surface) !important;
+  border-bottom: 1px solid var(--color-border) !important;
   backdrop-filter: blur(12px);
 }
 .page-title {
-  color: #F4E3D7;
+  color: var(--color-text) !important;
 }
 .page-title-icon {
-  color: #FFA048;
+  color: var(--color-primary) !important;
 }
 .page-meta {
-  color: #78716C;
+  color: var(--color-text-muted) !important;
 }
 .page-back-btn {
-  background-color: #191613;
-  border: 1px solid #2D2319;
+  background-color: var(--color-card-hover) !important;
+  border: 1px solid var(--color-border) !important;
 }
 .page-back-btn:hover {
-  border-color: rgba(255, 160, 72, 0.4);
+  border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
 }
 .page-icon-btn {
-  color: #78716C;
+  color: var(--color-text-muted) !important;
 }
 .page-icon-btn:hover {
-  color: #FFA048;
+  color: var(--color-primary) !important;
 }
 .page-icon-btn-danger:hover {
-  color: #F87171;
+  color: #DC2626 !important;
 }
-.page-card {
-  background-color: #13110E;
-  border: 1px solid #2D2319;
-}
+.page-card,
 .page-card-read {
-  background-color: #13110E;
-  border-color: rgba(45, 35, 25, 0.7);
+  background-color: var(--color-card) !important;
+  border: 1px solid var(--color-border) !important;
+  box-shadow: var(--shadow-sm);
 }
 .page-card-unread {
-  background-color: rgba(255, 160, 72, 0.08);
-  border-color: rgba(255, 160, 72, 0.25);
+  background-color: color-mix(in srgb, var(--color-primary) 10%, var(--color-card)) !important;
+  border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border)) !important;
 }
 .page-card-title {
-  color: #F4E3D7;
+  color: var(--color-text) !important;
 }
 .page-card-body {
-  color: #A8A29A;
+  color: var(--color-text-secondary) !important;
 }
 .page-cta {
-  background-color: rgba(255, 160, 72, 0.15);
-  border: 1px solid rgba(255, 160, 72, 0.35);
-  color: #FFA048;
+  background-color: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 40%, transparent);
+  color: var(--color-primary) !important;
 }
 .page-badge {
-  background-color: rgba(255, 160, 72, 0.15);
-  color: #FFA048;
+  background-color: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  color: var(--color-primary) !important;
 }
 .page-chip {
-  color: #78716C;
-  background-color: rgba(0, 0, 0, 0.3);
+  color: var(--color-text-muted) !important;
+  background-color: color-mix(in srgb, var(--color-text) 8%, transparent);
 }
 .page-empty-icon {
-  background-color: rgba(255, 160, 72, 0.1);
-  border: 1px solid rgba(255, 160, 72, 0.2);
+  background-color: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 25%, transparent);
 }
 .page-error {
+  color: #B91C1C;
+  background-color: #FEF2F2;
+  border: 1px solid #FECACA;
+}
+html.dark .page-error {
   color: #FECACA;
   background-color: rgba(127, 29, 29, 0.4);
-  border: 1px solid rgba(127, 29, 29, 0.4);
-}
-
-/* Light theme: white header + readable dark text */
-html.light .page-header {
-  background-color: #FFFFFF !important;
-  border-bottom-color: #E7E5E4 !important;
-  box-shadow: 0 1px 0 rgba(28, 25, 23, 0.04);
-}
-html.light .page-title,
-html.light .page-shell .page-title,
-html.light .page-shell h1.page-title,
-html.light .page-shell h2.page-card-title,
-html.light .page-card-title {
-  color: #1C1917 !important;
-}
-html.light .page-title-icon {
-  color: #C2410C !important;
-}
-html.light .page-meta {
-  color: #78716C !important;
-}
-html.light .page-back-btn {
-  background-color: #F5F5F4 !important;
-  border-color: #E7E5E4 !important;
-}
-html.light .page-icon-btn {
-  color: #78716C !important;
-}
-html.light .page-icon-btn:hover {
-  color: #C2410C !important;
-}
-html.light .page-card,
-html.light .page-card-read {
-  background-color: #FFFFFF !important;
-  border-color: #E7E5E4 !important;
-  box-shadow: 0 2px 8px rgba(28, 25, 23, 0.06) !important;
-}
-html.light .page-card-unread {
-  background-color: #FFF7ED !important;
-  border-color: #FED7AA !important;
-}
-html.light .page-card-body {
-  color: #44403C !important;
-}
-html.light .page-cta {
-  background-color: #FFF7ED !important;
-  border-color: #FDBA74 !important;
-  color: #C2410C !important;
-}
-html.light .page-badge {
-  background-color: #FFEDD5 !important;
-  color: #C2410C !important;
-}
-html.light .page-chip {
-  color: #57534E !important;
-  background-color: #F5F5F4 !important;
-}
-html.light .page-empty-icon {
-  background-color: #FFF7ED !important;
-  border-color: #FED7AA !important;
-}
-html.light .page-error {
-  color: #B91C1C !important;
-  background-color: #FEF2F2 !important;
-  border-color: #FECACA !important;
-}
-html.light .page-shell p.page-card-body,
-html.light .page-shell p.page-meta {
-  color: inherit;
+  border-color: rgba(127, 29, 29, 0.4);
 }
 html.light .page-shell p.page-card-body {
-  color: #44403C !important;
+  color: var(--color-text-secondary) !important;
 }
 html.light .page-shell p.page-meta {
-  color: #78716C !important;
+  color: var(--color-text-muted) !important;
 }
 
 /* ─── Modals (business details, edit profile) ─────────────── */
@@ -1146,3 +1082,136 @@ button, a, img, input, svg {
   transition: none;
 }
 button { transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease, transform 0.1s ease; }
+
+/* ─── Theme contrast safety net (app-wide) ───────────────── */
+/* Cream / warm text that stays pale on light cards → readable stone */
+html.light .text-\[\#C9A887\],
+html.light .text-\[\#B9A28A\],
+html.light .text-\[\#9A8A78\],
+html.light .text-\[\#8A7A68\],
+html.light .text-\[\#D4C4B0\],
+html.light .text-\[\#F8EDE3\],
+html.light .text-\[\#F4E3D7\]\/90,
+html.light .text-\[\#F4E3D7\]\/80 {
+  color: #44403C !important;
+}
+
+/* Dark amber callout panels → light amber + dark text */
+html.light .bg-\[\#1C130D\]\/75,
+html.light .bg-\[\#1C130D\] {
+  background-color: #FFF7ED !important;
+  border-color: #FED7AA !important;
+  color: #9A3412 !important;
+}
+html.light .bg-\[\#1C130D\]\/75 .text-\[\#C9A887\],
+html.light .bg-\[\#1C130D\]\/75 p,
+html.light [id$="-disclaimer"],
+html.light #admin-web-only-note p {
+  color: #9A3412 !important;
+}
+
+/* Extra opacity dark surfaces often missed by remap */
+html.light .bg-\[\#0F0E0C\]\/40,
+html.light .bg-\[\#0F0E0C\]\/50,
+html.light .bg-\[\#13110E\]\/75,
+html.light .bg-\[\#13110E\]\/80,
+html.light .bg-\[\#1A1612\]\/80,
+html.light .bg-\[\#1C1914\]\/80,
+html.light .bg-black\/25,
+html.light .bg-black\/40 {
+  background-color: #F8FAFC !important;
+}
+
+/* Keep orange CTA labels black on orange (both themes) */
+html.light .bg-\[\#FFA048\].text-black,
+html.light .bg-\[\#FFA048\] .text-black,
+html.dark .bg-\[\#FFA048\].text-black,
+html.dark .bg-\[\#FFA048\] .text-black,
+html.light [class*="from-[#FFA048]"].text-black,
+html.dark [class*="from-[#FFA048]"].text-black {
+  color: #000000 !important;
+}
+
+/* Dark theme: never leave slate-dark headings on dark surfaces */
+html.dark .text-\[\#0F172A\],
+html.dark .text-slate-900,
+html.dark .text-stone-900,
+html.dark .text-gray-900 {
+  color: #F4E3D7 !important;
+}
+
+/* Dark theme: muted grays that go too dark */
+html.dark .text-gray-700,
+html.dark .text-gray-800 {
+  color: #D6D3D1 !important;
+}
+
+/* Sub-page sticky headers (admin / jobs) — white bar in light */
+html.light .subpage-header,
+html.light #job-detail-view > .border-b,
+html.light #job-board-screen > .border-b,
+html.light #job-form-view > .border-b,
+html.light #job-management-list > .border-b,
+html.light [id^="legal-page-"] .page-header,
+html.light #notifications-page .page-header {
+  background-color: var(--color-surface) !important;
+  border-color: var(--color-border) !important;
+}
+.subpage-header {
+  background-color: transparent;
+  border-color: var(--color-border);
+}
+.subpage-header h2,
+.subpage-title {
+  color: var(--color-text) !important;
+}
+
+/* Account / portal row labels stay dark on light cards */
+html.light #account-tab-container .text-gray-300,
+html.light #account-options-list .text-gray-300 {
+  color: #334155 !important;
+}
+
+/* Ensure main headings follow theme tokens when on page shells */
+html.light .page-shell h1,
+html.light .page-shell h2,
+html.dark .page-shell h1,
+html.dark .page-shell h2 {
+  color: var(--color-text) !important;
+}
+
+/* Restore cream text on auth (always dark premium) — overrides safety net */
+html.light #auth-screen-root .text-\[\#C9A887\],
+html.light #auth-screen-content .text-\[\#C9A887\],
+html.light #auth-screen-root .text-\[\#B9A28A\],
+html.light #auth-screen-content .text-\[\#B9A28A\],
+html.light #auth-screen-root .text-\[\#9A8A78\],
+html.light #auth-screen-content .text-\[\#9A8A78\],
+html.light #auth-screen-root .text-\[\#F8EDE3\],
+html.light #auth-screen-content .text-\[\#F8EDE3\],
+html.light #auth-screen-root .text-\[\#F4E3D7\],
+html.light #auth-screen-content .text-\[\#F4E3D7\],
+html.light #auth-screen-root .text-\[\#D4C4B0\] {
+  color: inherit;
+}
+html.light #auth-screen-root .text-\[\#C9A887\],
+html.light #auth-screen-content .text-\[\#C9A887\] {
+  color: #C9A887 !important;
+}
+html.light #auth-screen-root .text-\[\#B9A28A\],
+html.light #auth-screen-content .text-\[\#B9A28A\] {
+  color: #B9A28A !important;
+}
+html.light #auth-screen-root .text-\[\#9A8A78\],
+html.light #auth-screen-content .text-\[\#9A8A78\] {
+  color: #9A8A78 !important;
+}
+html.light #auth-screen-root .text-\[\#F8EDE3\],
+html.light #auth-screen-content .text-\[\#F8EDE3\],
+html.light #auth-screen-root .text-\[\#F4E3D7\],
+html.light #auth-screen-content .text-\[\#F4E3D7\] {
+  color: #F8EDE3 !important;
+}
+html.light #auth-screen-root .text-\[\#D4C4B0\] {
+  color: #D4C4B0 !important;
+}

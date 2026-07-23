@@ -67,7 +67,7 @@ export const JobBoardScreen: React.FC<JobBoardScreenProps> = ({ onBack, initialJ
   if (selectedJob) {
     return (
       <div className="space-y-5" id="job-detail-view">
-        <div className="flex items-center gap-3 pb-3 border-b border-[#2D2319]">
+        <div className="subpage-header flex items-center gap-3 pb-3 border-b border-[#2D2319]">
           <button
             onClick={() => setSelectedJob(null)}
             className="p-2 rounded-full bg-[#191613] hover:bg-[#2D251C] border border-[#2D2319] transition-colors"
@@ -75,7 +75,7 @@ export const JobBoardScreen: React.FC<JobBoardScreenProps> = ({ onBack, initialJ
           >
             <ArrowLeft className="w-4 h-4 text-[#FFA048]" />
           </button>
-          <h2 className="text-sm font-extrabold text-[#F4E3D7] flex-1 truncate">
+          <h2 className="subpage-title text-sm font-extrabold flex-1 truncate">
             {language === 'en' ? 'Job Details' : 'تفاصيل الوظيفة'}
           </h2>
         </div>
@@ -155,7 +155,7 @@ export const JobBoardScreen: React.FC<JobBoardScreenProps> = ({ onBack, initialJ
   // ── JOB BOARD LIST VIEW ───────────────────────────────────────
   return (
     <div className="space-y-5" id="job-board-screen">
-      <div className="flex items-center gap-3 pb-3 border-b border-[#2D2319]">
+      <div className="subpage-header flex items-center gap-3 pb-3 border-b border-[#2D2319]">
         <button
           onClick={onBack}
           className="p-2 rounded-full bg-[#191613] hover:bg-[#2D251C] border border-[#2D2319] transition-colors"
@@ -164,7 +164,7 @@ export const JobBoardScreen: React.FC<JobBoardScreenProps> = ({ onBack, initialJ
           <ArrowLeft className="w-4 h-4 text-[#FFA048]" />
         </button>
         <div className="flex-1 min-w-0">
-          <h2 className="text-sm font-extrabold text-[#F4E3D7]">
+          <h2 className="subpage-title text-sm font-extrabold">
             {language === 'en' ? '🔥 All Job Openings' : '🔥 جميع الوظائف المتاحة'}
           </h2>
           <p className="text-[9px] text-gray-500">
