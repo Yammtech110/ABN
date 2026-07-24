@@ -1,9 +1,0 @@
-{
-  "expo": {
-    "name": "ANV",
-    "slug": "abn-community-app",
-    "android": {
-      "usesCleartextTraffic": true
-    }
-  }
-}
