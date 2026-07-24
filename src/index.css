@@ -250,6 +250,16 @@ html.light .account-plan-badge {
   color: #334155 !important;
   border-color: #CBD5E1 !important;
 }
+html.light .account-plan-pending {
+  background-color: #FFFBEB !important;
+  color: #B45309 !important;
+  border-color: #FCD34D !important;
+}
+html.light .account-plan-suspended {
+  background-color: #FEF2F2 !important;
+  color: #B91C1C !important;
+  border-color: #FECACA !important;
+}
 html.light .account-role-badge-admin {
   background-color: #FFF7ED !important;
   color: #C2410C !important;

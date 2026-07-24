@@ -80,9 +80,19 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
 
   const subscriptionLabel = () => {
     if (!myListing) return '';
-    if (myListing.status !== 'active') return 'Suspended';
+    if (myListing.status === 'pending' || !myListing.isVerified) return 'Pending Approval';
+    if (myListing.status === 'suspended') return 'Suspended';
+    if (myListing.status !== 'active') return 'Pending Approval';
     return kind === 'service' ? '$30 Service Plan' : '$50 Business Plan';
   };
+
+  const planBadge = subscriptionLabel();
+  const planBadgeClass =
+    planBadge === 'Suspended'
+      ? 'account-plan-suspended bg-red-950/40 text-red-300 border-red-700/40'
+      : planBadge === 'Pending Approval'
+        ? 'account-plan-pending bg-amber-950/30 text-amber-300 border-amber-700/40'
+        : 'bg-[#201B15] text-gray-400 border-[#2D2319]';
 
   if (!currentUser) return null;
 
@@ -161,9 +171,9 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
               }`}>
                 {roleBadgeLabel()}
               </span>
-              {subscriptionLabel() && (
-                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#201B15] text-gray-400 border border-[#2D2319] account-plan-badge">
-                  {subscriptionLabel()}
+              {planBadge && (
+                <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border account-plan-badge ${planBadgeClass}`}>
+                  {planBadge}
                 </span>
               )}
             </div>
