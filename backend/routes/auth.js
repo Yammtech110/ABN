@@ -563,6 +563,42 @@ router.put('/me', authenticate, async (req, res, next) => {
   }
 });
 
+// ── POST /api/auth/change-password — signed-in user changes password ──────
+router.post('/change-password', authenticate, async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body || {};
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Current password and new password are required.' });
+    }
+    if (typeof currentPassword !== 'string' || typeof newPassword !== 'string') {
+      return res.status(400).json({ error: 'Passwords must be strings.' });
+    }
+    if (newPassword.length < 6 || newPassword.length > MAX_FIELD_LEN) {
+      return res.status(400).json({ error: 'New password must be 6–200 characters.' });
+    }
+    if (currentPassword === newPassword) {
+      return res.status(400).json({ error: 'New password must be different from the current password.' });
+    }
+
+    const user = await findById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'User not found.' });
+
+    const valid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!valid) {
+      return res.status(401).json({ error: 'Current password is incorrect.' });
+    }
+
+    await updateUser(user.id, {
+      passwordHash: await bcrypt.hash(newPassword, HASH_ROUNDS),
+    });
+
+    res.json({ success: true, message: 'Password updated successfully.' });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // ── DELETE /api/auth/me — self-serve account deletion (Apple 5.1.1v) ───────
 router.delete('/me', authenticate, async (req, res, next) => {
   try {

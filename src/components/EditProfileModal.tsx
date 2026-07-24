@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ArrowLeft, Save, User, Briefcase, Zap } from 'lucide-react';
+import { ArrowLeft, Save, User, Briefcase, Zap, KeyRound, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useDirectory } from '../context/DirectoryContext';
 import { TRANSLATIONS } from '../data/translations';
 import { Business } from '../types';
@@ -18,6 +18,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
     businesses,
     categories,
     updateUserProfile,
+    changePassword,
     updateBusiness,
     addBusiness,
     apiToken,
@@ -60,6 +61,16 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
   const [success, setSuccess] = useState('');
   const [saving, setSaving] = useState(false);
 
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [showCurrentPw, setShowCurrentPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [pwBusy, setPwBusy] = useState(false);
+  const [pwError, setPwError] = useState('');
+  const [pwSuccess, setPwSuccess] = useState('');
+
   const planAmount = currentUser?.role === 'service_provider' ? 30 : 50;
 
   const handleSaveAccount = async (e: React.FormEvent) => {
@@ -81,6 +92,39 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
     }
     setSuccess(t.profileUpdated);
     setTimeout(onClose, 1200);
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPwError('');
+    setPwSuccess('');
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+      setPwError(language === 'en' ? 'All password fields are required.' : 'جميع حقول كلمة المرور مطلوبة.');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setPwError(language === 'en' ? 'New password must be at least 6 characters.' : 'كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل.');
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      setPwError(language === 'en' ? 'New passwords do not match.' : 'كلمتا المرور غير متطابقتين.');
+      return;
+    }
+    setPwBusy(true);
+    const result = await changePassword(currentPassword, newPassword);
+    setPwBusy(false);
+    if (!result.success) {
+      setPwError(result.error || (language === 'en' ? 'Could not change password.' : 'تعذر تغيير كلمة المرور.'));
+      return;
+    }
+    setPwSuccess(language === 'en' ? 'Password updated successfully.' : 'تم تحديث كلمة المرور.');
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmNewPassword('');
+    setTimeout(() => {
+      setShowChangePassword(false);
+      setPwSuccess('');
+    }, 1500);
   };
 
   const handleSaveListing = async (e: React.FormEvent) => {
@@ -323,6 +367,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
           </button>
         </form>
       ) : (
+        <>
         <form onSubmit={handleSaveAccount} className="space-y-4 p-5 rounded-2xl bg-[#13110E] border border-[#2D2319]">
           {error && (
             <p className="text-xs text-red-400 bg-red-950/30 border border-red-900/50 rounded-xl p-2.5">{error}</p>
@@ -354,6 +399,115 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
             {saving ? (language === 'en' ? 'Saving…' : 'جارٍ الحفظ…') : t.saveChanges}
           </button>
         </form>
+
+        <div className="p-5 rounded-2xl bg-[#13110E] border border-[#2D2319] space-y-3" id="edit-profile-change-password">
+          <button
+            type="button"
+            onClick={() => {
+              setShowChangePassword((v) => !v);
+              setPwError('');
+              setPwSuccess('');
+            }}
+            className="w-full flex items-center justify-between gap-2 text-left"
+            id="btn-toggle-change-password"
+          >
+            <span className="flex items-center gap-2 text-xs font-extrabold text-[#F4E3D7]">
+              <KeyRound className="w-4 h-4 text-[#FFA048]" />
+              {language === 'en' ? 'Change Password' : 'تغيير كلمة المرور'}
+            </span>
+            <span className="text-[10px] font-bold text-[#FFA048]">
+              {showChangePassword ? (language === 'en' ? 'Hide' : 'إخفاء') : (language === 'en' ? 'Show' : 'إظهار')}
+            </span>
+          </button>
+
+          {showChangePassword && (
+            <form onSubmit={handleChangePassword} className="space-y-3 pt-1 border-t border-[#2D2319]">
+              {pwError && (
+                <p className="text-xs text-red-400 bg-red-950/30 border border-red-900/50 rounded-xl p-2.5">{pwError}</p>
+              )}
+              {pwSuccess && (
+                <p className="text-xs text-green-400 bg-green-950/30 border border-green-900/50 rounded-xl p-2.5">{pwSuccess}</p>
+              )}
+
+              <div>
+                <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-wider">
+                  {language === 'en' ? 'Current password' : 'كلمة المرور الحالية'}
+                </label>
+                <div className="relative">
+                  <input
+                    type={showCurrentPw ? 'text' : 'password'}
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="w-full p-3 pr-10 rounded-xl bg-[#0F0E0C] border border-[#2D2319] focus:border-[#FFA048] text-xs text-[#F4E3D7] outline-none"
+                    id="edit-profile-current-password"
+                    autoComplete="current-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPw((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                    aria-label={showCurrentPw ? 'Hide password' : 'Show password'}
+                  >
+                    {showCurrentPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-wider">
+                  {language === 'en' ? 'New password' : 'كلمة المرور الجديدة'}
+                </label>
+                <div className="relative">
+                  <input
+                    type={showNewPw ? 'text' : 'password'}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full p-3 pr-10 rounded-xl bg-[#0F0E0C] border border-[#2D2319] focus:border-[#FFA048] text-xs text-[#F4E3D7] outline-none"
+                    id="edit-profile-new-password"
+                    autoComplete="new-password"
+                    minLength={6}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPw((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                    aria-label={showNewPw ? 'Hide password' : 'Show password'}
+                  >
+                    {showNewPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-wider">
+                  {language === 'en' ? 'Confirm new password' : 'تأكيد كلمة المرور الجديدة'}
+                </label>
+                <input
+                  type="password"
+                  value={confirmNewPassword}
+                  onChange={(e) => setConfirmNewPassword(e.target.value)}
+                  className="w-full p-3 rounded-xl bg-[#0F0E0C] border border-[#2D2319] focus:border-[#FFA048] text-xs text-[#F4E3D7] outline-none"
+                  id="edit-profile-confirm-password"
+                  autoComplete="new-password"
+                  minLength={6}
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={pwBusy}
+                className="w-full py-3 rounded-xl border border-[#FFA048]/50 bg-[#FFA048]/15 hover:bg-[#FFA048]/25 text-[#FFA048] font-extrabold text-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                id="btn-submit-change-password"
+              >
+                {pwBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeyRound className="w-4 h-4" />}
+                {pwBusy
+                  ? (language === 'en' ? 'Updating…' : 'جارٍ التحديث…')
+                  : (language === 'en' ? 'Update Password' : 'تحديث كلمة المرور')}
+              </button>
+            </form>
+          )}
+        </div>
+        </>
       )}
     </div>
   );

@@ -202,6 +202,7 @@ interface DirectoryContextType {
   blockListingOwner: (ownerEmailOrId: string) => Promise<{ success: boolean; error?: string }>;
   signOut:          () => Promise<void>;
   updateUserProfile: (updates: Partial<Pick<UserProfile, 'name' | 'phone' | 'preferredLanguage'>>) => Promise<{ success: boolean; error?: string }>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
 
   // i18n / theme (English-only UI)
   language:       'en';
@@ -1141,6 +1142,32 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return { success: false, error: 'You must be signed in to update your profile.' };
   };
 
+  const changePassword = async (
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<{ success: boolean; error?: string }> => {
+    if (!apiToken) {
+      return { success: false, error: 'You must be signed in to change your password.' };
+    }
+    try {
+      const res = await apiFetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiToken}`,
+        },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        return { success: false, error: data.error || 'Could not change password.' };
+      }
+      return { success: true };
+    } catch {
+      return { success: false, error: 'Cannot reach server. Make sure the backend is running.' };
+    }
+  };
+
   // ── Category helpers (server-backed) ──────────────────────────────────────
   const setTheme = (t: 'light' | 'dark') => setThemeState(t);
 
@@ -1629,7 +1656,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // ── Provider ──────────────────────────────────────────────────────────────
   return (
     <DirectoryContext.Provider value={{
-      authReady, isAuthenticated, currentUser, apiToken, apiLogin, signInWithGoogle, signInWithApple, oauthAvailable: isSupabaseConfigured, registerAccount, verifyEmailCode, resendVerificationCode, requestPasswordReset, verifyResetCode, completePasswordReset, deleteAccount, blockListingOwner, signOut, updateUserProfile,
+      authReady, isAuthenticated, currentUser, apiToken, apiLogin, signInWithGoogle, signInWithApple, oauthAvailable: isSupabaseConfigured, registerAccount, verifyEmailCode, resendVerificationCode, requestPasswordReset, verifyResetCode, completePasswordReset, deleteAccount, blockListingOwner, signOut, updateUserProfile, changePassword,
       language, theme, setTheme,
       categories, addCategory, removeCategory, refreshCategories,
       businesses, addBusiness, updateBusiness, removeBusiness, deleteMyListing, refreshDirectory,
