@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">ANV</string>
-    <string name="title_activity_main">ANV</string>
+    <string name="app_name">ABN</string>
+    <string name="title_activity_main">ABN</string>
     <string name="package_name">com.example.shiabusinessdirectory</string>
     <string name="custom_url_scheme">com.example.shiabusinessdirectory</string>
 </resources>
