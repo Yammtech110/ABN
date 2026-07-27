@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Capacitor } from '@capacitor/core';
 import { DirectoryProvider, useDirectory } from './context/DirectoryContext';
 import { BackNavigationProvider, exitNativeApp } from './context/BackNavigationContext';
 import { ExitConfirmDialog } from './components/ExitConfirmDialog';
@@ -25,42 +26,14 @@ import {
   Home,
   Search,
   Heart,
-  Briefcase,
   User,
   Shield,
-  Smartphone,
-  Info,
   ArrowLeft,
   Loader2,
 } from 'lucide-react';
 
-// ── Live Clock Hook ────────────────────────────────────────────
-function useLiveClock() {
-  const [time, setTime] = useState(() => {
-    const now = new Date();
-    return now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-  });
-  useEffect(() => {
-    const tick = () => {
-      const now = new Date();
-      setTime(now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }));
-    };
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, []);
-  return time;
-}
-
-// ── Detect if running on real mobile device (not desktop browser) ──
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 1024);
-  useEffect(() => {
-    const handler = () => setIsMobile(window.innerWidth < 1024);
-    window.addEventListener('resize', handler);
-    return () => window.removeEventListener('resize', handler);
-  }, []);
-  return isMobile;
-}
+// Native APK only — browser (abn-1.onrender.com) uses the web layout.
+const isNativeApp = (): boolean => Capacitor.isNativePlatform();
 
 // ── Tab View Wrapper with animation ───────────────────────────
 const TabView: React.FC<{ children: React.ReactNode; tabKey: string }> = ({ children, tabKey }) => (
@@ -277,11 +250,65 @@ function BottomNav({
   );
 }
 
+// ── Top Nav Bar (web browser) ─────────────────────────────────
+function WebTopNav({
+  activeTab,
+  setActiveTab,
+  setSearchQueryText,
+  t,
+  isAdmin,
+}: {
+  activeTab: string;
+  setActiveTab: (t: string) => void;
+  setSearchQueryText: (q: string) => void;
+  t: Record<string, string>;
+  isAdmin?: boolean;
+}) {
+  const isAccountActive =
+    activeTab === 'account' ||
+    activeTab === 'portal-management' ||
+    activeTab === 'job-management' ||
+    activeTab === 'notifications' ||
+    activeTab === 'legal';
+
+  const navBtn = (tab: string, label: string, icon: React.ReactNode, onClick?: () => void) => (
+    <button
+      type="button"
+      onClick={onClick ?? (() => setActiveTab(tab))}
+      className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-all ${
+        activeTab === tab || (tab === 'account' && isAccountActive)
+          ? 'bg-[#FFA048] text-black shadow-[0_0_15px_rgba(255,160,72,0.35)]'
+          : 'text-gray-400 hover:text-white hover:bg-[#191613]'
+      }`}
+      id={`web-tab-${tab}`}
+    >
+      {icon}
+      <span className="hidden sm:inline">{label}</span>
+    </button>
+  );
+
+  return (
+    <nav className="flex items-center gap-1 overflow-x-auto scrollbar-none" id="web-top-nav">
+      {!isAdmin && (
+        <>
+          {navBtn('home', t.home, <Home className="w-4 h-4" />, () => {
+            setSearchQueryText('');
+            setActiveTab('home');
+          })}
+          {navBtn('search', t.search, <Search className="w-4 h-4" />)}
+          {navBtn('saved', t.saved, <Heart className="w-4 h-4" />)}
+        </>
+      )}
+      {isAdmin && navBtn('admin', t.adminPanel || 'Admin', <Shield className="w-4 h-4" />)}
+      {navBtn('account', t.account, <User className="w-4 h-4" />)}
+    </nav>
+  );
+}
+
 function DirectoryAppContent() {
   const { language, currentUser, businesses, authReady, isAuthenticated, apiToken } = useDirectory();
   const t = TRANSLATIONS[language];
-  const liveTime = useLiveClock();
-  const isMobile = useIsMobile();
+  const nativeApp = isNativeApp();
 
   const [activeTab, setActiveTab] = useState<string>('home');
   const [legalDocId, setLegalDocId] = useState<LegalDocId | null>(null);
@@ -366,7 +393,6 @@ function DirectoryAppContent() {
   }, [activeTab, myListing]);
 
   const verifiedActiveCount = businesses.filter((b) => b.isVerified && b.status === 'active').length;
-  const expiredCount = businesses.filter((b) => b.status === 'suspended').length;
 
   const splashOverlay = showSplash ? <SplashScreen fading={splashFading} /> : null;
 
@@ -394,8 +420,8 @@ function DirectoryAppContent() {
     );
   }
 
-  // ── MOBILE LAYOUT: Full-screen native app experience ──────────
-  if (isMobile) {
+  // ── NATIVE APP: Full-screen mobile layout (APK only) ──────────
+  if (nativeApp) {
     return (
       <BackNavigationProvider onRootBack={handleRootBack}>
       <>
@@ -453,128 +479,52 @@ function DirectoryAppContent() {
     );
   }
 
-  // ── DESKTOP LAYOUT: Simulator sandbox (browser only) ─────────
+  // ── WEB APP: Full website layout (abn-1.onrender.com in browser) ─
   return (
     <>
-    {splashOverlay}
-    <div className="min-h-screen bg-[#0A0705] text-[#F4E3D7] font-sans flex flex-col antialiased" id="app-root">
-
-      {/* Top Navbar */}
-      <header className="border-b border-[#2D2319] bg-[#0A0705]/80 backdrop-blur-md p-4 sticky top-0 z-40 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-black text-[#FFA048] tracking-widest uppercase">ABN</h1>
-            <div className="hidden sm:block min-w-0">
-              <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest truncate">{t.tagline}</p>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Grid */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
-
-        {/* Phone Simulator */}
-        <section className="lg:col-span-6 flex flex-col items-center justify-center py-4">
-          <div className="relative w-full max-w-[395px] h-[812px] rounded-[52px] border-[10px] border-[#2D2319] bg-[#0F0E0C] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col ring-8 ring-[#1A1510]/50">
-
-            {/* Status Bar with live clock — desktop simulator only */}
-            <div className="absolute top-0 inset-x-0 h-6 bg-black z-30 flex justify-between items-center px-8 text-[9px] font-bold text-gray-400">
-              <span className="font-mono">{liveTime}</span>
-              <div className="w-16 h-3.5 bg-black rounded-b-xl absolute left-1/2 -translate-x-1/2 top-0 flex items-center justify-center">
-                <div className="w-8 h-1 bg-gray-800 rounded-full"></div>
-              </div>
-              <div className="flex items-center gap-1">
-                <span>5G</span>
-                <div className="w-4 h-2.5 bg-gray-600 rounded-sm flex items-end p-[1px] border border-gray-500">
-                  <div className="w-full h-[80%] bg-[#FFA048]"></div>
-                </div>
+      {splashOverlay}
+      <div className="min-h-screen bg-[#0A0705] text-[#F4E3D7] font-sans flex flex-col antialiased" id="app-root-web">
+        <header className="border-b border-[#2D2319] bg-[#0A0705]/90 backdrop-blur-md p-4 sticky top-0 z-40 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+          <div className="max-w-7xl mx-auto flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center justify-between gap-3 min-w-0">
+              <div className="min-w-0">
+                <h1 className="text-2xl font-black text-[#FFA048] tracking-widest uppercase">ABN</h1>
+                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest truncate">{t.tagline}</p>
               </div>
             </div>
-
-            {/* App Content */}
-            <div className="flex-1 pt-8 pb-16 overflow-y-auto px-5 bg-gradient-to-b from-[#191512] to-[#0A0705] scrollbar-none">
-              <TabContent
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                setSelectedBusiness={setSelectedBusiness}
-                searchQueryText={searchQueryText}
-                setSearchQueryText={setSearchQueryText}
-                legalDocId={legalDocId}
-                setLegalDocId={setLegalDocId}
-              />
-            </div>
-
-            {/* Simulator Bottom Navigation Bar */}
-            <div className="absolute bottom-0 inset-x-0 h-16 bg-[#0A0705]/80 backdrop-blur-xl border-t border-[#2D2319] rounded-b-[42px] z-30 shadow-[0_-4px_30px_rgba(0,0,0,0.5)]">
-                  <BottomNav
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
-                    setSearchQueryText={setSearchQueryText}
-                    t={t as unknown as Record<string, string>}
-                    isAdmin={isAdmin}
-                  />
-            </div>
-
-            {/* Home indicator bar */}
-            <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-32 h-1 bg-gray-700 rounded-full z-30"></div>
+            <WebTopNav
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              setSearchQueryText={setSearchQueryText}
+              t={t as unknown as Record<string, string>}
+              isAdmin={isAdmin}
+            />
           </div>
-        </section>
+        </header>
 
-        {/* Right Sandbox Panel */}
-        <section className="lg:col-span-6 space-y-6">
+        <main className="flex-1 w-full max-w-7xl mx-auto p-4 md:p-6">
+          <TabContent
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            setSelectedBusiness={setSelectedBusiness}
+            searchQueryText={searchQueryText}
+            setSearchQueryText={setSearchQueryText}
+            legalDocId={legalDocId}
+            setLegalDocId={setLegalDocId}
+          />
+        </main>
 
-          <div className="p-5 rounded-3xl bg-[#0F0E0C] border border-[#2D2319] space-y-2 animate-fade-in-up">
-            <div className="flex items-center gap-2 text-[#FFA048] text-xs font-bold uppercase tracking-wider">
-              <Smartphone className="w-4 h-4" />
-              <span>Interactive Community Sandbox</span>
-            </div>
-            <h2 className="text-xl font-bold text-white leading-snug">
-              Shia Business Directory Mobile Environment
-            </h2>
-            <p className="text-xs text-gray-400 leading-relaxed">
-              Assalamu Alaykum! Welcome to the Ahle Bait Network (ABN) sandbox. Experience the full mobile app and verify administrative rules on the fly.
-            </p>
-          </div>
+        <footer className="border-t border-[#2D2319] bg-[#0F0E0C] py-6 text-center text-xs text-gray-500">
+          <p>© 2026 Ahle Bait Network (ABN). All rights reserved.</p>
+          <p className="mt-1 text-[10px] text-gray-600">
+            {verifiedActiveCount} active listings · Admin panel available on web
+          </p>
+        </footer>
 
-          {/* Directory stats */}
-          <div className="p-5 rounded-3xl bg-[#0F0E0C] border border-[#2D2319] space-y-4 animate-fade-in-up" style={{ animationDelay: '0.07s' }}>
-            <span className="text-[10px] text-gray-400 font-black uppercase tracking-wider block">Live Directory Stats</span>
-            <div className="p-3.5 rounded-2xl bg-black/40 border border-[#2D2319]/80 text-xs text-gray-400">
-              <ul className="list-disc pl-4 space-y-1 text-[11px]">
-                <li>Total Listings: <strong className="text-white">{businesses.length}</strong></li>
-                <li>Active: <strong className="text-green-400">{verifiedActiveCount}</strong></li>
-                <li>Suspended: <strong className="text-red-400">{expiredCount}</strong></li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Compliance Info */}
-          <div className="p-5 rounded-3xl bg-[#0F0E0C] border border-[#2D2319] space-y-3 animate-fade-in-up" style={{ animationDelay: '0.14s' }}>
-            <div className="flex items-center gap-2 text-[#FFA048] text-xs font-bold uppercase tracking-wider">
-              <Info className="w-4 h-4" />
-              <span>Dues Compliance Audit Logs</span>
-            </div>
-            <p className="text-xs text-gray-300"><strong>The $50/Month Visibility Rule:</strong> Each business requires a monthly fee to remain in the directory.</p>
-            <div className="p-3 rounded-2xl bg-[#1C130D]/75 border border-[#3D2C1E]/50">
-              <p className="text-[11px] text-amber-400 leading-normal">
-                Sign in via the auth screen to register a business or service from Home, then await admin approval before it appears in search.
-              </p>
-            </div>
-          </div>
-
-        </section>
-      </main>
-
-      {/* Global Modals */}
-      {selectedBusiness && (
-        <BusinessDetailsModal business={selectedBusiness} onClose={() => setSelectedBusiness(null)} />
-      )}
-
-      <footer className="border-t border-[#2D2319] bg-[#0F0E0C] py-6 text-center text-xs text-gray-500">
-        <p>© 2026 Ahle Bait Network (ABN). All rights reserved.</p>
-      </footer>
-    </div>
+        {selectedBusiness && (
+          <BusinessDetailsModal business={selectedBusiness} onClose={() => setSelectedBusiness(null)} />
+        )}
+      </div>
     </>
   );
 }

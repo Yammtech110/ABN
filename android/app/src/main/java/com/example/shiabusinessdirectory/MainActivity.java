@@ -7,19 +7,13 @@ import com.getcapacitor.BridgeActivity;
 
 /**
  * Live shell: loads https://abn-1.onrender.com.
- * Disable aggressive WebView HTTP cache so Render redeploys show up after app restart.
+ * WebView cache is tuned after the bridge is ready (never cleared on launch).
  */
 public class MainActivity extends BridgeActivity {
 
     @Override
-    public void onStart() {
-        super.onStart();
-        applyLiveWebSettings();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         applyLiveWebSettings();
     }
 
@@ -30,8 +24,7 @@ public class MainActivity extends BridgeActivity {
 
         WebSettings settings = webView.getSettings();
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-        // Always revalidate against the live Static Site (no stale Sign In UI)
-        settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
-        webView.clearCache(true);
+        settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+        settings.setDomStorageEnabled(true);
     }
 }
