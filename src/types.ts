@@ -33,6 +33,8 @@ export interface Business {
   listingType?: ListingType;
   address: string;
   city: string;
+  /** US state / DC postal code when known (e.g. NY, CA). */
+  state?: string;
   area: string;
   isVerified: boolean;
   status: BusinessStatus;
@@ -56,6 +58,9 @@ export interface Review {
   rating: number;
   comment: string;
   date: string;
+  ownerReply?: string;
+  ownerReplyAt?: string | null;
+  ownerReplyBy?: string;
 }
 
 export interface PaymentRecord {

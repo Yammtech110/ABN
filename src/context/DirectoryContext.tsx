@@ -72,6 +72,7 @@ const mapDirectoryProfile = (p: Record<string, unknown>, categories: Category[] 
   listingType:          (p.listingType === 'service' ? 'service' : 'business') as Business['listingType'],
   address:              String(p.address ?? ''),
   city:                 (String(p.city || 'New York')) as Business['city'],
+  state:                String(p.state || '').trim().toUpperCase() || undefined,
   area:                 String(p.area ?? ''),
   isVerified:           Boolean(p.isVerified),
   status:               (p.subscriptionStatus === 'suspended'
@@ -227,6 +228,7 @@ interface DirectoryContextType {
   addReview:      (review: Review) => void;
   fetchReviewsForBusiness: (businessId: string) => Promise<void>;
   submitReview:   (businessId: string, rating: number, comment?: string) => Promise<{ success: boolean; error?: string }>;
+  replyToReview:  (reviewId: string, reply: string) => Promise<{ success: boolean; error?: string }>;
 
   favorites:      string[];
   favoritesLoading: boolean;
@@ -1403,6 +1405,34 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return { success: false, error: 'You must be signed in to submit a review.' };
   };
 
+  const replyToReview = async (
+    reviewId: string,
+    reply: string,
+  ): Promise<{ success: boolean; error?: string }> => {
+    if (!apiToken) {
+      return { success: false, error: 'You must be signed in to reply.' };
+    }
+    try {
+      const res = await apiFetch(`/api/reviews/${encodeURIComponent(reviewId)}/reply`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiToken}`,
+        },
+        body: JSON.stringify({ reply: reply.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, error: data.error || 'Failed to save reply.' };
+      }
+      const updated = data.review as Review;
+      setReviews((prev) => prev.map((r) => (r.id === updated.id ? { ...r, ...updated } : r)));
+      return { success: true };
+    } catch {
+      return { success: false, error: 'Cannot reach server. Make sure the backend is running.' };
+    }
+  };
+
   // ── Favorites (server-synced when signed in) ──────────────────────────────
   const readLegacyLocalFavorites = (): string[] => {
     try {
@@ -1736,7 +1766,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       language, theme, setTheme,
       categories, addCategory, removeCategory, refreshCategories,
       businesses, addBusiness, updateBusiness, removeBusiness, deleteMyListing, refreshDirectory,
-      reviews, addReview, fetchReviewsForBusiness, submitReview,
+      reviews, addReview, fetchReviewsForBusiness, submitReview, replyToReview,
       favorites, favoritesLoading, favoritesError, refreshFavorites, toggleFavorite,
       payments, refreshPayments, renewMembership,
       notifications, notificationsLoading, notificationsError,

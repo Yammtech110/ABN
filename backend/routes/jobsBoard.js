@@ -10,6 +10,7 @@ const { isSupabaseStorage, directoryProfiles, jobsBoard, newId, newUuid, today }
 const { mapJobFromDb, mapJobToDb, mapProfileFromDb } = require('../lib/supabaseMappers');
 const { authenticate, requireRole } = require('../middleware/authMiddleware');
 const { publicMediaPath, jobLogoFromProfile, streamStoredImage, sanitizeStoredImage, normalizeIncomingImage } = require('../lib/listingMedia');
+const { createNotification } = require('../lib/notificationStore');
 
 const router = express.Router();
 
@@ -264,21 +265,33 @@ router.post('/', authenticate, requireRole(...JOB_OWNER_ROLES), async (req, res,
 
     if (!isSupabaseStorage()) {
       jobsBoard.unshift(job);
-      return res.status(201).json(withPublicJobMedia(mapJob(job)));
+    } else {
+      const { data, error } = await supabaseAdmin
+        .from('jobs_board')
+        .insert(mapJobToDb(job))
+        .select('*')
+        .single();
+
+      if (error) return res.status(500).json({ error: error.message });
+      const saved = mapJob(mapJobFromDb(data));
+      const memIdx = jobsBoard.findIndex((j) => j.id === saved.id);
+      if (memIdx >= 0) jobsBoard[memIdx] = saved;
+      else jobsBoard.unshift(saved);
+      Object.assign(job, saved);
     }
 
-    const { data, error } = await supabaseAdmin
-      .from('jobs_board')
-      .insert(mapJobToDb(job))
-      .select('*')
-      .single();
+    try {
+      await createNotification({
+        userId: null,
+        receiverRole: 'all',
+        title: 'New Job Opening',
+        message: `${job.businessName || 'A business'} is hiring: ${job.title} (${job.category}).`,
+      });
+    } catch {
+      // non-fatal
+    }
 
-    if (error) return res.status(500).json({ error: error.message });
-    const saved = mapJob(mapJobFromDb(data));
-    const memIdx = jobsBoard.findIndex((j) => j.id === saved.id);
-    if (memIdx >= 0) jobsBoard[memIdx] = saved;
-    else jobsBoard.unshift(saved);
-    res.status(201).json(withPublicJobMedia(saved));
+    res.status(201).json(withPublicJobMedia(mapJob(job)));
   } catch (err) {
     next(err);
   }

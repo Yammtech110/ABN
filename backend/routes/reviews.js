@@ -1,25 +1,30 @@
 /**
- * routes/reviews.js — Supabase-backed star ratings
+ * routes/reviews.js — Supabase-backed star ratings + owner replies
  */
 
 'use strict';
 
 const express = require('express');
 const { supabaseAdmin } = require('../supabase');
-const { isSupabaseStorage, reviews, newId, today } = require('../db');
-const { mapReviewFromDb } = require('../lib/supabaseMappers');
+const { isSupabaseStorage, reviews, directoryProfiles, newId, today } = require('../db');
+const { mapReviewFromDb, mapProfileFromDb } = require('../lib/supabaseMappers');
 const { authenticate } = require('../middleware/authMiddleware');
+const { createNotification } = require('../lib/notificationStore');
+const { findByEmail: findUserByEmail } = require('../lib/userStore');
 
 const router = express.Router();
 
 const mapReview = (r) => ({
-  id:         r.id,
-  businessId: r.businessId,
-  userId:     r.userId,
-  userName:   r.userName,
-  rating:     r.rating ?? r.ratingScore,
-  comment:    r.comment,
-  date:       r.date,
+  id:           r.id,
+  businessId:   r.businessId,
+  userId:       r.userId,
+  userName:     r.userName,
+  rating:       r.rating ?? r.ratingScore,
+  comment:      r.comment,
+  date:         r.date,
+  ownerReply:   r.ownerReply || '',
+  ownerReplyAt: r.ownerReplyAt || null,
+  ownerReplyBy: r.ownerReplyBy || '',
 });
 
 const aggregateForBusiness = (list, businessId) => {
@@ -42,6 +47,32 @@ async function fetchReviewsForBusiness(businessId) {
 
   if (error) throw new Error(error.message);
   return (data || []).map(mapReviewFromDb);
+}
+
+async function findReviewById(id) {
+  if (!isSupabaseStorage()) {
+    return reviews.find((r) => r.id === id) || null;
+  }
+  const { data, error } = await supabaseAdmin
+    .from('business_reviews')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ? mapReviewFromDb(data) : null;
+}
+
+async function findListingById(id) {
+  if (!isSupabaseStorage()) {
+    return directoryProfiles.find((p) => p.id === id) || null;
+  }
+  const { data, error } = await supabaseAdmin
+    .from('profiles_directory')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ? mapProfileFromDb(data) : null;
 }
 
 // ── GET /api/reviews?businessId= ──────────────────────────────────────────
@@ -80,20 +111,22 @@ router.post('/', authenticate, async (req, res, next) => {
     }
 
     const record = {
-      id:          newId('rev'),
+      id:           newId('rev'),
       userId,
       businessId,
       ratingScore,
-      comment:     String(comment || '').trim(),
-      userName:    req.user.name || req.user.email?.split('@')[0] || 'Community Member',
-      date:        today(),
-      createdAt:   new Date().toISOString(),
+      comment:      String(comment || '').trim(),
+      userName:     req.user.name || req.user.email?.split('@')[0] || 'Community Member',
+      date:         today(),
+      createdAt:    new Date().toISOString(),
+      ownerReply:   '',
+      ownerReplyAt: null,
+      ownerReplyBy: '',
     };
 
     if (!isSupabaseStorage()) {
       reviews.unshift(record);
       const stats = aggregateForBusiness(reviews, businessId);
-      const { directoryProfiles } = require('../db');
       const profile = directoryProfiles.find((p) => p.id === businessId);
       if (profile) {
         profile.rating = stats.avg;
@@ -129,6 +162,91 @@ router.post('/', authenticate, async (req, res, next) => {
       review: mapReview(mapReviewFromDb(data)),
       aggregate: stats,
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── POST /api/reviews/:id/reply — listing owner replies ───────────────────
+router.post('/:id/reply', authenticate, async (req, res, next) => {
+  try {
+    const reply = String(req.body?.reply || '').trim().slice(0, 2000);
+    if (!reply) {
+      return res.status(400).json({ error: 'reply is required.' });
+    }
+
+    const review = await findReviewById(req.params.id);
+    if (!review) return res.status(404).json({ error: 'Review not found.' });
+
+    const listing = await findListingById(review.businessId);
+    if (!listing) return res.status(404).json({ error: 'Listing not found.' });
+
+    const isOwner = listing.email && listing.email === req.user.email;
+    const isAdmin = req.user.role === 'admin';
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ error: 'Only the listing owner can reply to reviews.' });
+    }
+
+    const ownerName = req.user.name || req.user.email?.split('@')[0] || 'Owner';
+    const repliedAt = new Date().toISOString();
+
+    if (!isSupabaseStorage()) {
+      const idx = reviews.findIndex((r) => r.id === review.id);
+      if (idx < 0) return res.status(404).json({ error: 'Review not found.' });
+      reviews[idx] = {
+        ...reviews[idx],
+        ownerReply: reply,
+        ownerReplyAt: repliedAt,
+        ownerReplyBy: ownerName,
+      };
+      return res.json({ review: mapReview(reviews[idx]) });
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('business_reviews')
+      .update({
+        owner_reply: reply,
+        owner_reply_at: repliedAt,
+        owner_reply_by: ownerName,
+      })
+      .eq('id', review.id)
+      .select('*')
+      .single();
+
+    if (error) {
+      const msg = String(error.message || '').toLowerCase();
+      if (msg.includes('owner_reply')) {
+        return res.status(503).json({
+          error: 'Review replies are not enabled yet. Run migration 015_review_replies.sql in Supabase.',
+        });
+      }
+      return res.status(500).json({ error: error.message });
+    }
+
+    try {
+      if (review.userId) {
+        await createNotification({
+          userId: review.userId,
+          receiverRole: 'customer',
+          title: 'Owner replied to your review',
+          message: `${listing.businessName || 'A business'} replied to your review.`,
+        });
+      } else {
+        const reviewer = await findUserByEmail(review.userName);
+        if (reviewer?.id) {
+          await createNotification({
+            userId: reviewer.id,
+            receiverRole: 'customer',
+            title: 'Owner replied to your review',
+            message: `${listing.businessName || 'A business'} replied to your review.`,
+          });
+        }
+      }
+    } catch {
+      // non-fatal
+    }
+
+    res.json({ review: mapReview(mapReviewFromDb(data)) });
   } catch (err) {
     next(err);
   }

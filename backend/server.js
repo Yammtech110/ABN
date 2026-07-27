@@ -141,6 +141,9 @@ app.use('/api/reports', require('./routes/reports'));
 // Listing name / photo change requests (owner → admin approval)
 app.use('/api/change-requests', require('./routes/changeRequests'));
 
+// Admin activity / audit log
+app.use('/api/admin/activity', require('./routes/adminActivity'));
+
 // Categories + notifications + device push tokens
 app.use('/api/categories', require('./routes/categories'));
 app.use('/api/notifications', require('./routes/notifications'));
@@ -189,11 +192,12 @@ app.get('/api', (_req, res) => {
       auth:      '/api/auth      — POST /register  POST /login  POST /oauth-sync  GET /me  PUT /me',
       directory: '/api/directory — GET /  GET /mine  GET /:id  POST /  PUT /:id  DELETE /:id  PUT /:id/hiring',
       jobsboard: '/api/jobsboard — GET /  GET /mine  GET /:id  POST /  PUT /:id  DELETE /:id',
-      reviews:   '/api/reviews   — GET /?businessId=  POST /',
+      reviews:   '/api/reviews   — GET /?businessId=  POST /  POST /:id/reply',
       payments:  '/api/payments  — GET /  GET /ledger  GET /mine  POST /renew',
       favorites: '/api/favorites — GET /  POST /:businessId  DELETE /:businessId',
       reports:   '/api/reports   — GET /  POST /  PATCH /:id/resolve',
       changeRequests: '/api/change-requests — GET /  GET /mine  POST /  POST /:id/approve  POST /:id/reject',
+      adminActivity: '/api/admin/activity — GET / (admin audit log)',
       notifications: '/api/notifications — GET /  POST /  PATCH /read-all  DELETE /',
       devices:   '/api/devices   — POST /register  DELETE /register (FCM push tokens)',
       health:    '/api/health    — GET /',
@@ -264,6 +268,13 @@ const LAN_HOST = process.env.LAN_HOST || '192.168.100.13';
     await seedDefaultCategories();
   } catch (err) {
     console.error('[db] Category seed failed:', err.message);
+  }
+
+  try {
+    const { startPaymentReminderScheduler } = require('./lib/paymentReminders');
+    startPaymentReminderScheduler();
+  } catch (err) {
+    console.warn('[paymentReminders] Could not start scheduler:', err.message);
   }
 
   const server = app.listen(PORT, '0.0.0.0', () => {

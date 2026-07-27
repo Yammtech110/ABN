@@ -1,12 +1,20 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useDirectory } from '../context/DirectoryContext';
 import { TRANSLATIONS } from '../data/translations';
-import { Search, MapPin, ArrowLeft, CheckCircle, Clock } from 'lucide-react';
+import { Search, MapPin, ArrowLeft, CheckCircle, Map, List, Star } from 'lucide-react';
 import { Business } from '../types';
 import { textEn } from '../utils/englishOnly';
 import { isLiveDirectoryListing } from '../utils/listingAccess';
 import { listingMatchesCategory } from '../utils/categoryMatch';
 import { BusinessThumbnail } from './BusinessThumbnail';
+import { US_STATES } from '../data/usStates';
+import { citiesForState, stateCodeForCity } from '../data/usCitiesByState';
+import { isBusinessOpenNow } from '../utils/openNow';
+import {
+  buildBusinessMapQuery,
+  googleMapsEmbedUrl,
+  openBusinessInMaps,
+} from '../utils/maps';
 
 interface SearchTabProps {
   initialQuery?: string;
@@ -25,44 +33,25 @@ const FALLBACK_CITIES = [
   'Dallas',
 ];
 
-// ── Open Now helper (shared logic) ───────────────────────────
-function isBusinessOpenNow(workingHours: string): boolean | null {
-  try {
-    const cleaned = workingHours.replace(/\(.*?\)/g, '').trim();
-    const parts = cleaned.split('-').map((s) => s.trim());
-    if (parts.length < 2) return null;
-    const parseTime = (str: string) => {
-      const m = str.match(/(\d+):(\d+)\s*(AM|PM)/i);
-      if (!m) return null;
-      let h = parseInt(m[1]);
-      const min = parseInt(m[2]);
-      const period = m[3].toUpperCase();
-      if (period === 'PM' && h !== 12) h += 12;
-      if (period === 'AM' && h === 12) h = 0;
-      return h * 60 + min;
-    };
-    const open = parseTime(parts[0]);
-    const close = parseTime(parts[1]);
-    if (open === null || close === null) return null;
-    const now = new Date();
-    const cur = now.getHours() * 60 + now.getMinutes();
-    if (close < open) return cur >= open || cur <= close;
-    return cur >= open && cur <= close;
-  } catch {
-    return null;
-  }
-}
+const MIN_RATINGS = [
+  { value: 0, label: 'Any rating' },
+  { value: 3, label: '3★+' },
+  { value: 4, label: '4★+' },
+  { value: 4.5, label: '4.5★+' },
+];
 
-// ── Skeleton Loader ───────────────────────────────────────────
+const listingState = (biz: Business): string =>
+  String(biz.state || stateCodeForCity(biz.city) || '').toUpperCase();
+
 const SearchSkeleton = () => (
   <div className="space-y-3.5">
     {[1, 2, 3].map((i) => (
       <div key={i} className="flex items-center gap-3.5 p-3 rounded-2xl bg-[#13110E] border border-[#2D2319]">
-        <div className="w-14 h-14 rounded-xl skeleton flex-shrink-0"></div>
+        <div className="w-14 h-14 rounded-xl skeleton flex-shrink-0" />
         <div className="flex-1 space-y-2">
-          <div className="h-3 skeleton rounded w-3/4"></div>
-          <div className="h-2.5 skeleton rounded w-1/2"></div>
-          <div className="h-2 skeleton rounded w-1/3"></div>
+          <div className="h-3 skeleton rounded w-3/4" />
+          <div className="h-2.5 skeleton rounded w-1/2" />
+          <div className="h-2 skeleton rounded w-1/3" />
         </div>
       </div>
     ))}
@@ -73,7 +62,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
   initialQuery = '',
   onClearQuery,
   onSelectBusiness,
-  onSwitchTab
+  onSwitchTab,
 }) => {
   const { language, businesses, categories } = useDirectory();
   const t = TRANSLATIONS[language];
@@ -81,18 +70,29 @@ export const SearchTab: React.FC<SearchTabProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [selectedState, setSelectedState] = useState<string>('All');
   const [selectedCity, setSelectedCity] = useState<string>('All');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [openNowOnly, setOpenNowOnly] = useState(false);
+  const [minRating, setMinRating] = useState(0);
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [mapFocusId, setMapFocusId] = useState<string | null>(null);
 
   const CITIES = useMemo(() => {
     const fromListings = businesses
       .filter(isLiveDirectoryListing)
+      .filter((b) => selectedState === 'All' || listingState(b) === selectedState)
       .map((b) => b.city)
       .filter(Boolean);
-    return ['All', ...Array.from(new Set([...FALLBACK_CITIES, ...fromListings])).sort((a, b) => a.localeCompare(b))];
-  }, [businesses]);
+    const stateCities = selectedState !== 'All' ? citiesForState(selectedState) : [];
+    return [
+      'All',
+      ...Array.from(new Set([...FALLBACK_CITIES, ...stateCities, ...fromListings])).sort((a, b) =>
+        a.localeCompare(b),
+      ),
+    ];
+  }, [businesses, selectedState]);
 
-  // Debounce search input by 300ms
   useEffect(() => {
     if (searchQuery === debouncedQuery) return;
     setIsSearching(true);
@@ -101,9 +101,8 @@ export const SearchTab: React.FC<SearchTabProps> = ({
       setIsSearching(false);
     }, 300);
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchQuery, debouncedQuery]);
 
-  // Trigger search filters when input query is passed from Home category clicks
   useEffect(() => {
     if (initialQuery) {
       const catById = categories.find((c) => c.id === initialQuery);
@@ -115,8 +114,8 @@ export const SearchTab: React.FC<SearchTabProps> = ({
         setSelectedCategory(matchedCat.id);
         setSearchQuery('');
         setDebouncedQuery('');
-      } else if (['New York', 'Los Angeles', 'Chicago', 'Houston', 'Miami', 'Dearborn', 'Dallas', 'All'].includes(initialQuery)) {
-        setSelectedCity(initialQuery as any);
+      } else if (FALLBACK_CITIES.includes(initialQuery) || initialQuery === 'All') {
+        setSelectedCity(initialQuery);
         setSearchQuery('');
         setDebouncedQuery('');
       } else {
@@ -127,14 +126,22 @@ export const SearchTab: React.FC<SearchTabProps> = ({
     }
   }, [initialQuery, categories, onClearQuery]);
 
+  useEffect(() => {
+    if (selectedCity !== 'All' && !CITIES.includes(selectedCity)) {
+      setSelectedCity('All');
+    }
+  }, [CITIES, selectedCity]);
+
   const handleClearAll = useCallback(() => {
     setSearchQuery('');
     setDebouncedQuery('');
+    setSelectedState('All');
     setSelectedCity('All');
     setSelectedCategory('All');
+    setOpenNowOnly(false);
+    setMinRating(0);
   }, []);
 
-  // Memoized filter logic — runs only when debounced query or filters change
   const filteredBusinesses = useMemo(() => {
     return businesses.filter((biz) => {
       if (!isLiveDirectoryListing(biz)) return false;
@@ -146,23 +153,55 @@ export const SearchTab: React.FC<SearchTabProps> = ({
         textEn(biz.subcategory).toLowerCase().includes(q) ||
         textEn(biz.description).toLowerCase().includes(q) ||
         biz.area.toLowerCase().includes(q) ||
-        // Improvement #13: search by phone & WhatsApp number
         biz.phone.replace(/\s+/g, '').includes(q.replace(/\s+/g, '')) ||
         biz.whatsapp.replace(/\s+/g, '').includes(q.replace(/\s+/g, '')) ||
         biz.address.toLowerCase().includes(q);
 
+      const st = listingState(biz);
+      const matchState = selectedState === 'All' || st === selectedState;
       const matchCity = selectedCity === 'All' || biz.city === selectedCity;
       const matchCategory = listingMatchesCategory(biz, selectedCategory, categories);
+      const open = isBusinessOpenNow(biz.workingHours.en);
+      const matchOpen = !openNowOnly || open === true;
+      const matchRating = Number(biz.rating || 0) >= minRating;
 
-      return matchQuery && matchCity && matchCategory;
+      return matchQuery && matchState && matchCity && matchCategory && matchOpen && matchRating;
     });
-  }, [businesses, debouncedQuery, selectedCity, selectedCategory, categories, language]);
+  }, [
+    businesses,
+    debouncedQuery,
+    selectedState,
+    selectedCity,
+    selectedCategory,
+    openNowOnly,
+    minRating,
+    categories,
+  ]);
 
+  const mapQuery = useMemo(() => {
+    if (mapFocusId) {
+      const focused = filteredBusinesses.find((b) => b.id === mapFocusId);
+      if (focused) return buildBusinessMapQuery(focused);
+    }
+    if (selectedCity !== 'All') return selectedCity;
+    if (selectedState !== 'All') {
+      const name = US_STATES.find((s) => s.code === selectedState)?.name;
+      return name || selectedState;
+    }
+    if (filteredBusinesses[0]) return buildBusinessMapQuery(filteredBusinesses[0]);
+    return 'United States';
+  }, [mapFocusId, filteredBusinesses, selectedCity, selectedState]);
+
+  const hasActiveFilters =
+    searchQuery ||
+    selectedState !== 'All' ||
+    selectedCity !== 'All' ||
+    selectedCategory !== 'All' ||
+    openNowOnly ||
+    minRating > 0;
 
   return (
     <div className="space-y-4" id="search-tab-container">
-      
-      {/* Top Header Card */}
       <div className="flex items-center gap-3 pb-2 animate-fade-in-up" id="search-header">
         <button
           onClick={() => onSwitchTab('home')}
@@ -171,13 +210,30 @@ export const SearchTab: React.FC<SearchTabProps> = ({
         >
           <ArrowLeft className="w-5 h-5 inline rounded" />
         </button>
-        <h2 className="text-xl font-extrabold text-[#F4E3D7]" id="search-header-title">
+        <h2 className="text-xl font-extrabold text-[#F4E3D7] flex-1" id="search-header-title">
           {language === 'en' ? 'Find a business' : 'ابحث عن نشاط تجاري'}
         </h2>
+        <div className="flex rounded-xl border border-[#2D2319] overflow-hidden" id="search-view-toggle">
+          <button
+            type="button"
+            onClick={() => setViewMode('list')}
+            className={`px-2.5 py-1.5 ${viewMode === 'list' ? 'bg-[#FFA048] text-black' : 'bg-[#191613] text-gray-400'}`}
+            aria-label="List view"
+          >
+            <List className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('map')}
+            className={`px-2.5 py-1.5 ${viewMode === 'map' ? 'bg-[#FFA048] text-black' : 'bg-[#191613] text-gray-400'}`}
+            aria-label="Map view"
+          >
+            <Map className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
-      {/* Comprehensive Search Input Bar */}
-      <div className="relative animate-fade-in-up" style={{animationDelay:'0.05s'}} id="search-input-wrapper">
+      <div className="relative animate-fade-in-up" style={{ animationDelay: '0.05s' }} id="search-input-wrapper">
         <Search className="absolute left-3.5 top-3.5 w-4 h-4 text-gray-500" />
         <input
           type="text"
@@ -187,37 +243,72 @@ export const SearchTab: React.FC<SearchTabProps> = ({
           className="w-full pl-10 pr-4 py-3 bg-[#13110E] border border-[#2D2319] rounded-2xl text-xs text-[#F4E3D7] placeholder-gray-500 outline-none focus:border-[#FFA048] transition-all"
           id="search-input-field"
         />
-        {/* Searching indicator */}
         {isSearching && (
-          <div className="absolute right-3 top-3.5 w-4 h-4 border-2 border-[#FFA048] border-t-transparent rounded-full animate-spin"></div>
+          <div className="absolute right-3 top-3.5 w-4 h-4 border-2 border-[#FFA048] border-t-transparent rounded-full animate-spin" />
         )}
       </div>
 
-      {/* HORIZONTAL CITIES CHIPS */}
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none snap-x animate-fade-in-up" style={{animationDelay:'0.10s'}} id="search-cities-scroll">
-        {CITIES.map((city) => {
-          const isSelected = selectedCity === city;
-          const label = city === 'All' ? t.allCities : (t[city.replace(/\s+/g, '').toLowerCase() as keyof typeof t] as string || city);
-          return (
-            <button
-              key={city}
-              onClick={() => setSelectedCity(city)}
-              className={`flex-shrink-0 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all snap-start border ${
-                isSelected
-                  ? 'bg-[#FFA048] text-black border-[#FFA048]'
-                  : 'bg-[#191613]/55 text-gray-400 border-[#2D2319] hover:text-white hover:bg-white/5'
-              }`}
-              id={`city-chip-${city}`}
-            >
-              <MapPin className="w-3 h-3 inline mr-1" />
-              {label}
-            </button>
-          );
-        })}
+      {/* State + city + open now + rating */}
+      <div className="grid grid-cols-2 gap-2 animate-fade-in-up" style={{ animationDelay: '0.08s' }} id="search-advanced-filters">
+        <select
+          value={selectedState}
+          onChange={(e) => {
+            setSelectedState(e.target.value);
+            setSelectedCity('All');
+            setMapFocusId(null);
+          }}
+          className="w-full px-3 py-2.5 rounded-xl bg-[#13110E] border border-[#2D2319] text-xs text-[#F4E3D7] outline-none focus:border-[#FFA048]"
+          id="search-state-select"
+        >
+          <option value="All">All states</option>
+          {US_STATES.map(({ code, name }) => (
+            <option key={code} value={code}>
+              {name} ({code})
+            </option>
+          ))}
+        </select>
+        <select
+          value={selectedCity}
+          onChange={(e) => {
+            setSelectedCity(e.target.value);
+            setMapFocusId(null);
+          }}
+          className="w-full px-3 py-2.5 rounded-xl bg-[#13110E] border border-[#2D2319] text-xs text-[#F4E3D7] outline-none focus:border-[#FFA048]"
+          id="search-city-select"
+        >
+          {CITIES.map((city) => (
+            <option key={city} value={city}>
+              {city === 'All' ? 'All cities' : city}
+            </option>
+          ))}
+        </select>
+        <button
+          type="button"
+          onClick={() => setOpenNowOnly((v) => !v)}
+          className={`px-3 py-2.5 rounded-xl text-xs font-bold border transition-all ${
+            openNowOnly
+              ? 'bg-green-500/15 text-green-300 border-green-600/40'
+              : 'bg-[#13110E] text-gray-400 border-[#2D2319]'
+          }`}
+          id="search-open-now-toggle"
+        >
+          Open now
+        </button>
+        <select
+          value={minRating}
+          onChange={(e) => setMinRating(Number(e.target.value))}
+          className="w-full px-3 py-2.5 rounded-xl bg-[#13110E] border border-[#2D2319] text-xs text-[#F4E3D7] outline-none focus:border-[#FFA048]"
+          id="search-rating-select"
+        >
+          {MIN_RATINGS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
       </div>
 
-      {/* HORIZONTAL CATEGORIES FILTER ROW */}
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none animate-fade-in-up" style={{animationDelay:'0.15s'}} id="search-cats-scroll">
+      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none animate-fade-in-up" style={{ animationDelay: '0.12s' }} id="search-cats-scroll">
         <button
           onClick={() => setSelectedCategory('All')}
           className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold uppercase border transition-all ${
@@ -227,7 +318,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
           }`}
           id="cat-chip-all"
         >
-          {language === 'en' ? 'All' : 'الكل'}
+          All
         </button>
         {categories.map((cat) => {
           const isSelected = selectedCategory === cat.id;
@@ -248,48 +339,68 @@ export const SearchTab: React.FC<SearchTabProps> = ({
         })}
       </div>
 
-      {/* Result Counter & Reset filter option */}
       <div className="flex items-center justify-between text-xs py-1" id="search-counter-bar">
         <span className="font-mono text-gray-400 font-bold" id="result-counter-text">
           {isSearching ? '...' : filteredBusinesses.length} {t.resultsCount}
         </span>
-        {(searchQuery || selectedCity !== 'All' || selectedCategory !== 'All') && (
+        {hasActiveFilters && (
           <button
             onClick={handleClearAll}
             className="text-[#FFA048]/85 hover:underline font-bold text-[11px]"
             id="search-btn-clear"
           >
-            {language === 'en' ? 'Reset Filters' : 'إعادة ضبط التصفية'}
+            Reset Filters
           </button>
         )}
       </div>
 
-      {/* Search Result list layout */}
+      {viewMode === 'map' && (
+        <div className="space-y-3 animate-fade-in-up" id="search-map-panel">
+          <div className="rounded-2xl overflow-hidden border border-[#2D2319] bg-[#0F0E0C] aspect-[4/3] relative">
+            <iframe
+              title="ABN listings map"
+              src={googleMapsEmbedUrl(mapQuery)}
+              className="absolute inset-0 w-full h-full border-0"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
+          <p className="text-[10px] text-gray-500 px-1">
+            Map centered on {selectedCity !== 'All' ? selectedCity : selectedState !== 'All' ? selectedState : 'your results'}.
+            Tap a listing below to focus the map or open details.
+          </p>
+        </div>
+      )}
+
       {isSearching ? (
         <SearchSkeleton />
       ) : (
         <div className="space-y-3.5" id="search-result-list">
           {filteredBusinesses.length === 0 ? (
             <div className="text-center py-12 px-6 rounded-3xl bg-[#13110E] border border-dashed border-[#2D2319] animate-scale-up" id="search-empty-state">
-              <span className="text-3xl block mb-2">🔍</span>
               <p className="text-xs text-gray-400 font-medium">{t.noResults}</p>
             </div>
           ) : (
             filteredBusinesses.map((biz) => {
               const isOpen = isBusinessOpenNow(biz.workingHours.en);
+              const focused = mapFocusId === biz.id;
               return (
                 <div
                   key={biz.id}
-                  onClick={() => onSelectBusiness(biz)}
-                  className="flex items-center gap-3.5 p-3 rounded-2xl bg-[#13110E] border border-[#2D2319] hover:border-[#FFA048]/40 transition-all cursor-pointer animate-fade-in-up card-hover"
+                  onClick={() => {
+                    if (viewMode === 'map') {
+                      setMapFocusId(biz.id);
+                    }
+                    onSelectBusiness(biz);
+                  }}
+                  className={`flex items-center gap-3.5 p-3 rounded-2xl bg-[#13110E] border transition-all cursor-pointer animate-fade-in-up card-hover ${
+                    focused ? 'border-[#FFA048]' : 'border-[#2D2319] hover:border-[#FFA048]/40'
+                  }`}
                   id={`search-item-${biz.id}`}
                 >
-                  {/* Image Left */}
                   <div className="w-14 h-14 rounded-xl overflow-hidden bg-stone-900 border border-[#2D2319] flex-shrink-0">
                     <BusinessThumbnail business={biz} eager />
                   </div>
-
-                  {/* Central Information */}
                   <div className="flex-1 min-w-0">
                     <h4 className="text-xs font-black text-white hover:text-[#FFA048] truncate transition-colors leading-snug">
                       {biz.name}
@@ -299,21 +410,32 @@ export const SearchTab: React.FC<SearchTabProps> = ({
                     </p>
                     <div className="flex items-center gap-1 mt-1 text-[9px] text-gray-500">
                       <MapPin className="w-3.5 h-3.5 text-[#FFA048]" />
-                      <span>{(t[biz.city.replace(/\s+/g, '').toLowerCase() as keyof typeof t] as string) || biz.city}</span>
-                      <span className="text-gray-700 font-normal">|</span>
-                      <span>{biz.area}</span>
+                      <span>
+                        {biz.city}
+                        {listingState(biz) ? `, ${listingState(biz)}` : ''}
+                      </span>
                     </div>
+                    {viewMode === 'map' && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openBusinessInMaps(buildBusinessMapQuery(biz));
+                        }}
+                        className="mt-1.5 text-[9px] font-bold text-[#FFA048] hover:underline"
+                      >
+                        Open in Maps
+                      </button>
+                    )}
                   </div>
-
-                  {/* Right indicators */}
                   <div className="text-right flex flex-col items-end gap-1 flex-shrink-0">
                     {biz.isVerified && (
                       <span className="p-0.5 rounded-full bg-green-500/10 text-green-400">
                         <CheckCircle className="w-3.5 h-3.5" />
                       </span>
                     )}
-                    <span className="text-[10px] font-black text-[#FFA048]">
-                      ★ {biz.rating}
+                    <span className="text-[10px] font-black text-[#FFA048] flex items-center gap-0.5">
+                      <Star className="w-3 h-3 fill-[#FFA048]" /> {biz.rating}
                     </span>
                     {isOpen !== null && (
                       <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded ${isOpen ? 'badge-open' : 'badge-closed'}`}>
@@ -327,7 +449,6 @@ export const SearchTab: React.FC<SearchTabProps> = ({
           )}
         </div>
       )}
-
     </div>
   );
 };

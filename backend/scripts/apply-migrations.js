@@ -30,6 +30,9 @@ const MIGRATION_FILES = [
   '012_job_image_url.sql',
   '013_device_tokens.sql',
   '014_listing_change_requests.sql',
+  '015_review_replies.sql',
+  '016_admin_activity_log.sql',
+  '017_listing_state.sql',
 ];
 
 function resolveDatabaseUrl() {

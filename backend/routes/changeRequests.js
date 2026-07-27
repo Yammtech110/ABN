@@ -8,6 +8,7 @@ const express = require('express');
 const { findProfileById } = require('../lib/profileStore');
 const { findByEmail: findUserByEmail } = require('../lib/userStore');
 const { createNotification } = require('../lib/notificationStore');
+const { logAdminAction } = require('../lib/activityLog');
 const {
   normalizeIncomingImage,
   publicMediaPath,
@@ -219,6 +220,14 @@ router.post('/:id/approve', authenticate, requireRole('admin'), async (req, res,
         title: 'Name / Photo Change Approved',
         message: `Your request for "${request.currentName}" was approved. The directory listing has been updated.`,
       });
+      await logAdminAction({
+        admin: req.user,
+        action: 'approve_change_request',
+        targetType: 'change_request',
+        targetId: request.id,
+        targetName: request.currentName,
+        details: `Approved name/photo change for listing ${request.businessId}`,
+      });
     } catch {
       // non-fatal
     }
@@ -257,6 +266,16 @@ router.post('/:id/reject', authenticate, requireRole('admin'), async (req, res, 
         message: `Your request for "${request.currentName}" was not approved.${
           resolved.adminNotes ? ` Note: ${resolved.adminNotes}` : ''
         }`,
+      });
+      await logAdminAction({
+        admin: req.user,
+        action: 'reject_change_request',
+        targetType: 'change_request',
+        targetId: request.id,
+        targetName: request.currentName,
+        details: resolved.adminNotes
+          ? `Declined: ${resolved.adminNotes}`
+          : `Declined name/photo change for listing ${request.businessId}`,
       });
     } catch {
       // non-fatal

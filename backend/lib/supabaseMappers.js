@@ -15,6 +15,7 @@ const mapProfileFromDb = (row) => ({
   address:            row.address || '',
   area:               row.area || '',
   city:               row.city || '',
+  state:              row.state || '',
   phone:              row.phone || '',
   whatsapp:           row.whatsapp || '',
   website:            row.website || '',
@@ -51,6 +52,7 @@ const mapProfileToDb = (api, { email } = {}) => {
   if (api.address !== undefined) row.address = api.address;
   if (api.area !== undefined) row.area = api.area;
   if (api.city !== undefined) row.city = api.city;
+  if (api.state !== undefined) row.state = api.state;
   if (api.phone !== undefined) row.phone = api.phone;
   if (api.whatsapp !== undefined) row.whatsapp = api.whatsapp;
   if (api.website !== undefined) row.website = api.website;
@@ -100,13 +102,16 @@ const mapJobToDb = (api) => {
 };
 
 const mapReviewFromDb = (row) => ({
-  id:         String(row.id),
-  businessId: String(row.business_id),
-  userId:     row.user_id,
-  userName:   row.user_name,
-  rating:     row.rating_score,
-  comment:    row.comment || '',
-  date:       row.review_date,
+  id:            String(row.id),
+  businessId:    String(row.business_id),
+  userId:        row.user_id,
+  userName:      row.user_name,
+  rating:        row.rating_score,
+  comment:       row.comment || '',
+  date:          row.review_date,
+  ownerReply:    row.owner_reply || '',
+  ownerReplyAt:  row.owner_reply_at || null,
+  ownerReplyBy:  row.owner_reply_by || '',
 });
 
 const mapReportFromDb = (row) => ({

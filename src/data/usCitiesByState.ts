@@ -93,3 +93,13 @@ export function cityBelongsToState(city: string, stateCode: string): boolean {
   if (list.length === 0) return true;
   return list.includes(city);
 }
+
+/** Infer state code from a known city name (first match). */
+export function stateCodeForCity(city: string): string | null {
+  const needle = String(city || '').trim().toLowerCase();
+  if (!needle) return null;
+  for (const [code, cities] of Object.entries(US_CITIES_BY_STATE)) {
+    if (cities.some((c) => c.toLowerCase() === needle)) return code;
+  }
+  return null;
+}

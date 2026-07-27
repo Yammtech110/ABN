@@ -11,6 +11,7 @@ const { mapProfileFromDb, mapProfileToDb } = require('../lib/supabaseMappers');
 const { findProfileByEmail } = require('../lib/profileStore');
 const { findByEmail: findUserByEmail } = require('../lib/userStore');
 const { createNotification } = require('../lib/notificationStore');
+const { logAdminAction } = require('../lib/activityLog');
 const { authenticate, requireRole } = require('../middleware/authMiddleware');
 const {
   mapProfileForList,
@@ -203,7 +204,7 @@ router.post('/', authenticate, requireRole('customer', 'business', 'service_prov
     const {
       businessName, category, description,
       imageUrl = '', coverUrl = '',
-      address = '', area = '', city = '',
+      address = '', area = '', city = '', state = '',
       phone = '', whatsapp = '', website = '',
       workingHours = '', membershipExpiry,
       subscriptionTier, listingType = 'business',
@@ -237,6 +238,7 @@ router.post('/', authenticate, requireRole('customer', 'business', 'service_prov
       address,
       area,
       city:               city || 'New York',
+      state:              String(state || '').trim().toUpperCase().slice(0, 2),
       phone,
       whatsapp,
       website,
@@ -298,7 +300,7 @@ router.put('/:id', authenticate, async (req, res, next) => {
     const {
       businessName, category, description,
       imageUrl, coverUrl,
-      address, area, city,
+      address, area, city, state,
       phone, whatsapp, website,
       workingHours, membershipExpiry,
       subscriptionStatus, isVerified,
@@ -330,6 +332,9 @@ router.put('/:id', authenticate, async (req, res, next) => {
     if (address            !== undefined) updated.address            = address;
     if (area               !== undefined) updated.area               = area;
     if (city               !== undefined) updated.city               = city;
+    if (state              !== undefined) {
+      updated.state = String(state || '').trim().toUpperCase().slice(0, 2);
+    }
     if (phone              !== undefined) updated.phone              = phone;
     if (whatsapp           !== undefined) updated.whatsapp           = whatsapp;
     if (website            !== undefined) updated.website            = website;
@@ -389,12 +394,28 @@ router.put('/:id', authenticate, async (req, res, next) => {
             title: 'Listing Approved ✓',
             message: `${listingName} passed vetting and is now live in the ABN directory.`,
           });
+          await logAdminAction({
+            admin: req.user,
+            action: 'approve_listing',
+            targetType: 'listing',
+            targetId: updated.id,
+            targetName: listingName,
+            details: `Approved listing for ${existing.email}`,
+          });
         } else if (isVerified === false && existing.isVerified) {
           await createNotification({
             userId: ownerId,
             receiverRole: 'customer',
             title: 'Listing Rejected',
             message: `${listingName} was not approved. Contact support if you need help.`,
+          });
+          await logAdminAction({
+            admin: req.user,
+            action: 'reject_listing',
+            targetType: 'listing',
+            targetId: updated.id,
+            targetName: listingName,
+            details: `Rejected / unverified listing for ${existing.email}`,
           });
         }
 
@@ -414,12 +435,28 @@ router.put('/:id', authenticate, async (req, res, next) => {
             title: 'Listing Suspended',
             message: `${listingName} was suspended by an administrator.`,
           });
+          await logAdminAction({
+            admin: req.user,
+            action: 'suspend_listing',
+            targetType: 'listing',
+            targetId: updated.id,
+            targetName: listingName,
+            details: `Suspended listing for ${existing.email}`,
+          });
         } else if (subscriptionStatus === 'active' && existing.subscriptionStatus === 'suspended') {
           await createNotification({
             userId: ownerId,
             receiverRole: 'customer',
             title: 'Listing Re-Activated',
             message: `${listingName} is visible again in the directory.`,
+          });
+          await logAdminAction({
+            admin: req.user,
+            action: 'reactivate_listing',
+            targetType: 'listing',
+            targetId: updated.id,
+            targetName: listingName,
+            details: `Re-activated listing for ${existing.email}`,
           });
         }
       } catch {

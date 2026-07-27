@@ -22,6 +22,7 @@ import {
   Check,
   X,
   Briefcase,
+  ScrollText,
 } from 'lucide-react';
 import { Business, Category, Job } from '../types';
 import {
@@ -57,7 +58,7 @@ export const AdminPanelTab: React.FC = () => {
   const t = TRANSLATIONS[language];
 
   // Selected administrative segment
-  const [adminTab, setAdminTab] = useState<'biz' | 'pay' | 'jobs' | 'cat' | 'users'>('biz');
+  const [adminTab, setAdminTab] = useState<'biz' | 'pay' | 'jobs' | 'cat' | 'users' | 'log'>('biz');
   const [bizFilter, setBizFilter] = useState<'all' | 'active' | 'pending' | 'expired' | 'submissions'>('all');
   const [vendorSearch, setVendorSearch] = useState('');
 
@@ -117,6 +118,23 @@ export const AdminPanelTab: React.FC = () => {
   const [reportsLoading, setReportsLoading] = useState(false);
   const [reportsError, setReportsError] = useState('');
   const [reportFilter, setReportFilter] = useState<'all' | 'open' | 'resolved'>('open');
+
+  type ActivityLogRow = {
+    id: string;
+    adminId: string;
+    adminEmail: string;
+    adminName: string;
+    action: string;
+    targetType: string;
+    targetId: string;
+    targetName: string;
+    details: string;
+    date: string;
+    createdAt: string | null;
+  };
+  const [activityLogs, setActivityLogs] = useState<ActivityLogRow[]>([]);
+  const [activityLoading, setActivityLoading] = useState(false);
+  const [activityError, setActivityError] = useState('');
 
   type ChangeRequestRow = {
     id: string;
@@ -456,6 +474,34 @@ export const AdminPanelTab: React.FC = () => {
   useEffect(() => {
     if (!isAdmin || adminTab !== 'biz') return;
     loadVettingData();
+  }, [isAdmin, adminTab, apiToken]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const loadActivityLogs = async () => {
+    if (!apiToken) return;
+    setActivityLoading(true);
+    setActivityError('');
+    try {
+      const res = await apiFetch('/api/admin/activity?limit=150', {
+        headers: { Authorization: `Bearer ${apiToken}` },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setActivityError(data.error || 'Failed to load activity log.');
+        setActivityLogs([]);
+        return;
+      }
+      setActivityLogs(Array.isArray(data.logs) ? data.logs : []);
+    } catch {
+      setActivityError('Cannot reach server.');
+      setActivityLogs([]);
+    } finally {
+      setActivityLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isAdmin || adminTab !== 'log') return;
+    void loadActivityLogs();
   }, [isAdmin, adminTab, apiToken]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const paymentsForListing = (businessId: string) =>
@@ -819,10 +865,10 @@ export const AdminPanelTab: React.FC = () => {
       )}
 
       {/* Internal Navigation tabs */}
-      <div className="grid grid-cols-5 gap-1 p-1 rounded-2xl bg-[#13110E] border border-[#2D2319]" id="admin-segment-bar">
+      <div className="grid grid-cols-6 gap-1 p-1 rounded-2xl bg-[#13110E] border border-[#2D2319]" id="admin-segment-bar">
         <button
           onClick={() => setAdminTab('biz')}
-          className={`py-2 rounded-xl text-[10px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
+          className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
             adminTab === 'biz' ? 'bg-[#FFA048] text-black shadow-md' : 'text-gray-400 hover:text-[#F4E3D7]'
           }`}
         >
@@ -837,7 +883,7 @@ export const AdminPanelTab: React.FC = () => {
 
         <button
           onClick={() => setAdminTab('pay')}
-          className={`py-2 rounded-xl text-[10px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
+          className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
             adminTab === 'pay' ? 'bg-[#FFA048] text-black shadow-md' : 'text-gray-400 hover:text-[#F4E3D7]'
           }`}
         >
@@ -847,7 +893,7 @@ export const AdminPanelTab: React.FC = () => {
 
         <button
           onClick={() => setAdminTab('jobs')}
-          className={`py-2 rounded-xl text-[10px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
+          className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
             adminTab === 'jobs' ? 'bg-[#FFA048] text-black shadow-md' : 'text-gray-400 hover:text-[#F4E3D7]'
           }`}
         >
@@ -862,7 +908,7 @@ export const AdminPanelTab: React.FC = () => {
 
         <button
           onClick={() => setAdminTab('cat')}
-          className={`py-2 rounded-xl text-[10px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
+          className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
             adminTab === 'cat' ? 'bg-[#FFA048] text-black shadow-md' : 'text-gray-400 hover:text-[#F4E3D7]'
           }`}
         >
@@ -872,7 +918,7 @@ export const AdminPanelTab: React.FC = () => {
 
         <button
           onClick={() => setAdminTab('users')}
-          className={`py-2 rounded-xl text-[10px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
+          className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
             adminTab === 'users' ? 'bg-[#FFA048] text-black shadow-md' : 'text-gray-400 hover:text-[#F4E3D7]'
           }`}
         >
@@ -883,6 +929,16 @@ export const AdminPanelTab: React.FC = () => {
               {openReportCount}
             </span>
           )}
+        </button>
+
+        <button
+          onClick={() => setAdminTab('log')}
+          className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
+            adminTab === 'log' ? 'bg-[#FFA048] text-black shadow-md' : 'text-gray-400 hover:text-[#F4E3D7]'
+          }`}
+        >
+          <ScrollText className="w-4 h-4" />
+          <span>Activity</span>
         </button>
       </div>
 
@@ -1799,6 +1855,65 @@ export const AdminPanelTab: React.FC = () => {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+      )}
+
+      {adminTab === 'log' && (
+        <div className="space-y-4 animate-fade-in-up" id="admin-activity-log">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-bold text-[#F4E3D7]">Admin activity log</h3>
+              <p className="text-[10px] text-gray-500">Who approved, suspended, or declined what</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => void loadActivityLogs()}
+              className="px-3 py-1.5 rounded-xl text-[10px] font-bold bg-[#191613] border border-[#2D2319] text-[#FFA048]"
+            >
+              Refresh
+            </button>
+          </div>
+          {activityLoading && (
+            <p className="text-xs text-gray-500">Loading activity…</p>
+          )}
+          {activityError && (
+            <p className="text-xs text-red-400">{activityError}</p>
+          )}
+          {!activityLoading && activityLogs.length === 0 && !activityError && (
+            <p className="text-xs text-gray-500 p-4 rounded-2xl border border-dashed border-[#2D2319]">
+              No admin actions logged yet. Approvals and suspensions will appear here.
+            </p>
+          )}
+          <div className="space-y-2">
+            {activityLogs.map((row) => (
+              <div
+                key={row.id}
+                className="p-3.5 rounded-2xl bg-[#13110E] border border-[#2D2319] space-y-1"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <span className="text-[11px] font-black uppercase tracking-wide text-[#FFA048]">
+                    {row.action.replace(/_/g, ' ')}
+                  </span>
+                  <span className="text-[9px] text-gray-500 whitespace-nowrap">
+                    {row.createdAt
+                      ? new Date(row.createdAt).toLocaleString()
+                      : row.date}
+                  </span>
+                </div>
+                <p className="text-xs text-[#F4E3D7] font-semibold">
+                  {row.targetName || row.targetId || '—'}
+                  <span className="text-gray-500 font-normal"> · {row.targetType}</span>
+                </p>
+                <p className="text-[10px] text-gray-400">
+                  By {row.adminName || 'Admin'}
+                  {row.adminEmail ? ` (${row.adminEmail})` : ''}
+                </p>
+                {row.details && (
+                  <p className="text-[10px] text-gray-500 leading-relaxed">{row.details}</p>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       )}

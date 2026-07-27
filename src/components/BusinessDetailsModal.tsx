@@ -64,7 +64,7 @@ function isBusinessOpenNow(workingHours: string): boolean | null {
 export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ business, onClose }) => {
   const {
     language, reviews, currentUser, favorites, toggleFavorite,
-    fetchReviewsForBusiness, submitReview, apiToken, isAuthenticated,
+    fetchReviewsForBusiness, submitReview, replyToReview, apiToken, isAuthenticated,
   } = useDirectory();
   const t = TRANSLATIONS[language];
 
@@ -76,6 +76,9 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
   const [reviewError, setReviewError] = useState('');
   const [reviewSuccess, setReviewSuccess] = useState('');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
+  const [replyBusyId, setReplyBusyId] = useState<string | null>(null);
+  const [replyError, setReplyError] = useState('');
 
   const [reportReason, setReportReason] = useState('');
   const [reportError, setReportError] = useState('');
@@ -90,8 +93,28 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
   const businessReviews = reviews.filter((r) => r.businessId === business.id);
 
   const isFav = favorites.includes(business.id);
-  const isListingOwner = currentUser?.id === business.ownerId;
+  const isListingOwner =
+    !!currentUser &&
+    (currentUser.email === business.ownerId || currentUser.id === business.ownerId);
   const canReportListing = isAuthenticated && !isListingOwner && currentUser?.role !== 'admin';
+  const canReplyToReviews = isListingOwner || currentUser?.role === 'admin';
+
+  const handleOwnerReply = async (reviewId: string) => {
+    const text = String(replyDrafts[reviewId] || '').trim();
+    if (text.length < 2) {
+      setReplyError('Reply must be at least 2 characters.');
+      return;
+    }
+    setReplyError('');
+    setReplyBusyId(reviewId);
+    const result = await replyToReview(reviewId, text);
+    setReplyBusyId(null);
+    if (!result.success) {
+      setReplyError(result.error || 'Could not save reply.');
+      return;
+    }
+    setReplyDrafts((prev) => ({ ...prev, [reviewId]: '' }));
+  };
 
   const handleToggleFavorite = async () => {
     const result = await toggleFavorite(business.id);
@@ -453,7 +476,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                   </p>
                 ) : (
                   businessReviews.map((rev) => (
-                    <div key={rev.id} className="p-3.5 rounded-xl bg-[#0F0E0C] border border-[#2D2319]/40">
+                    <div key={rev.id} className="p-3.5 rounded-xl bg-[#0F0E0C] border border-[#2D2319]/40 space-y-2">
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-xs font-bold text-[#F4E3D7]">{rev.userName}</span>
                         <div className="flex gap-0.5">
@@ -470,10 +493,41 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                         </div>
                       </div>
                       <p className="text-xs text-gray-300 leading-relaxed font-sans">{rev.comment}</p>
-                      <span className="text-[9px] text-gray-500 block mt-1.5 text-right">{rev.date}</span>
+                      <span className="text-[9px] text-gray-500 block text-right">{rev.date}</span>
+
+                      {rev.ownerReply ? (
+                        <div className="mt-2 p-2.5 rounded-lg bg-[#191613] border border-[#2D2319]/60">
+                          <p className="text-[10px] font-bold text-[#FFA048] mb-1">
+                            Owner reply{rev.ownerReplyBy ? ` · ${rev.ownerReplyBy}` : ''}
+                          </p>
+                          <p className="text-xs text-gray-300 leading-relaxed">{rev.ownerReply}</p>
+                        </div>
+                      ) : canReplyToReviews ? (
+                        <div className="mt-2 space-y-1.5">
+                          <textarea
+                            value={replyDrafts[rev.id] || ''}
+                            onChange={(e) =>
+                              setReplyDrafts((prev) => ({ ...prev, [rev.id]: e.target.value }))
+                            }
+                            rows={2}
+                            maxLength={2000}
+                            placeholder="Write a public reply as the listing owner…"
+                            className="w-full p-2 text-[11px] rounded-lg bg-[#13110E] border border-[#2D2319] text-gray-200 placeholder:text-gray-600 resize-none"
+                          />
+                          <button
+                            type="button"
+                            disabled={replyBusyId === rev.id}
+                            onClick={() => void handleOwnerReply(rev.id)}
+                            className="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-[#FFA048]/15 text-[#FFA048] border border-[#FFA048]/30 hover:bg-[#FFA048]/25 disabled:opacity-50"
+                          >
+                            {replyBusyId === rev.id ? 'Saving…' : 'Post reply'}
+                          </button>
+                        </div>
+                      ) : null}
                     </div>
                   ))
                 )}
+                {replyError && <p className="text-[10px] text-red-400">{replyError}</p>}
               </div>
 
               {/* Past reviews list only — submit form is above under "Rate This Business" */}
