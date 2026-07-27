@@ -42,27 +42,38 @@ const app = express();
 app.set('trust proxy', 1);
 
 // ── Rate limiting ──────────────────────────────────────────────────────────
-// Relaxed in local development so repeated login/testing is not blocked.
+// Important: many phones on the same Wi‑Fi share one public IP. With auto-refresh
+// + listing images, a low per-IP cap makes the app look like it "crashes" after
+// a few concurrent users. Keep abuse protection, but allow real community load.
 
 const isProduction = process.env.NODE_ENV === 'production';
 const skipRateLimitInDev = () => !isProduction;
 
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: isProduction ? 100 : 10_000,
+  // ~3–5k req / 15 min per IP covers shared Wi‑Fi + images + polling
+  max: isProduction ? Number(process.env.RATE_LIMIT_MAX || 3000) : 10_000,
   standardHeaders: true,
   legacyHeaders: false,
-  skip: skipRateLimitInDev,
-  message: { error: 'Too many requests from this IP. Please try again after 15 minutes.' },
+  skip: (req) => {
+    if (skipRateLimitInDev()) return true;
+    const path = String(req.originalUrl || req.url || req.path || '').split('?')[0];
+    // Health + static listing images should never trip the shared-IP limiter
+    if (path === '/api/health' || path === '/health') return true;
+    if (/^\/api\/directory\/[^/]+\/(logo|cover)$/.test(path)) return true;
+    return false;
+  },
+  message: { error: 'Too many requests from this network. Please wait a minute and try again.' },
 });
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: isProduction ? 10 : 1_000,
+  // Several people logging in from the same cafe/office Wi‑Fi
+  max: isProduction ? Number(process.env.AUTH_RATE_LIMIT_MAX || 60) : 1_000,
   standardHeaders: true,
   legacyHeaders: false,
   skip: skipRateLimitInDev,
-  message: { error: 'Too many login attempts. Please wait 15 minutes before trying again.' },
+  message: { error: 'Too many login attempts from this network. Please wait a few minutes.' },
   skipSuccessfulRequests: true,
 });
 

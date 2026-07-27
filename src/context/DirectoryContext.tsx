@@ -770,9 +770,9 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, [apiToken, currentUser?.email, currentUser?.role, syncMyDirectoryProfile]);
 
   // ── Live auto-refresh (any account / listing / admin change) ─────────────
-  // Poll while the app/tab is visible, and refresh immediately on focus/resume
-  // so Home, Account, Admin, and notifications stay in sync without a manual tap.
+  // Poll while visible; keep load light so shared Wi‑Fi / Render stay healthy.
   const autoRefreshBusyRef = useRef(false);
+  const liveRefreshTickRef = useRef(0);
   const liveRefreshRef = useRef<() => Promise<void>>(async () => {});
 
   liveRefreshRef.current = async () => {
@@ -780,9 +780,13 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
     if (autoRefreshBusyRef.current) return;
     autoRefreshBusyRef.current = true;
+    liveRefreshTickRef.current += 1;
+    const tick = liveRefreshTickRef.current;
     try {
+      // Always refresh directory + jobs (what users see change most)
       await refreshDirectory(currentUser);
-      if (apiToken) {
+      // Notifications / payments less often — every 3rd poll (~2 min)
+      if (apiToken && tick % 3 === 0) {
         await Promise.all([
           refreshNotifications(apiToken),
           refreshPayments(apiToken, currentUser?.role),
@@ -802,9 +806,9 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       void liveRefreshRef.current();
     };
 
-    // First sync shortly after boot (covers cold opens / other device edits)
-    const bootTimer = window.setTimeout(run, 2_500);
-    const pollId = window.setInterval(run, 25_000);
+    const bootTimer = window.setTimeout(run, 4_000);
+    // 45s — enough for near-live updates without hammering API on shared networks
+    const pollId = window.setInterval(run, 45_000);
 
     const onVisibility = () => {
       if (document.visibilityState === 'visible') run();
