@@ -74,7 +74,8 @@ html.light body {
 }
 
 /* Simulator chrome & nav bars that use hardcoded dark hex values */
-html.light #app-root {
+html.light #app-root,
+html.light #app-root-web {
   background-color: #E8ECF0 !important;
   color: var(--color-text) !important;
 }
@@ -103,8 +104,9 @@ html.light .bg-gradient-to-b {
 
 /* Bottom nav bar inside simulator — not auth */
 html.light #app-root .backdrop-blur-xl,
-html.light #app-root-mobile .backdrop-blur-xl {
-  background-color: rgba(255,255,255,0.88) !important;
+html.light #app-root-mobile .backdrop-blur-xl,
+html.light #app-root-web > header {
+  background-color: rgba(255,255,255,0.92) !important;
   border-color: var(--color-border) !important;
 }
 
@@ -391,12 +393,43 @@ html.light #app-root-mobile > .flex-shrink-0 {
   border-color: var(--color-border) !important;
 }
 
+/* ── Web app root (browser layout — abn-1.onrender.com) ─── */
+html.light #app-root-web {
+  background: linear-gradient(to bottom, #F4F5F7, #FFFFFF) !important;
+  color: var(--color-text) !important;
+}
+html.light #app-root-web > footer {
+  background-color: #FFFFFF !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text-muted) !important;
+}
+html.light #app-root-web > main h1,
+html.light #app-root-web > main h2:not(.page-card-title),
+html.light #account-header h2,
+html.light #admin-main-header h2 {
+  color: #0F172A !important;
+}
+html.light #account-header p,
+html.light #admin-main-header p,
+html.light #app-root-web > main p:not(.page-card-body):not(.page-meta):not(.page-error) {
+  color: #475569 !important;
+}
+html.light #app-root-web #web-top-nav button:not([class*="bg-[#FFA048]"]) {
+  color: #475569 !important;
+}
+html.light #app-root-web #web-top-nav button:not([class*="bg-[#FFA048]"]):hover {
+  color: #0F172A !important;
+  background-color: #F1F5F9 !important;
+}
+
 /* ── Sandbox panel (right side) ─────────────────────────── */
-html.light #app-root > main .bg-\[\#0F0E0C\] {
+html.light #app-root > main .bg-\[\#0F0E0C\],
+html.light #app-root-web > main .bg-\[\#0F0E0C\] {
   background-color: #FFFFFF !important;
   border-color: var(--color-border) !important;
 }
-html.light #app-root > main .bg-\[\#191613\] {
+html.light #app-root > main .bg-\[\#191613\],
+html.light #app-root-web > main .bg-\[\#191613\] {
   background-color: #F8FAFC !important;
 }
 /* Do not force dark slate on every heading — page shells use theme tokens */
@@ -1250,6 +1283,19 @@ html.light #notifications-page .page-header {
 .subpage-header h2,
 .subpage-title {
   color: var(--color-text) !important;
+}
+
+html.light #account-header,
+html.light #admin-main-header {
+  border-color: var(--color-border) !important;
+}
+html.light #account-header h2,
+html.light #admin-main-header h2 {
+  color: var(--color-text) !important;
+}
+html.light #account-header p,
+html.light #admin-main-header p {
+  color: var(--color-text-secondary) !important;
 }
 
 /* Account / portal row labels stay dark on light cards */
