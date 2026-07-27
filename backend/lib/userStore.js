@@ -20,10 +20,16 @@ function resolveAdminSeedPassword() {
   const fromEnv = process.env.ADMIN_PASSWORD;
   if (isProdLike) {
     if (!fromEnv || fromEnv === DEFAULT_ADMIN_PASSWORD || fromEnv.length < 12) {
-      console.error(
-        '[FATAL] ADMIN_PASSWORD must be set to a strong unique value (12+ chars) in production. Refusing to seed/start with the default.',
-      );
-      process.exit(1);
+      // Do not hard-crash a live Render service if ADMIN_PASSWORD was never set —
+      // existing admin rows keep working. We only refuse to *create* a new admin
+      // with the default password (see seedDemoAccounts).
+      if (!resolveAdminSeedPassword._warned) {
+        console.error(
+          '[security] CRITICAL: Set ADMIN_PASSWORD (12+ chars, not admin123) on Render. Weak/missing password — will not create a new admin account.',
+        );
+        resolveAdminSeedPassword._warned = true;
+      }
+      return null;
     }
     return fromEnv;
   }
@@ -201,8 +207,7 @@ async function setUserBlocked(id, isBlocked) {
 }
 
 async function seedDemoAccounts() {
-  // Always validate production admin password — even if the admin row already exists
-  resolveAdminSeedPassword();
+  const adminPassword = resolveAdminSeedPassword();
 
   for (const d of DEMO_ACCOUNTS) {
     const key = d.email.toLowerCase();
@@ -212,7 +217,14 @@ async function seedDemoAccounts() {
       continue;
     }
 
-    const passwordHash = await bcrypt.hash(d.password, HASH_ROUNDS);
+    if (!adminPassword) {
+      console.error(
+        `[FATAL] No admin user exists and ADMIN_PASSWORD is missing/weak. Set ADMIN_PASSWORD on the host, then redeploy.`,
+      );
+      process.exit(1);
+    }
+
+    const passwordHash = await bcrypt.hash(adminPassword, HASH_ROUNDS);
     const record = {
       id:                stableId(d.role, key),
       email:             key,
