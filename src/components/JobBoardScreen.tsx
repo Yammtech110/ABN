@@ -140,7 +140,7 @@ export const JobBoardScreen: React.FC<JobBoardScreenProps> = ({ onBack, initialJ
 
           {/* Email CTA */}
           <a
-            href={`mailto:${selectedJob.hiringEmail}?subject=Job Application: ${encodeURIComponent(selectedJob.title)} at ${encodeURIComponent(selectedJob.businessName)}&body=Assalamu Alaykum,%0A%0AI am writing to apply for the ${encodeURIComponent(selectedJob.title)} position at ${encodeURIComponent(selectedJob.businessName)}.%0A%0APlease find my CV attached.%0A%0AThank you.`}
+            href={`mailto:${selectedJob.hiringEmail}?subject=Job Application: ${encodeURIComponent(selectedJob.title)} at ${encodeURIComponent(selectedJob.businessName)}&body=${encodeURIComponent(`Hello,\n\nI am writing to apply for the ${selectedJob.title} position at ${selectedJob.businessName}.\n\nPlease find my CV attached.\n\nBest regards`)}`}
             className="flex items-center justify-center gap-2 w-full py-3.5 bg-[#FFA048] hover:bg-opacity-95 text-black font-extrabold rounded-2xl text-sm transition-all shadow-lg active:scale-95 no-underline"
             id={`btn-apply-${selectedJob.id}`}
           >

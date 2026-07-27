@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { AbnLogo } from '../components/AbnLogo';
 import { SUPPORT_MAILTO } from '../data/legalContent';
+import { userFacingError } from '../utils/userFacingError';
 
 type AuthMode = 'signin' | 'register' | 'verify' | 'forgot' | 'reset-code' | 'reset-choice';
 
@@ -102,7 +103,7 @@ export const AuthScreen: React.FC = () => {
       return;
     }
     if (!result.success) {
-      setError(result.error || 'Login failed.');
+      setError(userFacingError(result.error || 'Login failed.', { context: 'login' }));
     }
   };
 
@@ -116,8 +117,8 @@ export const AuthScreen: React.FC = () => {
       setError('All fields are required.');
       return;
     }
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters.');
+    if (password.length < 10) {
+      setError('Password must be at least 10 characters.');
       return;
     }
     if (password !== confirmPassword) {
@@ -135,7 +136,7 @@ export const AuthScreen: React.FC = () => {
     });
     setIsLoading(false);
     if (!result.success) {
-      setError(result.error || 'Registration failed.');
+      setError(userFacingError(result.error || 'Registration failed.', { context: 'register' }));
       return;
     }
     if (result.needsEmailVerification) {
@@ -156,7 +157,7 @@ export const AuthScreen: React.FC = () => {
     const result = await verifyEmailCode(pendingEmail, verifyCode.trim());
     setIsLoading(false);
     if (!result.success) {
-      setError(result.error || 'Verification failed.');
+      setError(userFacingError(result.error || 'Verification failed.', { context: 'login' }));
     }
   };
 
@@ -166,7 +167,7 @@ export const AuthScreen: React.FC = () => {
     const result = await resendVerificationCode(pendingEmail);
     setIsLoading(false);
     if (!result.success) {
-      setError(result.error || 'Could not resend.');
+      setError(userFacingError(result.error || 'Could not resend the code.', { context: 'login' }));
       return;
     }
     setVerifyCode('');
@@ -185,7 +186,7 @@ export const AuthScreen: React.FC = () => {
     const result = await requestPasswordReset(trimmedEmail);
     setIsLoading(false);
     if (!result.success) {
-      setError(result.error || 'Could not send code.');
+      setError(userFacingError(result.error || 'Could not send reset code.', { context: 'login' }));
       return;
     }
     setPendingEmail(result.email || trimmedEmail);
@@ -210,7 +211,7 @@ export const AuthScreen: React.FC = () => {
     const result = await verifyResetCode(pendingEmail, verifyCode.trim());
     setIsLoading(false);
     if (!result.success || !result.resetToken) {
-      setError(result.error || 'Invalid or expired code.');
+      setError(userFacingError(result.error || 'Invalid or expired code.', { context: 'login' }));
       return;
     }
     setResetToken(result.resetToken);
@@ -235,14 +236,14 @@ export const AuthScreen: React.FC = () => {
     });
     setIsLoading(false);
     if (!result.success) {
-      setError(result.error || 'Could not finish reset.');
+      setError(userFacingError(result.error || 'Could not finish reset.', { context: 'login' }));
     }
   };
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters.');
+    if (password.length < 10) {
+      setError('Password must be at least 10 characters.');
       return;
     }
     if (password !== confirmPassword) {
@@ -264,7 +265,7 @@ export const AuthScreen: React.FC = () => {
     });
     setIsLoading(false);
     if (!result.success) {
-      setError(result.error || 'Could not update password.');
+      setError(userFacingError(result.error || 'Could not update password.', { context: 'login' }));
     }
   };
 
@@ -521,7 +522,7 @@ export const AuthScreen: React.FC = () => {
                             value={password}
                             onChange={(e) => { setPassword(e.target.value); setError(''); }}
                             required
-                            minLength={6}
+                            minLength={10}
                             placeholder="At least 6 characters"
                             className={fieldClass}
                             autoComplete="new-password"
@@ -544,7 +545,7 @@ export const AuthScreen: React.FC = () => {
                             value={confirmPassword}
                             onChange={(e) => { setConfirmPassword(e.target.value); setError(''); }}
                             required
-                            minLength={6}
+                            minLength={10}
                             placeholder="Re-enter password"
                             className={fieldClass}
                             autoComplete="new-password"
@@ -706,7 +707,7 @@ export const AuthScreen: React.FC = () => {
                         const result = await requestPasswordReset(pendingEmail);
                         setIsLoading(false);
                         if (!result.success) {
-                          setError(result.error || 'Could not resend.');
+                          setError(userFacingError(result.error || 'Could not resend the code.', { context: 'login' }));
                           return;
                         }
                         setVerifyCode('');
@@ -749,7 +750,7 @@ export const AuthScreen: React.FC = () => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            minLength={6}
+                            minLength={10}
                             placeholder="At least 6 characters"
                             className={fieldClass}
                             autoComplete="new-password"
@@ -765,7 +766,7 @@ export const AuthScreen: React.FC = () => {
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             required
-                            minLength={6}
+                            minLength={10}
                             placeholder="Re-enter password"
                             className={fieldClass}
                             autoComplete="new-password"

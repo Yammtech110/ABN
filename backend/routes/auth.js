@@ -18,7 +18,8 @@ const { listBlockedUserIds, blockUser, unblockUser } = require('../lib/blockStor
 
 const router         = express.Router();
 const { JWT_SECRET } = require('../config/security');
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+// Short-lived tokens reduce damage if Bearer token is stolen from web storage (XSS).
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 const HASH_ROUNDS    = 12;
 const SUPPORT_EMAIL  = process.env.SUPPORT_EMAIL || 'yammtech80@gmail.com';
 
@@ -89,14 +90,18 @@ router.post('/register', async (req, res, next) => {
     if (!SELF_REGISTER_ROLES.includes(role)) {
       return res.status(400).json({ error: `Invalid role. Must be one of: ${SELF_REGISTER_ROLES.join(', ')}` });
     }
-    if (password.length < 6 || password.length > MAX_FIELD_LEN) {
-      return res.status(400).json({ error: 'Password must be between 6 and 200 characters.' });
+    if (password.length < 10 || password.length > MAX_FIELD_LEN) {
+      return res.status(400).json({ error: 'Password must be between 10 and 200 characters.' });
     }
 
     const key = trimmedEmail.toLowerCase();
 
     if (await findByEmail(key)) {
-      return res.status(409).json({ error: 'An account with this email already exists.' });
+      // Keep 409 so the client does not open the OTP screen for an account that already exists.
+      // Message is intentionally generic (no "email already registered" wording).
+      return res.status(409).json({
+        error: 'Unable to register with these details. Try signing in or use Forgot password.',
+      });
     }
 
     const passwordHash = await bcrypt.hash(password, HASH_ROUNDS);
@@ -149,7 +154,7 @@ router.post('/verify-email', async (req, res, next) => {
     }
     const key = String(email).toLowerCase().trim();
     const user = await findByEmail(key);
-    if (!user) return res.status(404).json({ error: 'Account not found.' });
+    if (!user) return res.status(400).json({ error: 'Invalid or expired verification code.' });
 
     if (user.emailVerified !== false) {
       const token = jwt.sign(
@@ -183,23 +188,22 @@ router.post('/resend-verification', async (req, res, next) => {
     if (!email) return res.status(400).json({ error: 'email is required.' });
     const key = String(email).toLowerCase().trim();
     const user = await findByEmail(key);
-    if (!user) return res.status(404).json({ error: 'Account not found.' });
-    if (user.emailVerified !== false) {
-      return res.json({ message: 'Email already verified.' });
-    }
-    const demoCode = await createCode(key, 'verify');
-    const mail = await sendOtpEmail({ to: key, code: demoCode, purpose: 'verify' });
-    if (!mail.sent) {
-      return res.status(503).json({
-        error: `Could not send email (${mail.reason || 'smtp'}). Fix Brevo SMTP on the server, then try again.`,
-        email: key,
-      });
-    }
     const body = {
-      message: `A new code was sent to ${key}. Check Gmail inbox and Spam.`,
+      message: `If that email needs verification, a new code was sent. Check Gmail inbox and Spam.`,
+      email: key,
     };
-    if (shouldExposeOtp()) {
-      body.verificationCode = demoCode;
+    if (user && user.emailVerified === false) {
+      const demoCode = await createCode(key, 'verify');
+      const mail = await sendOtpEmail({ to: key, code: demoCode, purpose: 'verify' });
+      if (!mail.sent) {
+        return res.status(503).json({
+          error: `Could not send email (${mail.reason || 'smtp'}). Fix Brevo SMTP on the server, then try again.`,
+          email: key,
+        });
+      }
+      if (shouldExposeOtp()) {
+        body.verificationCode = demoCode;
+      }
     }
     res.json(body);
   } catch (err) {
@@ -386,8 +390,8 @@ router.post('/reset-password', async (req, res, next) => {
       if (!newPassword || typeof newPassword !== 'string') {
         return res.status(400).json({ error: 'newPassword is required when changing password.' });
       }
-      if (newPassword.length < 6 || newPassword.length > MAX_FIELD_LEN) {
-        return res.status(400).json({ error: 'Password must be between 6 and 200 characters.' });
+      if (newPassword.length < 10 || newPassword.length > MAX_FIELD_LEN) {
+        return res.status(400).json({ error: 'Password must be between 10 and 200 characters.' });
       }
     }
 
@@ -574,8 +578,8 @@ router.post('/change-password', authenticate, async (req, res, next) => {
     if (typeof currentPassword !== 'string' || typeof newPassword !== 'string') {
       return res.status(400).json({ error: 'Passwords must be strings.' });
     }
-    if (newPassword.length < 6 || newPassword.length > MAX_FIELD_LEN) {
-      return res.status(400).json({ error: 'New password must be 6–200 characters.' });
+    if (newPassword.length < 10 || newPassword.length > MAX_FIELD_LEN) {
+      return res.status(400).json({ error: 'New password must be 10–200 characters.' });
     }
     if (currentPassword === newPassword) {
       return res.status(400).json({ error: 'New password must be different from the current password.' });

@@ -195,6 +195,9 @@ router.get('/:id/image', async (req, res, next) => {
   try {
     const job = await findJobById(req.params.id);
     if (!job) return res.status(404).end();
+    if (!job.isActive || !(await isBusinessHiring(job.businessId))) {
+      return res.status(404).end();
+    }
     await streamStoredImage(res, job.imageUrl, '', {
       name: job.title || job.businessName,
       seed: job.id,
@@ -210,6 +213,10 @@ router.get('/:id', async (req, res, next) => {
   try {
     const job = await findJobById(req.params.id);
     if (!job) return res.status(404).json({ error: 'Job not found.' });
+    // Same visibility as the public list — no inactive / non-hiring job leak
+    if (!job.isActive || !(await isBusinessHiring(job.businessId))) {
+      return res.status(404).json({ error: 'Job not found.' });
+    }
     res.json(withPublicJobMedia(mapJob(job)));
   } catch (err) {
     next(err);
@@ -272,7 +279,7 @@ router.post('/', authenticate, requireRole(...JOB_OWNER_ROLES), async (req, res,
         .select('*')
         .single();
 
-      if (error) return res.status(500).json({ error: error.message });
+      if (error) return res.status(500).json({ error: 'Failed to save job. Please try again.' });
       const saved = mapJob(mapJobFromDb(data));
       const memIdx = jobsBoard.findIndex((j) => j.id === saved.id);
       if (memIdx >= 0) jobsBoard[memIdx] = saved;
@@ -350,7 +357,7 @@ router.put('/:id', authenticate, requireRole(...JOB_OWNER_ROLES), async (req, re
       .select('*')
       .single();
 
-    if (error) return res.status(500).json({ error: error.message });
+    if (error) return res.status(500).json({ error: 'Failed to save job. Please try again.' });
     const saved = mapJob(mapJobFromDb(data));
     const memIdx = jobsBoard.findIndex((j) => j.id === saved.id);
     if (memIdx >= 0) jobsBoard[memIdx] = saved;
@@ -387,7 +394,7 @@ router.patch('/:id/active', authenticate, requireRole('admin'), async (req, res,
       .select('*')
       .single();
 
-    if (error) return res.status(500).json({ error: error.message });
+    if (error) return res.status(500).json({ error: 'Failed to save job. Please try again.' });
     const saved = mapJob(mapJobFromDb(data));
     const memIdx = jobsBoard.findIndex((j) => j.id === saved.id);
     if (memIdx >= 0) jobsBoard[memIdx] = saved;
@@ -420,7 +427,7 @@ router.delete('/:id', authenticate, requireRole(...JOB_OWNER_ROLES), async (req,
     }
 
     const { error } = await supabaseAdmin.from('jobs_board').delete().eq('id', req.params.id);
-    if (error) return res.status(500).json({ error: error.message });
+    if (error) return res.status(500).json({ error: 'Failed to save job. Please try again.' });
     const memIdx = jobsBoard.findIndex((j) => j.id === req.params.id);
     if (memIdx >= 0) jobsBoard.splice(memIdx, 1);
     res.status(204).end();

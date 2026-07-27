@@ -33,10 +33,11 @@ router.get('/', authenticate, async (req, res, next) => {
   }
 });
 
-// ── POST /api/notifications — authenticated users + admin broadcasts ────────
+// ── POST /api/notifications — self inbox (any auth) or admin broadcast ──────
 router.post('/', authenticate, async (req, res, next) => {
   try {
-    const { title, message, receiverRole = 'all', userId = null } = req.body;
+    const { title, message } = req.body || {};
+    let { receiverRole = 'all', userId = null } = req.body || {};
 
     if (!title || !message) {
       return res.status(400).json({ error: 'title and message are required.' });
@@ -44,15 +45,15 @@ router.post('/', authenticate, async (req, res, next) => {
     if (!VALID_ROLES.has(receiverRole)) {
       return res.status(400).json({ error: 'Invalid receiverRole.' });
     }
-    if (req.user.role !== 'admin' && receiverRole !== req.user.role && receiverRole !== 'all') {
-      return res.status(403).json({ error: 'You can only create notifications for your own role.' });
-    }
-    if (userId && req.user.role !== 'admin' && userId !== req.user.id) {
-      return res.status(403).json({ error: 'You can only create notifications for yourself.' });
+
+    // Non-admins may only create a notification for themselves (no role/all broadcast).
+    if (req.user.role !== 'admin') {
+      userId = req.user.id;
+      receiverRole = req.user.role;
     }
 
     const notification = await createNotification({
-      userId: userId || (receiverRole === req.user.role ? req.user.id : null),
+      userId: userId || null,
       receiverRole,
       title: String(title).trim(),
       message: String(message).trim(),

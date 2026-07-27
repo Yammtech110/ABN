@@ -75,24 +75,27 @@ async function upsertDeviceToken({ userId, userRole, token, platform = 'android'
   }
 }
 
-async function removeDeviceToken(token) {
+async function removeDeviceToken(token, userId = null) {
   if (!token) return;
 
   if (!isSupabaseStorage()) {
-    const idx = memoryTokens.findIndex((t) => t.token === token);
+    const idx = memoryTokens.findIndex(
+      (t) => t.token === token && (!userId || t.userId === String(userId)),
+    );
     if (idx >= 0) memoryTokens.splice(idx, 1);
     return;
   }
 
   try {
-    const { error } = await getAdmin()
-      .from('device_tokens')
-      .delete()
-      .eq('token', token);
+    let query = getAdmin().from('device_tokens').delete().eq('token', token);
+    if (userId) query = query.eq('user_id', String(userId));
+    const { error } = await query;
     if (error) throw new Error(error.message);
   } catch (err) {
     if (!isMissingTable(err)) throw err;
-    const idx = memoryTokens.findIndex((t) => t.token === token);
+    const idx = memoryTokens.findIndex(
+      (t) => t.token === token && (!userId || t.userId === String(userId)),
+    );
     if (idx >= 0) memoryTokens.splice(idx, 1);
   }
 }

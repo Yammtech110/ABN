@@ -18,9 +18,14 @@ export interface DirectoryRegistrationMessages {
   allFieldsRequired: string;
   photoRequired: string;
   phoneInvalid: string;
+  whatsappInvalid: string;
   zipInvalid: string;
   stateRequired: string;
   hoursRequired: string;
+  nameRequired?: string;
+  descriptionRequired?: string;
+  cityRequired?: string;
+  addressRequired?: string;
 }
 
 const ZIP_PATTERN = /^\d{5}$/;
@@ -62,21 +67,43 @@ export const validateDirectoryRegistration = (
   input: DirectoryRegistrationInput,
   messages: DirectoryRegistrationMessages,
 ): string | null => {
+  const isService = input.kind === 'service';
+
   if (input.images.length === 0) return messages.photoRequired;
 
-  if (!input.name.trim() || !input.description.trim() || !input.city.trim() || !input.address.trim()) {
-    return messages.allFieldsRequired;
+  if (!input.name.trim()) {
+    return (
+      messages.nameRequired ||
+      (isService ? 'Please enter the service provider name.' : 'Please enter the business name.')
+    );
   }
-
+  if (!input.description.trim()) {
+    return messages.descriptionRequired || 'Please add a short description of your listing.';
+  }
   if (!input.state.trim()) return messages.stateRequired;
-
+  if (!input.city.trim()) {
+    return messages.cityRequired || 'Please select a city.';
+  }
   if (!ZIP_PATTERN.test(input.zipCode.trim())) return messages.zipInvalid;
-
+  if (!input.address.trim()) {
+    return messages.addressRequired || 'Please enter the street address.';
+  }
   if (!input.operatingHours.trim()) return messages.hoursRequired;
 
   const phoneDigits = normalizeUSPhone(input.phone);
+  if (!input.phone.trim()) {
+    return 'Phone number is required.';
+  }
   if (phoneDigits.length !== 11 || !phoneDigits.startsWith('1')) {
     return messages.phoneInvalid;
+  }
+
+  if (!input.whatsapp.trim()) {
+    return 'WhatsApp number is required.';
+  }
+  const whatsappDigits = normalizeUSPhone(input.whatsapp);
+  if (whatsappDigits.length !== 11 || !whatsappDigits.startsWith('1')) {
+    return messages.whatsappInvalid;
   }
 
   return null;

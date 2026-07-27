@@ -102,8 +102,8 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
       setPwError(language === 'en' ? 'All password fields are required.' : 'جميع حقول كلمة المرور مطلوبة.');
       return;
     }
-    if (newPassword.length < 6) {
-      setPwError(language === 'en' ? 'New password must be at least 6 characters.' : 'كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل.');
+    if (newPassword.length < 10) {
+      setPwError(language === 'en' ? 'New password must be at least 10 characters.' : 'كلمة المرور الجديدة يجب أن تكون 10 أحرف على الأقل.');
       return;
     }
     if (newPassword !== confirmNewPassword) {
@@ -130,7 +130,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
   const handleSaveListing = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!bizName.trim() || !subcatEn.trim() || !descEn.trim() || !bizPhone.trim()) {
+    if (!bizName.trim() || !subcatEn.trim() || !descEn.trim() || !bizPhone.trim() || !whatsapp.trim()) {
       setError(t.allFieldsRequired);
       return;
     }
@@ -465,7 +465,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
                     className="w-full p-3 pr-10 rounded-xl bg-[#0F0E0C] border border-[#2D2319] focus:border-[#FFA048] text-xs text-[#F4E3D7] outline-none"
                     id="edit-profile-new-password"
                     autoComplete="new-password"
-                    minLength={6}
+                    minLength={10}
                   />
                   <button
                     type="button"
@@ -489,7 +489,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
                   className="w-full p-3 rounded-xl bg-[#0F0E0C] border border-[#2D2319] focus:border-[#FFA048] text-xs text-[#F4E3D7] outline-none"
                   id="edit-profile-confirm-password"
                   autoComplete="new-password"
-                  minLength={6}
+                  minLength={10}
                 />
               </div>
 

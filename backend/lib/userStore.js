@@ -13,10 +13,36 @@ const getAdmin = () => {
 
 const DEFAULT_ADMIN_PASSWORD = 'admin123';
 
+const isProdLike =
+  process.env.NODE_ENV === 'production' || Boolean(process.env.RENDER);
+
+function resolveAdminSeedPassword() {
+  const fromEnv = process.env.ADMIN_PASSWORD;
+  if (isProdLike) {
+    if (!fromEnv || fromEnv === DEFAULT_ADMIN_PASSWORD || fromEnv.length < 12) {
+      console.error(
+        '[FATAL] ADMIN_PASSWORD must be set to a strong unique value (12+ chars) in production. Refusing to seed/start with the default.',
+      );
+      process.exit(1);
+    }
+    return fromEnv;
+  }
+  if (!fromEnv || fromEnv === DEFAULT_ADMIN_PASSWORD) {
+    if (!resolveAdminSeedPassword._warned) {
+      console.warn(
+        '[security] Using default admin password for local dev only. Set ADMIN_PASSWORD before any shared/staging deploy.',
+      );
+      resolveAdminSeedPassword._warned = true;
+    }
+    return DEFAULT_ADMIN_PASSWORD;
+  }
+  return fromEnv;
+}
+
 const DEMO_ACCOUNTS = [
   {
     email:    process.env.ADMIN_EMAIL || 'admin@shiadirectory.com',
-    password: process.env.ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD,
+    get password() { return resolveAdminSeedPassword(); },
     role:     'admin',
     name:     'Abu Murtadha (Admin)',
     phone:    '+1 780 000 0000',
@@ -175,12 +201,8 @@ async function setUserBlocked(id, isBlocked) {
 }
 
 async function seedDemoAccounts() {
-  if (
-    process.env.NODE_ENV === 'production' &&
-    (process.env.ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD) === DEFAULT_ADMIN_PASSWORD
-  ) {
-    console.warn('[security] Admin account is using the default password. Set ADMIN_PASSWORD (and ADMIN_EMAIL) to a strong secret in production.');
-  }
+  // Always validate production admin password — even if the admin row already exists
+  resolveAdminSeedPassword();
 
   for (const d of DEMO_ACCOUNTS) {
     const key = d.email.toLowerCase();

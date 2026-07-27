@@ -16,6 +16,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { ImageUploadGrid } from './ImageUploadGrid';
+import { userFacingError, networkErrorMessage } from '../utils/userFacingError';
 
 const JOB_CATEGORIES: JobCategory[] = ['IT', 'Graphic Designing', 'Developer', 'Chef', 'Maid', 'Others'];
 
@@ -165,18 +166,18 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
           setTimeout(() => { setView('list'); setFormSuccess(''); }, 1100);
           return;
         }
-        const err = await res.json();
-        setFormError(err.error || 'Could not save job.');
+        const err = await res.json().catch(() => ({}));
+        setFormError(userFacingError(err.error || err, { status: res.status, context: 'job' }));
         setIsLoading(false);
         return;
       } catch {
-        setFormError('Cannot reach server. Make sure the backend is running.');
+        setFormError(networkErrorMessage());
         setIsLoading(false);
         return;
       }
     }
 
-    setFormError('You must be signed in to manage jobs.');
+    setFormError('Sign in to post or manage jobs.');
     setIsLoading(false);
   };
 
@@ -196,13 +197,14 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
           await refreshDirectory();
           return;
         }
-        alert('Could not delete job on server.');
+        const err = await res.json().catch(() => ({}));
+        alert(userFacingError(err.error || err, { status: res.status, context: 'job' }));
       } catch {
-        alert('Cannot reach server. Make sure the backend is running.');
+        alert(networkErrorMessage());
       }
       return;
     }
-    alert('You must be signed in to delete jobs.');
+    alert('Sign in to delete jobs.');
   };
 
   const handleHiringToggle = async () => {
@@ -216,6 +218,20 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
   };
 
   if (!canManageJobs) {
+    let deniedDetail =
+      'Register a business listing and get admin approval before you can post jobs.';
+    if (!currentUser) {
+      deniedDetail = 'Sign in first, then register an approved business listing to post jobs.';
+    } else if (!myListing) {
+      deniedDetail = 'You do not have a directory listing yet. Register as a business first.';
+    } else if (myListing.listingType === 'service') {
+      deniedDetail = 'Service listings cannot post jobs. Only approved business listings can hire.';
+    } else if (!myListing.isVerified || myListing.status === 'pending') {
+      deniedDetail = 'Your business listing is still pending admin approval. Jobs unlock after approval.';
+    } else if (myListing.status === 'suspended') {
+      deniedDetail = 'Your listing is suspended. Renew membership to post jobs again.';
+    }
+
     return (
       <div className="space-y-4 p-4" id="job-management-denied">
         {!embedded && onBack && (
@@ -230,14 +246,8 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
         <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-900/20 border border-amber-700/40">
           <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-bold text-[#F4E3D7]">
-              {language === 'en' ? 'Job posting unavailable' : 'نشر الوظائف غير متاح'}
-            </p>
-            <p className="text-xs text-gray-400 mt-1">
-              {language === 'en'
-                ? 'Register and get approved as a business to post jobs.'
-                : 'سجّل واعتمد كعمل تجاري لنشر الوظائف.'}
-            </p>
+            <p className="text-sm font-bold text-[#F4E3D7]">Job posting unavailable</p>
+            <p className="text-xs text-gray-400 mt-1">{deniedDetail}</p>
           </div>
         </div>
       </div>

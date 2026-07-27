@@ -9,11 +9,13 @@
 'use strict';
 
 const express = require('express');
+const crypto = require('crypto');
 const { supabaseAdmin } = require('../supabase');
 const { isSupabaseStorage } = require('../config/storage');
 const { createNotification } = require('../lib/notificationStore');
 const { findProfileByEmail } = require('../lib/profileStore');
 const { authenticate, requireRole } = require('../middleware/authMiddleware');
+const { evaluateOwnerPurchase } = require('../lib/iapVerify');
 
 const router = express.Router();
 
@@ -29,7 +31,8 @@ const mapPayment = (row) => ({
   refNo:      row.ref_no ?? row.refNo,
 });
 
-const generateRefNo = () => `TXN-${Math.floor(Math.random() * 9000000 + 1000000)}`;
+const generateAdminRefNo = () =>
+  `ADMIN-${crypto.randomBytes(6).toString('hex').toUpperCase()}`;
 
 const TRIAL_DAYS = 60;
 
@@ -41,6 +44,25 @@ const isMissingPaymentsTable = (err) => {
     msg.includes('could not find the table')
   );
 };
+
+async function findPaymentByRefNo(refNo) {
+  if (!refNo) return null;
+  if (!isSupabaseStorage()) {
+    return memoryPayments.find((p) => p.refNo === refNo) || null;
+  }
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('membership_payments')
+      .select('*')
+      .eq('ref_no', refNo)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return data ? mapPayment(data) : null;
+  } catch (err) {
+    if (!isMissingPaymentsTable(err)) throw err;
+    return memoryPayments.find((p) => p.refNo === refNo) || null;
+  }
+}
 
 async function listAllPayments() {
   if (!isSupabaseStorage()) {
@@ -100,7 +122,6 @@ async function activateListing(profile, amount) {
     return updated;
   }
 
-  const { mapProfileToDb } = require('../lib/supabaseMappers');
   const { data, error } = await supabaseAdmin
     .from('profiles_directory')
     .update({
@@ -117,10 +138,59 @@ async function activateListing(profile, amount) {
   return mapProfileFromDb(data);
 }
 
+async function insertPaymentRecord({ businessId, ownerEmail, amount, refNo, paidAt }) {
+  if (!isSupabaseStorage()) {
+    const payment = {
+      id: `pay-${Date.now()}`,
+      businessId,
+      ownerEmail,
+      amount,
+      date: paidAt,
+      status: 'success',
+      refNo,
+    };
+    memoryPayments.unshift(payment);
+    return payment;
+  }
+
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('membership_payments')
+      .insert({
+        business_id: businessId,
+        owner_email: ownerEmail,
+        amount,
+        status: 'success',
+        ref_no: refNo,
+        paid_at: paidAt,
+      })
+      .select('*')
+      .single();
+
+    if (error) throw new Error(error.message);
+    return mapPayment(data);
+  } catch (err) {
+    if (!isMissingPaymentsTable(err)) throw err;
+    const payment = {
+      id: `pay-${Date.now()}`,
+      businessId,
+      ownerEmail,
+      amount,
+      date: paidAt,
+      status: 'success',
+      refNo,
+    };
+    memoryPayments.unshift(payment);
+    return payment;
+  }
+}
+
 // ── POST /api/payments/renew ──────────────────────────────────────────────
+// Admin: may activate without store proof (Mark as Paid).
+// Owner: must pass store transactionId; activation gated by IAP_VERIFY_MODE.
 router.post('/renew', authenticate, requireRole('customer', 'business', 'service_provider', 'admin'), async (req, res, next) => {
   try {
-    const { businessId, amount } = req.body;
+    const { businessId, amount, transactionId, productId, platform } = req.body || {};
 
     if (!businessId || amount === undefined) {
       return res.status(400).json({ error: 'businessId and amount are required.' });
@@ -144,54 +214,43 @@ router.post('/renew', authenticate, requireRole('customer', 'business', 'service
       });
     }
 
-    const refNo = generateRefNo();
-    const paidAt = new Date().toISOString().split('T')[0];
+    const isAdmin = req.user.role === 'admin';
+    let refNo;
 
-    let payment;
-    if (!isSupabaseStorage()) {
-      payment = {
-        id: `pay-${Date.now()}`,
-        businessId,
-        ownerEmail: req.user.email,
-        amount: parsedAmount,
-        date: paidAt,
-        status: 'success',
-        refNo,
-      };
-      memoryPayments.unshift(payment);
+    if (isAdmin && profile.email !== req.user.email) {
+      // Admin marking another listing as paid
+      refNo = generateAdminRefNo();
+    } else if (isAdmin && !transactionId) {
+      // Admin renewing without IAP payload
+      refNo = generateAdminRefNo();
     } else {
-      try {
-        const { data, error } = await supabaseAdmin
-          .from('membership_payments')
-          .insert({
-            business_id: businessId,
-            owner_email: req.user.email,
-            amount: parsedAmount,
-            status: 'success',
-            ref_no: refNo,
-            paid_at: paidAt,
-          })
-          .select('*')
-          .single();
+      const check = evaluateOwnerPurchase({ transactionId, productId, platform });
+      if (!check.ok) {
+        return res.status(check.status).json({ error: check.error });
+      }
+      refNo = check.refNo;
 
-        if (error) throw new Error(error.message);
-        payment = mapPayment(data);
-      } catch (err) {
-        if (!isMissingPaymentsTable(err)) {
-          return res.status(500).json({ error: err.message });
-        }
-        payment = {
-          id: `pay-${Date.now()}`,
-          businessId,
-          ownerEmail: req.user.email,
-          amount: parsedAmount,
-          date: paidAt,
-          status: 'success',
-          refNo,
-        };
-        memoryPayments.unshift(payment);
+      const existing = await findPaymentByRefNo(refNo);
+      if (existing) {
+        // Idempotent replay — return current profile, do not extend again
+        return res.status(200).json({
+          success: true,
+          payment: existing,
+          profile,
+          membershipExpiry: profile.membershipExpiry,
+          replayed: true,
+        });
       }
     }
+
+    const paidAt = new Date().toISOString().split('T')[0];
+    const payment = await insertPaymentRecord({
+      businessId,
+      ownerEmail: profile.email || req.user.email,
+      amount: parsedAmount,
+      refNo,
+      paidAt,
+    });
 
     const activated = await activateListing(profile, parsedAmount);
 

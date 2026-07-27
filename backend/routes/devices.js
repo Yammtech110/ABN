@@ -46,7 +46,7 @@ router.delete('/register', authenticate, async (req, res, next) => {
     if (!token) {
       return res.status(400).json({ error: 'token is required.' });
     }
-    await removeDeviceToken(String(token));
+    await removeDeviceToken(String(token), req.user.id);
     res.json({ success: true });
   } catch (err) {
     next(err);

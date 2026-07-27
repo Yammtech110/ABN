@@ -27,6 +27,7 @@ import {
   openBusinessInMaps,
   openExternalUrl,
 } from '../utils/maps';
+import { networkErrorMessage, userFacingError } from '../utils/userFacingError';
 
 interface BusinessDetailsModalProps {
   business: Business;
@@ -110,7 +111,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
     const result = await replyToReview(reviewId, text);
     setReplyBusyId(null);
     if (!result.success) {
-      setReplyError(result.error || 'Could not save reply.');
+      setReplyError(userFacingError(result.error || 'Could not save reply.', { context: 'reply' }));
       return;
     }
     setReplyDrafts((prev) => ({ ...prev, [reviewId]: '' }));
@@ -129,7 +130,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
     setReviewSuccess('');
 
     if (!currentUser) {
-      setReviewError(language === 'en' ? 'You must be signed in to submit a review!' : 'يجب تسجيل الدخول لإضافة تقييم!');
+      setReviewError('Sign in to submit a review.');
       return;
     }
 
@@ -138,13 +139,17 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
     setIsSubmittingReview(false);
 
     if (!result.success) {
-      setReviewError(result.error || (language === 'en' ? 'Could not submit review.' : 'تعذر إرسال التقييم.'));
+      setReviewError(userFacingError(result.error || 'Could not submit review.', { context: 'review' }));
       return;
     }
 
     setComment('');
     setRating(5);
-    setReviewSuccess(language === 'en' ? 'Review posted! Jazakumullah Khayran.' : 'تم نشر المراجعة! جزاكم الله خيراً.');
+    setReviewSuccess(
+      language === 'en'
+        ? 'Review posted! Thanks for sharing your feedback.'
+        : 'تم نشر المراجعة! شكراً لمشاركتك.',
+    );
     setTimeout(() => setReviewSuccess(''), 4000);
   };
 
@@ -154,13 +159,13 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
     setReportSuccess('');
 
     if (!apiToken) {
-      setReportError(language === 'en' ? 'You must be signed in to report a listing.' : 'يجب تسجيل الدخول للإبلاغ عن نشاط.');
+      setReportError('Sign in to report a listing.');
       return;
     }
 
     const trimmed = reportReason.trim();
     if (trimmed.length < 10) {
-      setReportError(language === 'en' ? 'Please describe the issue in at least 10 characters.' : 'يرجى وصف المشكلة في 10 أحرف على الأقل.');
+      setReportError('Please describe the issue in at least 10 characters.');
       return;
     }
 
@@ -176,18 +181,14 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
       });
       const data = await res.json();
       if (!res.ok) {
-        setReportError(data.error || (language === 'en' ? 'Could not submit report.' : 'تعذر إرسال البلاغ.'));
+        setReportError(userFacingError(data.error || data, { status: res.status, context: 'report' }));
         return;
       }
       setReportReason('');
-      setReportSuccess(
-        language === 'en'
-          ? 'Report submitted. Our admin team will review it.'
-          : 'تم إرسال البلاغ. سيقوم فريق الإدارة بمراجعته.'
-      );
+      setReportSuccess('Report submitted. Our admin team will review it.');
       setTimeout(() => setReportSuccess(''), 5000);
     } catch {
-      setReportError(language === 'en' ? 'Cannot reach server. Try again later.' : 'تعذر الاتصال بالخادم. حاول لاحقاً.');
+      setReportError(networkErrorMessage());
     } finally {
       setIsSubmittingReport(false);
     }

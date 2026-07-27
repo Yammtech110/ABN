@@ -11,6 +11,8 @@
 'use strict';
 
 require('dotenv').config();
+// Fail fast on missing/weak secrets before mounting routes
+require('./config/security');
 
 // ── Last-resort crash guards ───────────────────────────────────────────────
 // Keep the process alive on programmer errors that escape route handlers.
@@ -46,8 +48,11 @@ app.set('trust proxy', 1);
 // + listing images, a low per-IP cap makes the app look like it "crashes" after
 // a few concurrent users. Keep abuse protection, but allow real community load.
 
-const isProduction = process.env.NODE_ENV === 'production';
-const skipRateLimitInDev = () => !isProduction;
+const isProduction = process.env.NODE_ENV === 'production' || Boolean(process.env.RENDER);
+const isTest = process.env.NODE_ENV === 'test';
+// Always rate-limit outside automated tests (including local / mis-set NODE_ENV on Render).
+const skipGlobalRateLimit = () => isTest;
+const skipAuthRateLimit = () => isTest;
 
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -56,7 +61,7 @@ const globalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) => {
-    if (skipRateLimitInDev()) return true;
+    if (skipGlobalRateLimit()) return true;
     const path = String(req.originalUrl || req.url || req.path || '').split('?')[0];
     // Health + static listing images should never trip the shared-IP limiter
     if (path === '/api/health' || path === '/health') return true;
@@ -69,10 +74,10 @@ const globalLimiter = rateLimit({
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   // Several people logging in from the same cafe/office Wi‑Fi
-  max: isProduction ? Number(process.env.AUTH_RATE_LIMIT_MAX || 60) : 1_000,
+  max: isProduction ? Number(process.env.AUTH_RATE_LIMIT_MAX || 60) : 200,
   standardHeaders: true,
   legacyHeaders: false,
-  skip: skipRateLimitInDev,
+  skip: skipAuthRateLimit,
   message: { error: 'Too many login attempts from this network. Please wait a few minutes.' },
   skipSuccessfulRequests: true,
 });
@@ -86,17 +91,37 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
 
-// Global mobile + web — JWT in Authorization header (no cookies), so origin * is safe
+// CORS — allowlist production web + Capacitor origins (JWT Bearer, credentials: false)
+const defaultCorsOrigins = [
+  'https://abn-1.onrender.com',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'capacitor://localhost',
+  'http://localhost',
+  'https://localhost',
+];
+const corsOrigins = String(process.env.CORS_ORIGINS || defaultCorsOrigins.join(','))
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
 app.use(cors({
-  origin: '*',
+  origin(origin, callback) {
+    // Native apps and same-origin tools often omit Origin
+    if (!origin) return callback(null, true);
+    if (corsOrigins.includes('*') || corsOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(null, false);
+  },
   credentials: false,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// Allow up to 10 MB JSON bodies so base64 images from the image picker work
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+// Cap JSON bodies — listing images should stay under a few MB each
+app.use(express.json({ limit: process.env.JSON_BODY_LIMIT || '5mb' }));
+app.use(express.urlencoded({ extended: true, limit: process.env.JSON_BODY_LIMIT || '5mb' }));
 
 if (process.env.NODE_ENV !== 'test') {
   app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
@@ -152,24 +177,21 @@ app.use('/api/devices', require('./routes/devices'));
 // ── Health check ───────────────────────────────────────────────────────────
 
 app.get('/api/health', async (_req, res) => {
-  let supabaseStatus = 'unchecked';
+  let supabaseOk = false;
   try {
     const { error } = await supabaseAdmin
       .from('profiles_directory')
-      .select('*')
+      .select('id')
       .limit(1);
-    supabaseStatus = error ? `error: ${error.message}` : 'connected';
-  } catch (e) {
-    supabaseStatus = `error: ${e.message}`;
+    supabaseOk = !error;
+  } catch {
+    supabaseOk = false;
   }
 
   res.json({
-    status:    'ok',
-    service:   'ABN Community API',
+    status: supabaseOk ? 'ok' : 'degraded',
+    service: 'ABN Community API',
     timestamp: new Date().toISOString(),
-    env:       process.env.NODE_ENV || 'development',
-    storage:   STORAGE_MODE,
-    supabase:  supabaseStatus,
   });
 });
 

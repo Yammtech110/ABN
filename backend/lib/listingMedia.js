@@ -4,6 +4,10 @@
 const DEFAULT_LOGO = '';
 const DEFAULT_COVER = '';
 
+const ALLOWED_DATA_MIME = new Set(['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']);
+/** Max decoded image bytes accepted from client uploads (~2 MB). */
+const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
+
 const isDataImage = (url) => typeof url === 'string' && url.startsWith('data:image/');
 const isRemoteImage = (url) => typeof url === 'string' && /^https?:\/\//i.test(url.trim());
 const isApiMediaPath = (url) =>
@@ -85,11 +89,28 @@ const toPublicImageUrl = (profile, field, kind) => {
   return publicMediaPath(id, kind);
 };
 
-const mapProfileForList = (profile) => ({
-  ...profile,
-  imageUrl: toPublicImageUrl(profile, 'imageUrl', 'logo'),
-  coverUrl: toPublicImageUrl(profile, 'coverUrl', 'cover'),
-});
+/** Public directory responses must not expose owner email (PII). */
+const mapProfileForList = (profile, { includeEmail = false } = {}) => {
+  const rawImg = sanitizeStoredImage(profile?.imageUrl);
+  const rawCover = sanitizeStoredImage(profile?.coverUrl);
+  // Owner/admin payloads may keep inline data URLs so <img> works without Bearer on /logo
+  const imageUrl = includeEmail && (isDataImage(rawImg) || isRemoteImage(rawImg))
+    ? rawImg
+    : toPublicImageUrl(profile, 'imageUrl', 'logo');
+  const coverUrl = includeEmail && (isDataImage(rawCover) || isRemoteImage(rawCover))
+    ? rawCover
+    : toPublicImageUrl(profile, 'coverUrl', 'cover');
+
+  const mapped = {
+    ...profile,
+    imageUrl,
+    coverUrl,
+  };
+  if (!includeEmail) {
+    delete mapped.email;
+  }
+  return mapped;
+};
 
 /** Live logo path for jobs — always the owning listing's media endpoint */
 const jobLogoFromProfile = (profile) => {
@@ -99,27 +120,61 @@ const jobLogoFromProfile = (profile) => {
   return publicMediaPath(profile.id, 'logo');
 };
 
+/** Hosts allowed for open redirects when streaming remote listing images */
+const allowedImageHosts = () =>
+  String(process.env.ALLOWED_IMAGE_HOSTS || 'images.unsplash.com,lh3.googleusercontent.com')
+    .split(',')
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean);
+
+const isAllowedRemoteImageUrl = (url) => {
+  try {
+    const u = new URL(url);
+    if (u.protocol !== 'https:') return false;
+    if (u.username || u.password) return false;
+    const host = u.hostname.toLowerCase();
+    return allowedImageHosts().some(
+      (allowed) => host === allowed || host.endsWith(`.${allowed}`),
+    );
+  } catch {
+    return false;
+  }
+};
+
+const parseDataImage = (src) => {
+  const match = String(src).match(/^data:(image\/[\w.+-]+);base64,([\s\S]+)$/i);
+  if (!match) return null;
+  const mime = match[1].toLowerCase();
+  if (!ALLOWED_DATA_MIME.has(mime) && mime !== 'image/jpg') return null;
+  let buf;
+  try {
+    buf = Buffer.from(match[2], 'base64');
+  } catch {
+    return null;
+  }
+  if (!buf.length || buf.length > MAX_IMAGE_BYTES) return null;
+  return { mime: mime === 'image/jpg' ? 'image/jpeg' : mime, buf };
+};
+
 const streamStoredImage = async (res, primary, fallback, { name = '', seed = '', wide = false } = {}) => {
   const src = sanitizeStoredImage(primary) || sanitizeStoredImage(fallback);
 
   if (src && isRemoteImage(src)) {
+    if (!isAllowedRemoteImageUrl(src)) {
+      const svg = buildPlaceholderSvg(name, seed, { wide });
+      setMediaHeaders(res, 'image/svg+xml; charset=utf-8');
+      return res.send(svg);
+    }
     res.set('Cross-Origin-Resource-Policy', 'cross-origin');
     res.set('Cache-Control', 'public, max-age=3600');
     return res.redirect(302, src);
   }
 
   if (src) {
-    const match = src.match(/^data:(image\/[\w.+-]+);base64,([\s\S]+)$/);
-    if (match) {
-      try {
-        const buf = Buffer.from(match[2], 'base64');
-        if (buf.length) {
-          setMediaHeaders(res, match[1]);
-          return res.send(buf);
-        }
-      } catch {
-        // fall through to placeholder
-      }
+    const parsed = parseDataImage(src);
+    if (parsed) {
+      setMediaHeaders(res, parsed.mime);
+      return res.send(parsed.buf);
     }
   }
 
@@ -128,15 +183,34 @@ const streamStoredImage = async (res, primary, fallback, { name = '', seed = '',
   return res.send(svg);
 };
 
-/** Strip API paths / legacy mocks before persisting client uploads */
+/** Strip API paths / legacy mocks before persisting client uploads; reject oversized / bad MIME. */
 const normalizeIncomingImage = (incoming, current) => {
   if (incoming === undefined) return undefined;
   const next = String(incoming ?? '').trim();
   if (!next || isApiMediaPath(next) || LEGACY_MOCK_IMAGE_RE.test(next)) {
     return current ?? '';
   }
-  return next;
+  if (isDataImage(next)) {
+    if (!parseDataImage(next)) return current ?? '';
+    return next;
+  }
+  if (isRemoteImage(next)) {
+    // Do not persist arbitrary remote URLs (open redirect / SSRF surface)
+    if (!isAllowedRemoteImageUrl(next)) return current ?? '';
+    return next;
+  }
+  return current ?? '';
 };
+
+/** Listings that appear in the public directory may expose logo/cover bytes. */
+const isPubliclyVisibleListing = (profile) =>
+  Boolean(
+    profile &&
+      profile.isVerified &&
+      profile.subscriptionStatus !== 'pending' &&
+      profile.subscriptionStatus !== 'suspended' &&
+      profile.isActive !== false,
+  );
 
 module.exports = {
   DEFAULT_LOGO,
@@ -149,4 +223,6 @@ module.exports = {
   sanitizeStoredImage,
   normalizeIncomingImage,
   buildPlaceholderSvg,
+  isPubliclyVisibleListing,
+  MAX_IMAGE_BYTES,
 };

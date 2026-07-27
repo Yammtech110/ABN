@@ -148,7 +148,7 @@ router.post('/', authenticate, async (req, res, next) => {
       .select('*')
       .single();
 
-    if (error) return res.status(500).json({ error: error.message });
+    if (error) return res.status(500).json({ error: 'Failed to save review. Please try again.' });
 
     const all = await fetchReviewsForBusiness(businessId);
     const stats = aggregateForBusiness(all, businessId);
@@ -220,7 +220,7 @@ router.post('/:id/reply', authenticate, async (req, res, next) => {
           error: 'Review replies are not enabled yet. Run migration 015_review_replies.sql in Supabase.',
         });
       }
-      return res.status(500).json({ error: error.message });
+      return res.status(500).json({ error: 'Failed to save reply. Please try again.' });
     }
 
     try {

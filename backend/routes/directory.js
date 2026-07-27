@@ -9,10 +9,12 @@ const { supabaseAdmin } = require('../supabase');
 const { isSupabaseStorage, directoryProfiles, jobsBoard, newId, today } = require('../db');
 const { mapProfileFromDb, mapProfileToDb } = require('../lib/supabaseMappers');
 const { findProfileByEmail } = require('../lib/profileStore');
-const { findByEmail: findUserByEmail } = require('../lib/userStore');
+const { findByEmail: findUserByEmail, findById: findUserById } = require('../lib/userStore');
 const { createNotification } = require('../lib/notificationStore');
 const { logAdminAction } = require('../lib/activityLog');
 const { authenticate, requireRole } = require('../middleware/authMiddleware');
+const jwt = require('jsonwebtoken');
+const { JWT_SECRET } = require('../config/security');
 const {
   mapProfileForList,
   streamStoredImage,
@@ -34,6 +36,23 @@ const isPublicListing = (profile) =>
     profile.subscriptionStatus !== 'suspended' &&
     profile.isActive !== false,
   );
+
+/** Owner/admin may view logo/cover for pending listings; public only sees approved ones. */
+async function mayViewListingMedia(req, profile) {
+  if (isPublicListing(profile)) return true;
+  const header = req.headers.authorization;
+  if (!header || !header.startsWith('Bearer ')) return false;
+  try {
+    const payload = jwt.verify(header.slice(7), JWT_SECRET);
+    let user = null;
+    if (payload.id) user = await findUserById(payload.id);
+    if (!user && payload.email) user = await findUserByEmail(String(payload.email).toLowerCase().trim());
+    if (!user || user.isBlocked) return false;
+    return user.email === profile.email || user.role === 'admin';
+  } catch {
+    return false;
+  }
+}
 
 const filterProfiles = (list, { city, category, search, role, publicOnly = false, adminIncludeAll = false }) =>
   list.filter((p) => {
@@ -138,7 +157,7 @@ router.get('/all', authenticate, requireRole('admin'), async (req, res, next) =>
     const results = sortProfiles(
       filterProfiles(await fetchAllProfiles(), { adminIncludeAll: true }),
     );
-    res.json(results.map((row) => mapProfile(mapProfileForList(row))));
+    res.json(results.map((row) => mapProfile(mapProfileForList(row, { includeEmail: true }))));
   } catch (err) {
     next(err);
   }
@@ -148,7 +167,7 @@ router.get('/all', authenticate, requireRole('admin'), async (req, res, next) =>
 router.get('/mine', authenticate, async (req, res, next) => {
   try {
     const profile = await findProfileByEmail(req.user.email);
-    res.json(profile ? mapProfile(mapProfileForList(profile)) : null);
+    res.json(profile ? mapProfile(mapProfileForList(profile, { includeEmail: true })) : null);
   } catch (err) {
     next(err);
   }
@@ -159,7 +178,8 @@ router.get('/:id/logo', async (req, res, next) => {
   try {
     const profile = await findProfileById(req.params.id);
     if (!profile) return res.status(404).end();
-    await streamStoredImage(res, profile.imageUrl, profile.coverUrl, {
+    const allow = await mayViewListingMedia(req, profile);
+    await streamStoredImage(res, allow ? profile.imageUrl : '', allow ? profile.coverUrl : '', {
       name: profile.businessName,
       seed: profile.id,
       wide: false,
@@ -174,7 +194,8 @@ router.get('/:id/cover', async (req, res, next) => {
   try {
     const profile = await findProfileById(req.params.id);
     if (!profile) return res.status(404).end();
-    await streamStoredImage(res, profile.coverUrl, profile.imageUrl, {
+    const allow = await mayViewListingMedia(req, profile);
+    await streamStoredImage(res, allow ? profile.coverUrl : '', allow ? profile.imageUrl : '', {
       name: profile.businessName,
       seed: profile.id,
       wide: true,
@@ -206,8 +227,8 @@ router.post('/', authenticate, requireRole('customer', 'business', 'service_prov
       imageUrl = '', coverUrl = '',
       address = '', area = '', city = '', state = '',
       phone = '', whatsapp = '', website = '',
-      workingHours = '', membershipExpiry,
-      subscriptionTier, listingType = 'business',
+      workingHours = '',
+      listingType = 'business',
     } = req.body;
 
     if (!businessName) return res.status(400).json({ error: 'businessName is required.' });
@@ -220,9 +241,11 @@ router.post('/', authenticate, requireRole('customer', 'business', 'service_prov
       return res.status(409).json({ error: 'A directory profile already exists for your account.' });
     }
 
-    const tier = subscriptionTier ?? (listingType === 'service' ? 30 : 50);
-    const expiry = membershipExpiry ||
-      new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    // Billing fields are server-owned — ignore client membershipExpiry / subscriptionTier
+    const tier = listingType === 'service' ? 30 : 50;
+    const expiry = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split('T')[0];
 
     let savedProfile = {
       id:                 newId('dir'),
@@ -261,7 +284,7 @@ router.post('/', authenticate, requireRole('customer', 'business', 'service_prov
         .select('*')
         .single();
 
-      if (error) return res.status(500).json({ error: error.message });
+      if (error) return res.status(500).json({ error: 'Failed to save listing. Please try again.' });
       savedProfile = mapProfile(mapProfileFromDb(data));
     }
 
@@ -282,7 +305,7 @@ router.post('/', authenticate, requireRole('customer', 'business', 'service_prov
       // non-fatal
     }
 
-    return res.status(201).json(mapProfile(mapProfileForList(savedProfile)));
+    return res.status(201).json(mapProfile(mapProfileForList(savedProfile, { includeEmail: true })));
   } catch (err) {
     next(err);
   }
@@ -302,7 +325,7 @@ router.put('/:id', authenticate, async (req, res, next) => {
       imageUrl, coverUrl,
       address, area, city, state,
       phone, whatsapp, website,
-      workingHours, membershipExpiry,
+      workingHours, membershipExpiry, subscriptionTier,
       subscriptionStatus, isVerified,
     } = req.body;
 
@@ -339,8 +362,9 @@ router.put('/:id', authenticate, async (req, res, next) => {
     if (whatsapp           !== undefined) updated.whatsapp           = whatsapp;
     if (website            !== undefined) updated.website            = website;
     if (workingHours       !== undefined) updated.workingHours       = workingHours;
-    if (membershipExpiry   !== undefined) updated.membershipExpiry   = membershipExpiry;
-    // Only admins may change trust/billing state — non-admins silently skip these fields
+    // Only admins may change billing / trust state
+    if (membershipExpiry   !== undefined && isAdmin) updated.membershipExpiry   = membershipExpiry;
+    if (subscriptionTier   !== undefined && isAdmin) updated.subscriptionTier   = subscriptionTier;
     if (subscriptionStatus !== undefined && isAdmin) updated.subscriptionStatus = subscriptionStatus;
     if (isVerified         !== undefined && isAdmin) updated.isVerified         = isVerified;
 
@@ -368,7 +392,7 @@ router.put('/:id', authenticate, async (req, res, next) => {
         .select('*')
         .single();
 
-      if (error) return res.status(500).json({ error: error.message });
+      if (error) return res.status(500).json({ error: 'Failed to save listing. Please try again.' });
       updated = mapProfile(mapProfileFromDb(data));
 
       if (logoChanged || businessName !== undefined) {
@@ -464,7 +488,7 @@ router.put('/:id', authenticate, async (req, res, next) => {
       }
     }
 
-    return res.json(mapProfile(mapProfileForList(updated)));
+    return res.json(mapProfile(mapProfileForList(updated, { includeEmail: true })));
   } catch (err) {
     next(err);
   }
@@ -493,7 +517,7 @@ router.delete('/:id', authenticate, async (req, res, next) => {
       .delete()
       .eq('id', req.params.id);
 
-    if (error) return res.status(500).json({ error: error.message });
+    if (error) return res.status(500).json({ error: 'Failed to save listing. Please try again.' });
     res.status(204).end();
   } catch (err) {
     next(err);
@@ -533,14 +557,14 @@ router.put('/:id/hiring', authenticate, requireRole('customer', 'business', 'ser
       .update({ hiring_active: isActive })
       .eq('id', req.params.id);
 
-    if (profileErr) return res.status(500).json({ error: profileErr.message });
+    if (profileErr) return res.status(500).json({ error: 'Failed to update hiring status. Please try again.' });
 
     const { error: jobsErr } = await supabaseAdmin
       .from('jobs_board')
       .update({ is_active: isActive })
       .eq('business_id', req.params.id);
 
-    if (jobsErr) return res.status(500).json({ error: jobsErr.message });
+    if (jobsErr) return res.status(500).json({ error: 'Failed to update related jobs. Please try again.' });
 
     res.json({ businessId: req.params.id, hiringActive: isActive });
   } catch (err) {

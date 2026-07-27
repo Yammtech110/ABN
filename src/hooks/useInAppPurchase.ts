@@ -64,10 +64,14 @@ export const purchaseSubscription = async (
         productId: result.purchase.productId,
       };
     }
-    return { success: false, error: 'Purchase not completed.' };
+    return { success: false, error: 'Payment cancelled.' };
   } catch (err: any) {
     console.error('[ABN IAP] Purchase error:', err);
-    return { success: false, error: err?.message || 'Payment failed. Please try again.' };
+    const msg = String(err?.message || err || '');
+    if (/cancel|dismiss|abort|user.?cancel/i.test(msg)) {
+      return { success: false, error: 'Payment cancelled.' };
+    }
+    return { success: false, error: 'Payment could not be completed. Please try again.' };
   }
 };
 

@@ -38,6 +38,13 @@ import {
   normalizeUSPhone,
   validateDirectoryRegistration,
 } from '../utils/businessRegistrationValidation';
+import { networkErrorMessage, userFacingError } from '../utils/userFacingError';
+import {
+  clearRegistrationDraft,
+  draftHasContent,
+  loadRegistrationDraft,
+  saveRegistrationDraft,
+} from '../utils/registrationDraft';
 import { bilingualEn, textEn } from '../utils/englishOnly';
 import { canManageListing, getUserListing, listingKind } from '../utils/listingAccess';
 import { filterNotificationsForUser } from '../utils/notifications';
@@ -160,9 +167,186 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
   const [regPhotoError, setRegPhotoError] = useState('');
   const [isSubmittingReg, setIsSubmittingReg] = useState(false);
   const [showApprovalNotice, setShowApprovalNotice] = useState(false);
+  const [draftBanner, setDraftBanner] = useState('');
+  const draftHydratedRef = React.useRef(false);
+  const skipNextCatResetRef = React.useRef(false);
+
+  const draftUserKey = currentUser?.email || currentUser?.id || 'guest';
+  const canUseRegistrationDraft = !manageMode && !myBusiness;
+
+  // If user signs in mid-draft, move guest draft onto their account
+  React.useEffect(() => {
+    if (!currentUser?.email) return;
+    const guest = loadRegistrationDraft('guest');
+    const mine = loadRegistrationDraft(currentUser.email);
+    if (guest && draftHasContent(guest) && !draftHasContent(mine)) {
+      saveRegistrationDraft(currentUser.email, {
+        registrationType: guest.registrationType,
+        regName: guest.regName,
+        regCatId: guest.regCatId,
+        regDesc: guest.regDesc,
+        regState: guest.regState,
+        regCity: guest.regCity,
+        regZipCode: guest.regZipCode,
+        regAddress: guest.regAddress,
+        regPhone: guest.regPhone,
+        regWhatsapp: guest.regWhatsapp,
+        regWeb: guest.regWeb,
+        regHours: guest.regHours,
+        regImages: guest.regImages,
+        regCoverImages: guest.regCoverImages,
+      });
+      clearRegistrationDraft('guest');
+    }
+  }, [currentUser?.email]);
+
+  // Restore draft when opening a new registration (not manage mode)
+  React.useEffect(() => {
+    if (!canUseRegistrationDraft || draftHydratedRef.current) return;
+    draftHydratedRef.current = true;
+    const draft = loadRegistrationDraft(draftUserKey);
+    if (!draft || !draftHasContent(draft)) return;
+
+    skipNextCatResetRef.current = true;
+    setRegistrationType(draft.registrationType);
+    setRegName(draft.regName || '');
+    setRegCatId(draft.regCatId || categories[0]?.id || '');
+    setRegDesc(draft.regDesc || '');
+    setRegState(draft.regState || '');
+    setRegCity(draft.regCity || '');
+    setRegZipCode(draft.regZipCode || '');
+    setRegAddress(draft.regAddress || '');
+    setRegPhone(draft.regPhone || '');
+    setRegWhatsapp(draft.regWhatsapp || '');
+    setRegWeb(draft.regWeb || '');
+    setRegHours(draft.regHours || '8:00 AM - 10:00 PM');
+    setRegImages(Array.isArray(draft.regImages) ? draft.regImages : []);
+    setRegCoverImages(Array.isArray(draft.regCoverImages) ? draft.regCoverImages : []);
+    setDraftBanner('Draft restored — continue where you left off.');
+    const t = window.setTimeout(() => setDraftBanner(''), 5000);
+    return () => window.clearTimeout(t);
+  }, [canUseRegistrationDraft, draftUserKey, categories]);
+
+  // Auto-save draft while filling the form
+  React.useEffect(() => {
+    if (!canUseRegistrationDraft || !registrationType || !draftHydratedRef.current) return;
+    if (!draftHasContent({
+      version: 1,
+      savedAt: '',
+      registrationType,
+      regName,
+      regCatId,
+      regDesc,
+      regState,
+      regCity,
+      regZipCode,
+      regAddress,
+      regPhone,
+      regWhatsapp,
+      regWeb,
+      regHours,
+      regImages,
+      regCoverImages,
+    })) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      saveRegistrationDraft(draftUserKey, {
+        registrationType,
+        regName,
+        regCatId,
+        regDesc,
+        regState,
+        regCity,
+        regZipCode,
+        regAddress,
+        regPhone,
+        regWhatsapp,
+        regWeb,
+        regHours,
+        regImages,
+        regCoverImages,
+      });
+    }, 400);
+
+    return () => window.clearTimeout(timer);
+  }, [
+    canUseRegistrationDraft,
+    draftUserKey,
+    registrationType,
+    regName,
+    regCatId,
+    regDesc,
+    regState,
+    regCity,
+    regZipCode,
+    regAddress,
+    regPhone,
+    regWhatsapp,
+    regWeb,
+    regHours,
+    regImages,
+    regCoverImages,
+  ]);
+
+  // Flush draft if user leaves the tab / app
+  React.useEffect(() => {
+    if (!canUseRegistrationDraft) return;
+    const flush = () => {
+      if (!registrationType) return;
+      saveRegistrationDraft(draftUserKey, {
+        registrationType,
+        regName,
+        regCatId,
+        regDesc,
+        regState,
+        regCity,
+        regZipCode,
+        regAddress,
+        regPhone,
+        regWhatsapp,
+        regWeb,
+        regHours,
+        regImages,
+        regCoverImages,
+      });
+    };
+    const onVis = () => {
+      if (document.visibilityState === 'hidden') flush();
+    };
+    window.addEventListener('pagehide', flush);
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      flush();
+      window.removeEventListener('pagehide', flush);
+      document.removeEventListener('visibilitychange', onVis);
+    };
+  }, [
+    canUseRegistrationDraft,
+    draftUserKey,
+    registrationType,
+    regName,
+    regCatId,
+    regDesc,
+    regState,
+    regCity,
+    regZipCode,
+    regAddress,
+    regPhone,
+    regWhatsapp,
+    regWeb,
+    regHours,
+    regImages,
+    regCoverImages,
+  ]);
 
   React.useEffect(() => {
     if (!registrationType) return;
+    if (skipNextCatResetRef.current) {
+      skipNextCatResetRef.current = false;
+      return;
+    }
     if (registrationType === 'service') {
       const serviceCat = categories.find((c) => c.group === 'Services');
       if (serviceCat) setRegCatId(serviceCat.id);
@@ -271,21 +455,46 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
     const result = await purchaseSubscription(productId);
 
     if (!result.success) {
-      setPayError(result.error || (language === 'en' ? 'Payment was not completed.' : 'لم يكتمل الدفع.'));
+      const raw = String(result.error || '');
+      const cancelled = /cancel|dismiss|abort|not completed|user.?canceled|user.?cancelled/i.test(raw);
+      setPayError(
+        cancelled
+          ? 'Payment cancelled. You can subscribe anytime when ready.'
+          : userFacingError(raw || 'Payment was not completed. Please try again.', { context: 'generic' }),
+      );
       setIsProcessingPay(false);
       return;
     }
 
-    const renewal = await renewMembership(myBusiness.id, planAmount);
+    // Store charged — activate membership (apiFetch already retries on cold start)
+    const platform = (() => {
+      try {
+        const cap = (window as any).Capacitor;
+        const p = cap?.getPlatform?.();
+        if (p === 'ios' || p === 'android') return p;
+      } catch { /* web */ }
+      return 'web';
+    })();
+    const purchaseMeta = {
+      transactionId: result.transactionId,
+      productId: result.productId || productId,
+      platform,
+    };
+    let renewal = await renewMembership(myBusiness.id, planAmount, purchaseMeta);
     if (!renewal.success) {
-      setPayError(renewal.error || (language === 'en' ? 'Payment succeeded but activation failed. Contact support.' : 'تم الدفع لكن فشل التفعيل. تواصل مع الدعم.'));
+      await new Promise((r) => setTimeout(r, 2500));
+      renewal = await renewMembership(myBusiness.id, planAmount, purchaseMeta);
+    }
+    if (!renewal.success) {
+      setPayError(
+        renewal.error ||
+          'Your store payment went through, but activation needs an admin or server IAP verification. Tap Restore Purchases later, or contact support — you will not be charged twice.',
+      );
       setIsProcessingPay(false);
       return;
     }
 
-    setPaySuccess(language === 'en'
-      ? '✅ Subscription activated! Your listing is now live in the directory.'
-      : '✅ تم تفعيل الاشتراك! ظهر نشاطك في الدليل.');
+    setPaySuccess('Subscription activated! Your listing is now live in the directory.');
     setTimeout(() => { setPaySuccess(''); setActivePortalTab('dash'); }, 3000);
     setIsProcessingPay(false);
   };
@@ -297,7 +506,20 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
     setPayError('');
     const purchases = await restorePurchases();
     if (purchases.length > 0) {
-      const renewal = await renewMembership(myBusiness.id, planAmount);
+      const first = purchases[0];
+      const platform = (() => {
+        try {
+          const cap = (window as any).Capacitor;
+          const p = cap?.getPlatform?.();
+          if (p === 'ios' || p === 'android') return p;
+        } catch { /* web */ }
+        return 'android';
+      })();
+      const renewal = await renewMembership(myBusiness.id, planAmount, {
+        transactionId: first.transactionId,
+        productId: first.productId,
+        platform,
+      });
       if (renewal.success) {
         setPaySuccess(language === 'en' ? 'Purchases restored successfully!' : 'تم استعادة الاشتراك بنجاح!');
       } else {
@@ -358,6 +580,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
         allFieldsRequired: t.allFieldsRequired,
         photoRequired: photoRequiredMsg,
         phoneInvalid: t.phoneInvalid,
+        whatsappInvalid: t.whatsappInvalid,
         zipInvalid: t.zipInvalid,
         stateRequired: t.stateRequired,
         hoursRequired: t.hoursRequired,
@@ -377,6 +600,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
 
     const normalizedPhone = normalizeUSPhone(regPhone);
     const formattedPhone = `+${normalizedPhone}`;
+    const formattedWhatsapp = `+${normalizeUSPhone(regWhatsapp)}`;
 
     setIsSubmittingReg(true);
     setRegError('');
@@ -404,7 +628,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
           area: regZipCode,
           city: regCity,
           phone: formattedPhone,
-          whatsapp: regWhatsapp.trim() || formattedPhone,
+          whatsapp: formattedWhatsapp,
           website: regWeb,
           workingHours: regHours,
           subscriptionTier: registrationType === 'service' ? 30 : 50,
@@ -420,7 +644,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
           setRegError('Your session expired. Please sign in again, then submit your listing.');
           return;
         }
-        setRegError(data.error || t.allFieldsRequired);
+        setRegError(userFacingError(data.error || data, { status: res.status, context: 'listing' }));
         return;
       }
 
@@ -441,7 +665,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
         isVerified: false,
         status: 'pending',
         phone: formattedPhone,
-        whatsapp: regWhatsapp.trim() || formattedPhone,
+        whatsapp: formattedWhatsapp,
         website: regWeb,
         workingHours: { en: regHours, ar: regHours },
         // 2 MONTHS FREE TRIAL: Set expiry to 60 days from today for all new registrations
@@ -453,11 +677,27 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
       };
       addBusiness(newBiz);
       await refreshDirectory();
+      clearRegistrationDraft(draftUserKey);
+      setDraftBanner('');
       setShowApprovalNotice(true);
       setRegError('');
       setRegPhotoError('');
+      // Clear form fields after successful submit
+      setRegName('');
+      setRegDesc('');
+      setRegState('');
+      setRegCity('');
+      setRegZipCode('');
+      setRegAddress('');
+      setRegPhone('');
+      setRegWhatsapp('');
+      setRegWeb('');
+      setRegHours('8:00 AM - 10:00 PM');
+      setRegImages([]);
+      setRegCoverImages([]);
+      setRegistrationType(null);
     } catch {
-      setRegError(language === 'en' ? 'Could not complete registration. Please try again.' : 'تعذر إكمال التسجيل. يرجى المحاولة مرة أخرى.');
+      setRegError(networkErrorMessage());
     } finally {
       setIsSubmittingReg(false);
     }
@@ -490,6 +730,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
         allFieldsRequired: t.allFieldsRequired,
         photoRequired: photoRequiredMsg,
         phoneInvalid: t.phoneInvalid,
+        whatsappInvalid: t.whatsappInvalid,
         zipInvalid: t.zipInvalid,
         stateRequired: t.stateRequired,
         hoursRequired: t.hoursRequired,
@@ -505,6 +746,9 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
     const cat = categories.find((c) => c.id === regCatId);
     const categoryLabel = cat?.name.en || myBusiness.subcategory.en;
     const formattedPhone = isValidUSPhone(regPhone) ? `+${normalizeUSPhone(regPhone)}` : regPhone.trim();
+    const formattedWhatsapp = isValidUSPhone(regWhatsapp)
+      ? `+${normalizeUSPhone(regWhatsapp)}`
+      : regWhatsapp.trim();
 
     setIsSavingManage(true);
     setRegError('');
@@ -524,7 +768,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
       state: regState,
       area: regZipCode,
       phone: formattedPhone,
-      whatsapp: regWhatsapp.trim() || formattedPhone,
+      whatsapp: formattedWhatsapp,
       website: regWeb,
       workingHours: bilingualEn(regHours),
     };
@@ -541,7 +785,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
           city: regCity,
           state: regState,
           phone: formattedPhone,
-          whatsapp: regWhatsapp.trim() || formattedPhone,
+          whatsapp: formattedWhatsapp,
           website: regWeb,
           workingHours: regHours,
         };
@@ -555,7 +799,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
-          setRegError(data.error || 'Could not update listing.');
+          setRegError(userFacingError(data.error || data, { status: res.status, context: 'listing' }));
           setIsSavingManage(false);
           return;
         }
@@ -611,7 +855,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setChangeReqError(data.error || 'Could not submit change request.');
+        setChangeReqError(userFacingError(data.error || data, { status: res.status, context: 'listing' }));
         if (data.request) setPendingChangeRequest(data.request);
         setChangeReqBusy(false);
         return;
@@ -627,7 +871,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
       setChangeReqNote('');
       setShowChangeRequest(false);
     } catch {
-      setChangeReqError(language === 'en' ? 'Cannot reach server.' : 'تعذر الاتصال بالخادم.');
+      setChangeReqError(networkErrorMessage());
     }
     setChangeReqBusy(false);
   };
@@ -835,16 +1079,67 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
           <div className="space-y-4 animate-fade-in-up" id="portal-registration-selection">
             <div className="pb-1 border-b border-[#2D2319]">
               <h2 className="text-xl font-extrabold text-[#F4E3D7]">
-                {language === 'en' ? 'Choose Registration Type' : 'اختر نوع التسجيل'}
+                Choose Registration Type
               </h2>
               <p className="text-[10px] text-gray-500 font-medium">
-                {language === 'en' ? 'Select how you want to join the community directory.' : 'اختر كيف تريد الانضمام إلى دليل المجتمع.'}
+                Select how you want to join the community directory.
               </p>
             </div>
+
+            {canUseRegistrationDraft && draftHasContent(loadRegistrationDraft(draftUserKey)) && (
+              <div className="p-3 rounded-2xl bg-amber-950/30 border border-amber-800/40 space-y-2" id="reg-draft-resume">
+                <p className="text-[11px] text-amber-200 font-semibold">
+                  You have a saved draft. Pick the same type below to continue, or discard it.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearRegistrationDraft(draftUserKey);
+                    setDraftBanner('');
+                    setRegName('');
+                    setRegDesc('');
+                    setRegState('');
+                    setRegCity('');
+                    setRegZipCode('');
+                    setRegAddress('');
+                    setRegPhone('');
+                    setRegWhatsapp('');
+                    setRegWeb('');
+                    setRegHours('8:00 AM - 10:00 PM');
+                    setRegImages([]);
+                    setRegCoverImages([]);
+                  }}
+                  className="text-[10px] font-bold text-amber-400 hover:underline"
+                >
+                  Discard draft
+                </button>
+              </div>
+            )}
             
             <div className="grid grid-cols-1 gap-4 mt-4">
               <button
-                onClick={() => setRegistrationType('business')}
+                onClick={() => {
+                  const draft = loadRegistrationDraft(draftUserKey);
+                  if (draft?.registrationType === 'business' && draftHasContent(draft)) {
+                    skipNextCatResetRef.current = true;
+                    setRegName(draft.regName || '');
+                    setRegCatId(draft.regCatId || categories[0]?.id || '');
+                    setRegDesc(draft.regDesc || '');
+                    setRegState(draft.regState || '');
+                    setRegCity(draft.regCity || '');
+                    setRegZipCode(draft.regZipCode || '');
+                    setRegAddress(draft.regAddress || '');
+                    setRegPhone(draft.regPhone || '');
+                    setRegWhatsapp(draft.regWhatsapp || '');
+                    setRegWeb(draft.regWeb || '');
+                    setRegHours(draft.regHours || '8:00 AM - 10:00 PM');
+                    setRegImages(Array.isArray(draft.regImages) ? draft.regImages : []);
+                    setRegCoverImages(Array.isArray(draft.regCoverImages) ? draft.regCoverImages : []);
+                    setDraftBanner('Draft restored — continue where you left off.');
+                    setTimeout(() => setDraftBanner(''), 4000);
+                  }
+                  setRegistrationType('business');
+                }}
                 className="p-5 rounded-3xl bg-[#13110E] border border-[#2D2319] hover:border-[#FFA048] transition-all flex flex-col text-left space-y-2 group shadow-sm active:scale-95"
               >
                 <div className="flex items-center justify-between w-full">
@@ -865,7 +1160,28 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
               </button>
 
               <button
-                onClick={() => setRegistrationType('service')}
+                onClick={() => {
+                  const draft = loadRegistrationDraft(draftUserKey);
+                  if (draft?.registrationType === 'service' && draftHasContent(draft)) {
+                    skipNextCatResetRef.current = true;
+                    setRegName(draft.regName || '');
+                    setRegCatId(draft.regCatId || categories.find((c) => c.group === 'Services')?.id || '');
+                    setRegDesc(draft.regDesc || '');
+                    setRegState(draft.regState || '');
+                    setRegCity(draft.regCity || '');
+                    setRegZipCode(draft.regZipCode || '');
+                    setRegAddress(draft.regAddress || '');
+                    setRegPhone(draft.regPhone || '');
+                    setRegWhatsapp(draft.regWhatsapp || '');
+                    setRegWeb(draft.regWeb || '');
+                    setRegHours(draft.regHours || '8:00 AM - 10:00 PM');
+                    setRegImages(Array.isArray(draft.regImages) ? draft.regImages : []);
+                    setRegCoverImages(Array.isArray(draft.regCoverImages) ? draft.regCoverImages : []);
+                    setDraftBanner('Draft restored — continue where you left off.');
+                    setTimeout(() => setDraftBanner(''), 4000);
+                  }
+                  setRegistrationType('service');
+                }}
                 className="p-5 rounded-3xl bg-[#13110E] border border-[#2D2319] hover:border-blue-500 transition-all flex flex-col text-left space-y-2 group shadow-sm active:scale-95"
               >
                 <div className="flex items-center justify-between w-full">
@@ -888,15 +1204,25 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
           </div>
         ) : (
         <div className="space-y-4 animate-fade-in" id="portal-registration-form-section">
+          {draftBanner && !isManageForm && (
+            <div className="px-3 py-2 rounded-xl bg-green-950/40 border border-green-800/40 text-[11px] text-green-300 font-semibold">
+              {draftBanner}
+            </div>
+          )}
+          {!isManageForm && (
+            <p className="text-[10px] text-gray-500 px-1">
+              Your progress is saved automatically as a draft if you leave this form.
+            </p>
+          )}
           <div className="flex items-center gap-3 pb-1 border-b border-[#2D2319]">
             {!isManageForm && (
             <button 
               onClick={() => {
+                // Keep draft — only leave the form view
                 setRegistrationType(null);
                 setRegError('');
                 setRegPhotoError('');
                 setRegSuccess('');
-                setRegCoverImages([]);
               }}
               className="p-1.5 rounded-full bg-[#191613] hover:bg-[#2D251C] transition-colors border border-[#2D2319]"
             >
@@ -1264,13 +1590,14 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1">{t.whatsapp}</label>
+                  <label className="block text-xs text-gray-400 mb-1">{t.whatsapp}*</label>
                   <input
                     type="tel"
                     placeholder={t.phoneHint}
                     value={regWhatsapp}
                     onChange={(e) => setRegWhatsapp(formatUSPhoneInput(e.target.value))}
-                    className="w-full p-2.5 rounded-xl bg-[#0F0E0C] border border-[#2D2319] text-xs text-white placeholder-gray-600 outline-none focus:border-[#FFA048]/40"
+                    className="w-full p-2.5 rounded-xl bg-[#0F0E0C] border border-[#2D2319] text-xs text-white placeholder-gray-600 outline-none focus:border-[#FFA048]"
+                    required
                   />
                 </div>
               </div>
@@ -1289,14 +1616,16 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                 <p className="mt-1 text-[9px] text-gray-600">{t.phoneHint}</p>
               </div>
               <div>
-                <label className="block text-xs text-gray-400 mb-1">{t.whatsapp}</label>
+                <label className="block text-xs text-gray-400 mb-1">{t.whatsapp}*</label>
                 <input
                   type="tel"
                   placeholder={t.phoneHint}
                   value={regWhatsapp}
                   onChange={(e) => setRegWhatsapp(formatUSPhoneInput(e.target.value))}
-                  className="w-full p-2.5 rounded-xl bg-[#0F0E0C] border border-[#2D2319] text-xs text-white placeholder-gray-600 outline-none focus:border-[#FFA048]/40"
+                  className="w-full p-2.5 rounded-xl bg-[#0F0E0C] border border-[#2D2319] text-xs text-white placeholder-gray-600 outline-none focus:border-[#FFA048]"
+                  required
                 />
+                <p className="mt-1 text-[9px] text-gray-600">{t.phoneHint}</p>
               </div>
             </div>
             )}
@@ -1560,7 +1889,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-450 mb-1">{t.whatsapp}</label>
+                    <label className="block text-xs text-gray-450 mb-1">{t.whatsapp}*</label>
                     <input
                       type="text"
                       value={editWhatsapp}

@@ -16,10 +16,13 @@ services:
       - key: STORAGE_MODE
         value: supabase
       - key: JWT_EXPIRES_IN
-        value: 7d
+        value: 24h
       - key: PORT
         value: 10000
       # Set these in Render Dashboard → Environment (secrets):
       # JWT_SECRET, SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
-      # FRONTEND_URL=https://your-frontend.vercel.app
-      # CORS_ORIGINS=capacitor://localhost,https://your-frontend.vercel.app
+      # ADMIN_EMAIL, ADMIN_PASSWORD (12+ chars, never admin123)
+      # FRONTEND_URL, CORS_ORIGINS
+      # IAP_VERIFY_MODE=trust-txid  # until real Apple/Google receipt verify is added
+      # Never commit backend/.env — rotate any key that was pasted into chat or zip files
+    

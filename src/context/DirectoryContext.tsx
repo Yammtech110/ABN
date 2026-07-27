@@ -13,6 +13,7 @@ import {
 } from '../data/mockData';
 import { resolveCategoryId } from '../utils/categoryMatch';
 import { resolveListingCoverUrl, resolveListingLogoUrl, resolveJobImageUrl } from '../utils/listingImages';
+import { networkErrorMessage, userFacingError } from '../utils/userFacingError';
 
 // ── Safe storage helpers ────────────────────────────────────────────────────
 // localStorage can throw (private browsing, quota exceeded, storage disabled).
@@ -238,7 +239,11 @@ interface DirectoryContextType {
 
   payments:       PaymentRecord[];
   refreshPayments: (token?: string | null, role?: UserRole) => Promise<void>;
-  renewMembership: (businessId: string, amount: number) => Promise<{ success: boolean; error?: string; payment?: PaymentRecord }>;
+  renewMembership: (businessId: string, amount: number, purchase?: {
+    transactionId?: string;
+    productId?: string;
+    platform?: string;
+  }) => Promise<{ success: boolean; error?: string; payment?: PaymentRecord }>;
 
   notifications:        AppNotification[];
   notificationsLoading: boolean;
@@ -518,7 +523,8 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       }
       if (Array.isArray(data.notifications)) setNotifications(data.notifications);
     } catch {
-      setNotificationsError('Cannot reach server. Make sure the backend is running.');
+      // Soft fail — keep cached notifications; apiFetch already retried
+      setNotificationsError('');
       console.warn('[ABN Directory] Could not load notifications from API.');
     } finally {
       setNotificationsLoading(false);
@@ -920,7 +926,10 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           needsEmailVerification: true,
           email: data.email || trimmedEmail,
           verificationCode: data.verificationCode,
-          error: data.error || 'Email not verified.',
+          error: userFacingError(
+            data.error || 'Please verify your email with the 6-digit code we sent you before signing in.',
+            { status: res.status, context: 'login' },
+          ),
         };
       }
 
@@ -929,7 +938,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         const profile = applyBackendSession(data.token, user);
         void addNotification(
           'Login Successful',
-          `Assalamu Alaykum, ${profile.name}. Welcome back!`,
+          `Welcome back, ${profile.name}! You're signed in.`,
           profile.role,
           true,
           profile.id,
@@ -947,13 +956,14 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       }
 
       // Backend responded — never fall through to Supabase (would wipe admin → customer)
-      return { success: false, error: data.error || 'Login failed.' };
+      return {
+        success: false,
+        error: userFacingError(data.error || 'Login failed.', { status: res.status, context: 'login' }),
+      };
     } catch {
       return {
         success: false,
-        error: isNativeApp()
-          ? 'Cannot reach server. Wait 60 seconds and try again — the cloud server may be waking up.'
-          : 'Cannot reach server. Check VITE_API_BASE_URL / backend.',
+        error: networkErrorMessage(),
       };
     }
   };
@@ -969,7 +979,10 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const trimmedPhone = payload.phone.trim();
 
     if (!trimmedName || !trimmedEmail || !trimmedPhone || !payload.password) {
-      return { success: false, error: 'All fields are required.' };
+      if (!trimmedName) return { success: false, error: 'Please enter your full name.' };
+      if (!trimmedEmail) return { success: false, error: 'Please enter your email address.' };
+      if (!trimmedPhone) return { success: false, error: 'Please enter your phone number.' };
+      return { success: false, error: 'Please enter a password (at least 10 characters).' };
     }
 
     try {
@@ -987,7 +1000,13 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       const data = await res.json();
 
       if (!res.ok) {
-        return { success: false, error: data.error || 'Registration failed.' };
+        return {
+          success: false,
+          error: userFacingError(data.error || 'Registration failed.', {
+            status: res.status,
+            context: 'register',
+          }),
+        };
       }
 
       if (data.needsEmailVerification) {
@@ -1008,12 +1027,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
       return { success: true };
     } catch {
-      return {
-        success: false,
-        error: isNativeApp()
-          ? 'Cannot reach server. Check mobile data/Wi‑Fi, then try again.'
-          : 'Cannot reach server. Make sure the backend is running.',
-      };
+      return { success: false, error: networkErrorMessage() };
     }
   };
 
@@ -1026,14 +1040,20 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       });
       const data = await res.json();
       if (!res.ok || !data.token) {
-        return { success: false, error: data.error || 'Verification failed.' };
+        return {
+          success: false,
+          error: userFacingError(data.error || 'Verification failed.', {
+            status: res.status,
+            context: 'login',
+          }),
+        };
       }
       applyBackendSession(data.token, data.user);
       await refreshDirectory();
       await refreshFavorites(data.token);
       return { success: true };
     } catch {
-      return { success: false, error: 'Cannot reach server.' };
+      return { success: false, error: networkErrorMessage() };
     }
   };
 
@@ -1045,10 +1065,18 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         body: JSON.stringify({ email: email.trim().toLowerCase() }),
       });
       const data = await res.json();
-      if (!res.ok) return { success: false, error: data.error || 'Could not resend code.' };
+      if (!res.ok) {
+        return {
+          success: false,
+          error: userFacingError(data.error || 'Could not resend code.', {
+            status: res.status,
+            context: 'login',
+          }),
+        };
+      }
       return { success: true, verificationCode: data.verificationCode };
     } catch {
-      return { success: false, error: 'Cannot reach server.' };
+      return { success: false, error: networkErrorMessage() };
     }
   };
 
@@ -1064,19 +1092,22 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         body: JSON.stringify({ email: trimmedEmail }),
       });
       const data = await res.json();
-      if (!res.ok) return { success: false, error: data.error || 'Could not send reset code.' };
+      if (!res.ok) {
+        return {
+          success: false,
+          error: userFacingError(data.error || 'Could not send reset code.', {
+            status: res.status,
+            context: 'login',
+          }),
+        };
+      }
       return {
         success: true,
         email: data.email || trimmedEmail,
         resetCode: data.resetCode,
       };
     } catch {
-      return {
-        success: false,
-        error: isNativeApp()
-          ? 'Cannot reach server. Wait 60 seconds and try again — the cloud server may be waking up.'
-          : 'Cannot reach server. Check VITE_API_BASE_URL / backend.',
-      };
+      return { success: false, error: networkErrorMessage() };
     }
   };
 
@@ -1092,11 +1123,17 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       });
       const data = await res.json();
       if (!res.ok || !data.resetToken) {
-        return { success: false, error: data.error || 'Invalid or expired code.' };
+        return {
+          success: false,
+          error: userFacingError(data.error || 'Invalid or expired code.', {
+            status: res.status,
+            context: 'login',
+          }),
+        };
       }
       return { success: true, resetToken: data.resetToken };
     } catch {
-      return { success: false, error: 'Cannot reach server.' };
+      return { success: false, error: networkErrorMessage() };
     }
   };
 
@@ -1121,7 +1158,13 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       });
       const data = await res.json();
       if (!res.ok || !data.token) {
-        return { success: false, error: data.error || 'Could not complete password reset.' };
+        return {
+          success: false,
+          error: userFacingError(data.error || 'Could not complete password reset.', {
+            status: res.status,
+            context: 'login',
+          }),
+        };
       }
       const profile = applyBackendSession(data.token, data.user);
       await refreshDirectory(profile);
@@ -1130,7 +1173,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       await syncMyDirectoryProfile(data.token, profile.email, profile.role);
       return { success: true };
     } catch {
-      return { success: false, error: 'Cannot reach server.' };
+      return { success: false, error: networkErrorMessage() };
     }
   };
 
@@ -1374,7 +1417,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     comment = '',
   ): Promise<{ success: boolean; error?: string }> => {
     if (!currentUser) {
-      return { success: false, error: 'You must be signed in to submit a review.' };
+      return { success: false, error: 'Sign in to submit a review.' };
     }
 
     if (apiToken) {
@@ -1389,7 +1432,13 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         });
         const data = await res.json();
         if (!res.ok) {
-          return { success: false, error: data.error || 'Failed to submit review.' };
+          return {
+            success: false,
+            error: userFacingError(data.error || 'Could not submit review.', {
+              status: res.status,
+              context: 'review',
+            }),
+          };
         }
         const review = data.review as Review;
         addReview(review);
@@ -1398,11 +1447,11 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         }
         return { success: true };
       } catch {
-        return { success: false, error: 'Cannot reach server. Make sure the backend is running.' };
+        return { success: false, error: networkErrorMessage() };
       }
     }
 
-    return { success: false, error: 'You must be signed in to submit a review.' };
+    return { success: false, error: 'Sign in to submit a review.' };
   };
 
   const replyToReview = async (
@@ -1410,7 +1459,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     reply: string,
   ): Promise<{ success: boolean; error?: string }> => {
     if (!apiToken) {
-      return { success: false, error: 'You must be signed in to reply.' };
+      return { success: false, error: 'Sign in to reply to a review.' };
     }
     try {
       const res = await apiFetch(`/api/reviews/${encodeURIComponent(reviewId)}/reply`, {
@@ -1423,13 +1472,19 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       });
       const data = await res.json();
       if (!res.ok) {
-        return { success: false, error: data.error || 'Failed to save reply.' };
+        return {
+          success: false,
+          error: userFacingError(data.error || 'Could not save reply.', {
+            status: res.status,
+            context: 'reply',
+          }),
+        };
       }
       const updated = data.review as Review;
       setReviews((prev) => prev.map((r) => (r.id === updated.id ? { ...r, ...updated } : r)));
       return { success: true };
     } catch {
-      return { success: false, error: 'Cannot reach server. Make sure the backend is running.' };
+      return { success: false, error: networkErrorMessage() };
     }
   };
 
@@ -1525,7 +1580,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const toggleFavorite = async (businessId: string): Promise<{ success: boolean; error?: string }> => {
     if (!apiToken) {
-      return { success: false, error: 'Sign in to save favorites to your account.' };
+      return { success: false, error: 'Sign in to save this listing to your favorites.' };
     }
 
     const wasFav = favorites.includes(businessId);
@@ -1540,13 +1595,19 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setFavorites((p) => (wasFav ? [...p, businessId] : p.filter((id) => id !== businessId)));
-        return { success: false, error: data.error || 'Could not update saved list.' };
+        return {
+          success: false,
+          error: userFacingError(data.error || 'Could not update saved list.', {
+            status: res.status,
+            context: 'favorite',
+          }),
+        };
       }
       setFavorites(applyFavoritesPayload(data));
       return { success: true };
     } catch {
       setFavorites((p) => (wasFav ? [...p, businessId] : p.filter((id) => id !== businessId)));
-      return { success: false, error: 'Cannot reach server. Make sure the backend is running.' };
+      return { success: false, error: networkErrorMessage() };
     }
   };
 
@@ -1574,6 +1635,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const renewMembership = async (
     businessId: string,
     amount: number,
+    purchase?: { transactionId?: string; productId?: string; platform?: string },
   ): Promise<{ success: boolean; error?: string; payment?: PaymentRecord }> => {
     if (!apiToken) {
       return { success: false, error: 'You must be signed in to renew membership.' };
@@ -1586,11 +1648,23 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           'Content-Type': 'application/json',
           Authorization: `Bearer ${apiToken}`,
         },
-        body: JSON.stringify({ businessId, amount }),
+        body: JSON.stringify({
+          businessId,
+          amount,
+          ...(purchase?.transactionId ? { transactionId: purchase.transactionId } : {}),
+          ...(purchase?.productId ? { productId: purchase.productId } : {}),
+          ...(purchase?.platform ? { platform: purchase.platform } : {}),
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
-        return { success: false, error: data.error || 'Payment could not be recorded.' };
+        return {
+          success: false,
+          error: userFacingError(data.error || 'Could not activate membership.', {
+            status: res.status,
+            context: 'generic',
+          }),
+        };
       }
 
       const payment = data.payment as PaymentRecord;
@@ -1616,7 +1690,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
       return { success: true, payment };
     } catch {
-      return { success: false, error: 'Could not reach payment service.' };
+      return { success: false, error: networkErrorMessage() };
     }
   };
 

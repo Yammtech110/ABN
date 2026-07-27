@@ -10,7 +10,7 @@
  *     still works out of the box.
  */
 
-const isProduction = process.env.NODE_ENV === 'production';
+const isProduction = process.env.NODE_ENV === 'production' || Boolean(process.env.RENDER);
 
 const DEV_FALLBACK_SECRET = 'dev-secret-change-in-production';
 
@@ -31,4 +31,12 @@ if (!JWT_SECRET || JWT_SECRET.trim().length === 0) {
   console.warn('[security] JWT_SECRET is shorter than 32 characters — consider a longer, high-entropy secret.');
 }
 
-module.exports = { JWT_SECRET };
+// Never log secret values. Warn if service-role style env looks accidentally empty in prod.
+if (isProduction && process.env.STORAGE_MODE === 'supabase') {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY.length < 20) {
+    console.error('[FATAL] SUPABASE_SERVICE_ROLE_KEY is missing or too short in production.');
+    process.exit(1);
+  }
+}
+
+module.exports = { JWT_SECRET, isProduction };
