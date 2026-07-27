@@ -769,6 +769,78 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }, [apiToken, currentUser?.email, currentUser?.role, syncMyDirectoryProfile]);
 
+  // ── Live auto-refresh (any account / listing / admin change) ─────────────
+  // Poll while the app/tab is visible, and refresh immediately on focus/resume
+  // so Home, Account, Admin, and notifications stay in sync without a manual tap.
+  const autoRefreshBusyRef = useRef(false);
+  const liveRefreshRef = useRef<() => Promise<void>>(async () => {});
+
+  liveRefreshRef.current = async () => {
+    if (!authReady) return;
+    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+    if (autoRefreshBusyRef.current) return;
+    autoRefreshBusyRef.current = true;
+    try {
+      await refreshDirectory(currentUser);
+      if (apiToken) {
+        await Promise.all([
+          refreshNotifications(apiToken),
+          refreshPayments(apiToken, currentUser?.role),
+        ]);
+      }
+    } catch {
+      // Next interval / focus will retry
+    } finally {
+      autoRefreshBusyRef.current = false;
+    }
+  };
+
+  useEffect(() => {
+    if (!authReady) return;
+
+    const run = () => {
+      void liveRefreshRef.current();
+    };
+
+    // First sync shortly after boot (covers cold opens / other device edits)
+    const bootTimer = window.setTimeout(run, 2_500);
+    const pollId = window.setInterval(run, 25_000);
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') run();
+    };
+    const onFocus = () => run();
+
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('focus', onFocus);
+
+    let removeAppListener: (() => void) | undefined;
+    if (isNativeApp()) {
+      void import('@capacitor/app')
+        .then(({ App }) =>
+          App.addListener('appStateChange', ({ isActive }) => {
+            if (isActive) run();
+          }),
+        )
+        .then((handle) => {
+          removeAppListener = () => {
+            void handle.remove();
+          };
+        })
+        .catch(() => {
+          /* web / plugin unavailable */
+        });
+    }
+
+    return () => {
+      window.clearTimeout(bootTimer);
+      window.clearInterval(pollId);
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('focus', onFocus);
+      removeAppListener?.();
+    };
+  }, [authReady]);
+
   // ── Auth functions ────────────────────────────────────────────────────────
 
   const signInWithOAuth = async (provider: 'google' | 'apple'): Promise<{ success: boolean; error?: string }> => {
