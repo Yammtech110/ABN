@@ -59,7 +59,7 @@ export const LEGAL_DOCS: Record<
       },
       {
         heading: 'Contact',
-        body: `Privacy questions: ${SUPPORT_EMAIL}`,
+        body: 'Privacy questions: use Contact Support in Account.',
       },
     ],
   },
@@ -93,7 +93,7 @@ export const LEGAL_DOCS: Record<
       },
       {
         heading: 'Contact',
-        body: `Legal: ${SUPPORT_EMAIL}`,
+        body: 'Legal questions: use Contact Support in Account.',
       },
     ],
   },
@@ -145,7 +145,7 @@ export const LEGAL_DOCS: Record<
       },
       {
         heading: 'How do I contact support?',
-        body: `Email ${SUPPORT_EMAIL} or use Contact Support in Account.`,
+        body: 'Open Account → Contact Support to email our team.',
       },
       {
         heading: 'How do I report abuse?',

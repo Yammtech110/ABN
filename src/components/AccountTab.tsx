@@ -23,7 +23,7 @@ import { EditProfileModal } from './EditProfileModal';
 import { canManageListing, canPostJobs, getUserListing, listingKind } from '../utils/listingAccess';
 import { countUnreadNotifications, filterNotificationsForUser } from '../utils/notifications';
 import { isNativeApp } from '../lib/oauth';
-import { LegalDocId, SUPPORT_MAILTO } from '../data/legalContent';
+import { LegalDocId, SUPPORT_EMAIL, SUPPORT_MAILTO } from '../data/legalContent';
 
 interface AccountTabProps {
   onSwitchTab: (tabId: string) => void;
@@ -338,11 +338,14 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
           className="w-full flex items-center justify-between p-4 hover:bg-stone-900/10 transition-colors group"
           id="row-contact-support"
         >
-          <span className="flex items-center gap-3 text-xs text-gray-300 font-semibold">
-            <Mail className="w-4.5 h-4.5 text-[#FFA048]" />
-            Contact Support
+          <span className="flex items-center gap-3 text-xs text-gray-300 font-semibold min-w-0">
+            <Mail className="w-4.5 h-4.5 text-[#FFA048] shrink-0" />
+            <span className="min-w-0 flex flex-col items-start gap-0.5">
+              <span>Contact Support</span>
+              <span className="text-[10px] font-medium text-[#FFA048]/90 truncate">{SUPPORT_EMAIL}</span>
+            </span>
           </span>
-          <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-white" />
+          <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-white shrink-0" />
         </a>
       </div>
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { LEGAL_DOCS, LegalDocId, SUPPORT_EMAIL } from '../data/legalContent';
+import { LEGAL_DOCS, LegalDocId } from '../data/legalContent';
 import { Lock, FileText, X } from 'lucide-react';
 
 interface LegalDocModalProps {
@@ -59,10 +59,6 @@ export const LegalDocModal: React.FC<LegalDocModalProps> = ({ docId, onClose }) 
               <p className="sheet-card-body text-[11px] leading-relaxed">{s.body}</p>
             </section>
           ))}
-        </div>
-
-        <div className="px-5 py-4 border-t border-[#2D2319]/80 sheet-panel-footer">
-          <p className="sheet-panel-meta text-[9px] text-center">{SUPPORT_EMAIL}</p>
         </div>
       </div>
     </div>

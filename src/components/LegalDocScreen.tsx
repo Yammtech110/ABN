@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { ArrowLeft, FileText, Lock } from 'lucide-react';
-import { LEGAL_DOCS, LegalDocId, SUPPORT_EMAIL } from '../data/legalContent';
+import { LEGAL_DOCS, LegalDocId } from '../data/legalContent';
 import { useBackHandler } from '../context/BackNavigationContext';
 
 interface LegalDocScreenProps {
@@ -50,8 +50,6 @@ export const LegalDocScreen: React.FC<LegalDocScreenProps> = ({ docId, onBack })
             <p className="page-card-body text-[11px] leading-relaxed">{s.body}</p>
           </section>
         ))}
-
-        <p className="page-meta text-[9px] text-center pt-2">{SUPPORT_EMAIL}</p>
       </div>
     </div>
   );
