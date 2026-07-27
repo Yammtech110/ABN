@@ -123,6 +123,19 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
   // Find business registered to current owner
   const [isSavingManage, setIsSavingManage] = useState(false);
   const [isDeletingListing, setIsDeletingListing] = useState(false);
+  const [showChangeRequest, setShowChangeRequest] = useState(false);
+  const [changeReqName, setChangeReqName] = useState('');
+  const [changeReqLogo, setChangeReqLogo] = useState<string[]>([]);
+  const [changeReqCover, setChangeReqCover] = useState<string[]>([]);
+  const [changeReqNote, setChangeReqNote] = useState('');
+  const [changeReqBusy, setChangeReqBusy] = useState(false);
+  const [changeReqError, setChangeReqError] = useState('');
+  const [changeReqSuccess, setChangeReqSuccess] = useState('');
+  const [pendingChangeRequest, setPendingChangeRequest] = useState<{
+    id: string;
+    proposedName?: string | null;
+    status: string;
+  } | null>(null);
 
   // Registration Flow State
   const [registrationType, setRegistrationType] = useState<'business' | 'service' | null>(null);
@@ -185,6 +198,33 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
       setRegCatId(myBusiness.categoryId);
     }
   }, [manageMode, myBusiness?.id, language, categories]);
+
+  // Load pending name/photo change request for this listing
+  React.useEffect(() => {
+    if (!manageMode || !myBusiness?.id || !apiToken) {
+      setPendingChangeRequest(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await apiFetch(`/api/change-requests/mine?businessId=${encodeURIComponent(myBusiness.id)}`, {
+          headers: { Authorization: `Bearer ${apiToken}` },
+        });
+        const data = await res.json().catch(() => ({}));
+        if (cancelled) return;
+        setPendingChangeRequest(data.request || null);
+        if (data.request) {
+          setChangeReqName(data.request.proposedName || myBusiness.name);
+        } else {
+          setChangeReqName(myBusiness.name);
+        }
+      } catch {
+        if (!cancelled) setPendingChangeRequest(null);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [manageMode, myBusiness?.id, apiToken]);
 
   // ── Bug #3 Fix: Edit form state — initialized empty, populated via useEffect ──
   const [editName, setEditName] = useState('');
@@ -429,9 +469,10 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
     const isServiceReg = registrationType === 'service';
     const photoRequiredMsg = isServiceReg ? t.servicePhotoRequired : t.photoRequired;
 
+    // Name/photos are locked after registration — validate other fields only
     const validationError = validateDirectoryRegistration(
       {
-        name: regName,
+        name: myBusiness.name,
         description: regDesc,
         state: regState,
         city: regCity,
@@ -440,10 +481,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
         operatingHours: regHours,
         phone: regPhone,
         whatsapp: regWhatsapp,
-        // Existing listings already have photos on the server — don't force re-upload
-        images: regImages.length > 0
-          ? regImages
-          : (myBusiness.logoUrl || myBusiness.coverUrl ? ['existing'] : []),
+        images: myBusiness.logoUrl || myBusiness.coverUrl || regImages.length > 0 ? ['existing'] : [],
         kind: registrationType,
       },
       {
@@ -464,8 +502,6 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
 
     const cat = categories.find((c) => c.id === regCatId);
     const categoryLabel = cat?.name.en || myBusiness.subcategory.en;
-    const uploadedLogo = regImages.find(isUsableUploadSrc);
-    const uploadedCover = regCoverImages.find(isUsableUploadSrc);
     const formattedPhone = isValidUSPhone(regPhone) ? `+${normalizeUSPhone(regPhone)}` : regPhone.trim();
 
     setIsSavingManage(true);
@@ -473,7 +509,11 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
 
     const updatedBiz: Business = {
       ...myBusiness,
-      name: regName,
+      // Keep locked identity fields
+      name: myBusiness.name,
+      logoUrl: myBusiness.logoUrl,
+      coverUrl: myBusiness.coverUrl,
+      gallery: myBusiness.gallery,
       description: bilingualEn(regDesc),
       subcategory: { en: regState, ar: regState },
       categoryId: regCatId,
@@ -484,11 +524,6 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
       whatsapp: regWhatsapp.trim() || formattedPhone,
       website: regWeb,
       workingHours: bilingualEn(regHours),
-      logoUrl: uploadedLogo || myBusiness.logoUrl,
-      coverUrl: uploadedCover || uploadedLogo || myBusiness.coverUrl,
-      gallery: regImages.filter(isUsableUploadSrc).length > 0
-        ? regImages.filter(isUsableUploadSrc)
-        : myBusiness.gallery,
     };
 
     updateBusiness(updatedBiz);
@@ -496,7 +531,6 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
     if (apiToken) {
       try {
         const body: Record<string, unknown> = {
-          businessName: regName,
           category: regCatId || categoryLabel,
           description: regDesc,
           address: regAddress,
@@ -507,13 +541,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
           website: regWeb,
           workingHours: regHours,
         };
-        if (uploadedLogo) {
-          body.imageUrl = uploadedLogo;
-        }
-        if (uploadedCover || uploadedLogo) {
-          body.coverUrl = uploadedCover || uploadedLogo;
-        }
-        await apiFetch(`/api/directory/${myBusiness.id}`, {
+        const res = await apiFetch(`/api/directory/${myBusiness.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -521,6 +549,12 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
           },
           body: JSON.stringify(body),
         });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          setRegError(data.error || 'Could not update listing.');
+          setIsSavingManage(false);
+          return;
+        }
         await refreshDirectory();
       } catch {
         console.warn('[ABN] Could not sync listing update to server.');
@@ -533,26 +567,82 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
     setTimeout(() => setRegSuccess(''), 4000);
   };
 
-  // Profile update submit
+  const handleSubmitChangeRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!myBusiness || !apiToken) return;
+    setChangeReqError('');
+    setChangeReqSuccess('');
+
+    const proposedName = changeReqName.trim();
+    const uploadedLogo = changeReqLogo.find(isUsableUploadSrc);
+    const uploadedCover = changeReqCover.find(isUsableUploadSrc);
+    const nameChanged = proposedName && proposedName !== myBusiness.name.trim();
+
+    if (!nameChanged && !uploadedLogo && !uploadedCover) {
+      setChangeReqError(
+        language === 'en'
+          ? 'Enter a new name and/or upload a new logo or cover photo.'
+          : 'أدخل اسماً جديداً و/أو ارفع شعاراً أو صورة غلاف جديدة.',
+      );
+      return;
+    }
+
+    setChangeReqBusy(true);
+    try {
+      const body: Record<string, unknown> = {
+        businessId: myBusiness.id,
+        note: changeReqNote.trim(),
+      };
+      if (nameChanged) body.proposedName = proposedName;
+      if (uploadedLogo) body.proposedImageUrl = uploadedLogo;
+      if (uploadedCover) body.proposedCoverUrl = uploadedCover;
+
+      const res = await apiFetch('/api/change-requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiToken}`,
+        },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setChangeReqError(data.error || 'Could not submit change request.');
+        if (data.request) setPendingChangeRequest(data.request);
+        setChangeReqBusy(false);
+        return;
+      }
+      setPendingChangeRequest(data.request || { id: 'pending', status: 'pending', proposedName: proposedName || null });
+      setChangeReqSuccess(
+        language === 'en'
+          ? 'Request sent to admin. Name/photos update after approval.'
+          : 'تم إرسال الطلب للمشرف. يتحدث الاسم/الصور بعد الموافقة.',
+      );
+      setChangeReqLogo([]);
+      setChangeReqCover([]);
+      setChangeReqNote('');
+      setShowChangeRequest(false);
+    } catch {
+      setChangeReqError(language === 'en' ? 'Cannot reach server.' : 'تعذر الاتصال بالخادم.');
+    }
+    setChangeReqBusy(false);
+  };
+
+  // Profile update submit — name/photos locked; other fields only
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!myBusiness) return;
 
-    const uploadedLogo = editImages.find(isUsableUploadSrc);
-    const uploadedCover = editImages.filter(isUsableUploadSrc)[1] || (isUsableUploadSrc(editCover) ? editCover : '');
-
     const updatedBiz: Business = {
       ...myBusiness,
-      name: editName,
+      name: myBusiness.name,
+      logoUrl: myBusiness.logoUrl,
+      coverUrl: myBusiness.coverUrl,
+      gallery: myBusiness.gallery,
       description: bilingualEn(editDesc),
       phone: editPhone,
       whatsapp: editWhatsapp,
       workingHours: bilingualEn(editHours),
-      logoUrl: uploadedLogo || myBusiness.logoUrl,
-      coverUrl: uploadedCover || uploadedLogo || myBusiness.coverUrl,
-      gallery: editImages.filter(isUsableUploadSrc).length > 0
-        ? editImages.filter(isUsableUploadSrc)
-        : myBusiness.gallery,
     };
 
     updateBusiness(updatedBiz);
@@ -560,14 +650,11 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
     if (apiToken) {
       try {
         const body: Record<string, unknown> = {
-          businessName: editName,
           description: editDesc,
           phone: editPhone,
           whatsapp: editWhatsapp,
           workingHours: editHours,
         };
-        if (uploadedLogo) body.imageUrl = uploadedLogo;
-        if (uploadedCover || uploadedLogo) body.coverUrl = uploadedCover || uploadedLogo;
         await apiFetch(`/api/directory/${myBusiness.id}`, {
           method: 'PUT',
           headers: {
@@ -820,7 +907,9 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
               </h2>
               <p className="text-[10px] text-gray-500 font-medium">
                 {isManageForm
-                  ? (language === 'en' ? 'Update your directory listing details below.' : 'حدّث بيانات إدراجك في الدليل أدناه.')
+                  ? (language === 'en'
+                    ? 'Update contact & location below. Name and photos need admin approval to change.'
+                    : 'حدّث بيانات التواصل والموقع. تغيير الاسم والصور يحتاج موافقة المشرف.')
                   : (language === 'en'
                     ? `Reach Shia community customers directly for $${registrationType === 'business' ? '50' : '30'}/month.`
                     : `انضم لدليل أعمال المجتمع وتواصل مع آلاف الزبائن بقيمة ${registrationType === 'business' ? '50$' : '30$'} شهرياً.`)}
@@ -837,11 +926,13 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
               id="reg-image-upload"
               images={regImages}
               onChange={(next) => {
+                if (isManageForm) return;
                 setRegImages(next);
                 if (next.length > 0) setRegPhotoError('');
               }}
               language={language}
-              required
+              required={!isManageForm}
+              readOnly={isManageForm}
               errorMessage={regPhotoError}
               label={
                 registrationType === 'business'
@@ -849,9 +940,13 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                   : (language === 'en' ? 'Service provider photo' : 'صورة مزود الخدمة')
               }
               hint={
-                language === 'en'
-                  ? 'Up to 5 images · First image is your profile logo.'
-                  : 'حتى 5 صور · الصورة الأولى هي الشعار.'
+                isManageForm
+                  ? (language === 'en'
+                    ? 'Locked after registration — request a change below for admin approval.'
+                    : 'مقفل بعد التسجيل — اطلب التغيير أدناه لموافقة المشرف.')
+                  : (language === 'en'
+                    ? 'Up to 5 images · First image is your profile logo.'
+                    : 'حتى 5 صور · الصورة الأولى هي الشعار.')
               }
             />
 
@@ -859,18 +954,26 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
             <ImageUploadGrid
               id="reg-cover-upload"
               images={regCoverImages}
-              onChange={setRegCoverImages}
+              onChange={(next) => {
+                if (isManageForm) return;
+                setRegCoverImages(next);
+              }}
               language={language}
               maxImages={1}
+              readOnly={isManageForm}
               label={
                 language === 'en'
                   ? 'Background / cover photo (banner)'
                   : 'صورة الخلفية / الغلاف'
               }
               hint={
-                language === 'en'
-                  ? 'Wide banner shown at the top of your listing. Optional — if empty, your logo is used.'
-                  : 'بانر عريض أعلى صفحة نشاطك. اختياري — إن تُرك فارغاً يُستخدم الشعار.'
+                isManageForm
+                  ? (language === 'en'
+                    ? 'Cover photo is locked — use the change request below.'
+                    : 'صورة الغلاف مقفلة — استخدم طلب التغيير أدناه.')
+                  : (language === 'en'
+                    ? 'Wide banner shown at the top of your listing. Optional — if empty, your logo is used.'
+                    : 'بانر عريض أعلى صفحة نشاطك. اختياري — إن تُرك فارغاً يُستخدم الشعار.')
               }
             />
 
@@ -878,19 +981,35 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
               <div className={registrationType === 'business' ? '' : 'w-full'}>
                 <label className="block text-xs text-gray-400 mb-1">
                   {registrationType === 'business' ? t.businessName : t.serviceProviderName}*
+                  {isManageForm && (
+                    <span className="ml-1 text-[9px] text-amber-500/90 font-bold uppercase tracking-wide">
+                      {language === 'en' ? '(locked)' : '(مقفل)'}
+                    </span>
+                  )}
                 </label>
-                <input
-                  type="text"
-                  value={regName}
-                  onChange={(e) => setRegName(e.target.value)}
-                  placeholder={
-                    registrationType === 'business'
-                      ? (language === 'en' ? 'e.g. Al-Kawthar Grocery' : 'مثال: بقالة الكوثر')
-                      : (language === 'en' ? 'e.g. Hassan Al-Rashid' : 'مثال: حسن الراشد')
-                  }
-                  className="w-full p-2.5 rounded-xl bg-[#0F0E0C] border border-[#2D2319] text-xs text-white outline-none focus:border-[#FFA048]"
-                  required
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={regName}
+                    onChange={(e) => {
+                      if (isManageForm) return;
+                      setRegName(e.target.value);
+                    }}
+                    readOnly={isManageForm}
+                    placeholder={
+                      registrationType === 'business'
+                        ? (language === 'en' ? 'e.g. Al-Kawthar Grocery' : 'مثال: بقالة الكوثر')
+                        : (language === 'en' ? 'e.g. Hassan Al-Rashid' : 'مثال: حسن الراشد')
+                    }
+                    className={`w-full p-2.5 rounded-xl bg-[#0F0E0C] border border-[#2D2319] text-xs text-white outline-none focus:border-[#FFA048] ${
+                      isManageForm ? 'opacity-80 cursor-not-allowed pr-9' : ''
+                    }`}
+                    required
+                  />
+                  {isManageForm && (
+                    <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-amber-500/80" />
+                  )}
+                </div>
               </div>
 
               {registrationType === 'business' && (
@@ -911,6 +1030,114 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                 </div>
               )}
             </div>
+
+            {isManageForm && (
+              <div className="p-4 rounded-2xl bg-[#1C130D]/80 border border-amber-900/40 space-y-3" id="listing-change-request-panel">
+                <div className="flex items-start gap-2">
+                  <Lock className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-extrabold text-amber-300 uppercase tracking-wide">
+                      {language === 'en' ? 'Name & photos need admin approval' : 'الاسم والصور تحتاج موافقة المشرف'}
+                    </p>
+                    <p className="text-[10px] text-gray-400 mt-1 leading-relaxed">
+                      {language === 'en'
+                        ? 'After registration you cannot change your listing name or pictures yourself. Send a request and an admin will approve or decline it.'
+                        : 'بعد التسجيل لا يمكنك تغيير الاسم أو الصور بنفسك. أرسل طلباً ليوافق المشرف أو يرفضه.'}
+                    </p>
+                  </div>
+                </div>
+
+                {pendingChangeRequest?.status === 'pending' && (
+                  <p className="text-[10px] font-bold text-[#FFA048] bg-black/30 rounded-xl px-3 py-2 border border-[#2D2319]">
+                    {language === 'en'
+                      ? `Pending admin review${pendingChangeRequest.proposedName ? ` · proposed name: ${pendingChangeRequest.proposedName}` : ''}`
+                      : `بانتظار مراجعة المشرف${pendingChangeRequest.proposedName ? ` · الاسم المقترح: ${pendingChangeRequest.proposedName}` : ''}`}
+                  </p>
+                )}
+
+                {changeReqSuccess && (
+                  <p className="text-[10px] text-green-300 bg-green-950/40 border border-green-900/50 rounded-xl px-3 py-2">{changeReqSuccess}</p>
+                )}
+                {changeReqError && (
+                  <p className="text-[10px] text-red-300 bg-red-950/40 border border-red-900/50 rounded-xl px-3 py-2">{changeReqError}</p>
+                )}
+
+                {pendingChangeRequest?.status !== 'pending' && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowChangeRequest((v) => !v);
+                        setChangeReqError('');
+                        setChangeReqName(myBusiness?.name || '');
+                      }}
+                      className="w-full py-2.5 rounded-xl border border-[#FFA048]/40 bg-[#FFA048]/10 hover:bg-[#FFA048]/20 text-[#FFA048] text-[10px] font-extrabold uppercase tracking-wider transition-all"
+                      id="btn-toggle-change-request"
+                    >
+                      {showChangeRequest
+                        ? (language === 'en' ? 'Hide change request' : 'إخفاء طلب التغيير')
+                        : (language === 'en' ? 'Request name / photo change' : 'طلب تغيير الاسم / الصورة')}
+                    </button>
+
+                    {showChangeRequest && (
+                      <div className="space-y-3 pt-1 border-t border-[#2D2319]" id="change-request-form">
+                        <div>
+                          <label className="block text-[10px] text-gray-400 mb-1">
+                            {language === 'en' ? 'Proposed name (optional)' : 'الاسم المقترح (اختياري)'}
+                          </label>
+                          <input
+                            type="text"
+                            value={changeReqName}
+                            onChange={(e) => setChangeReqName(e.target.value)}
+                            className="w-full p-2.5 rounded-xl bg-[#0F0E0C] border border-[#2D2319] text-xs text-white outline-none focus:border-[#FFA048]"
+                          />
+                        </div>
+                        <ImageUploadGrid
+                          id="change-req-logo"
+                          images={changeReqLogo}
+                          onChange={setChangeReqLogo}
+                          language={language}
+                          maxImages={1}
+                          label={language === 'en' ? 'New logo (optional)' : 'شعار جديد (اختياري)'}
+                          hint={language === 'en' ? 'Upload only if you want a new logo.' : 'ارفع فقط إذا أردت شعاراً جديداً.'}
+                        />
+                        <ImageUploadGrid
+                          id="change-req-cover"
+                          images={changeReqCover}
+                          onChange={setChangeReqCover}
+                          language={language}
+                          maxImages={1}
+                          label={language === 'en' ? 'New cover photo (optional)' : 'غلاف جديد (اختياري)'}
+                        />
+                        <div>
+                          <label className="block text-[10px] text-gray-400 mb-1">
+                            {language === 'en' ? 'Note to admin (optional)' : 'ملاحظة للمشرف (اختياري)'}
+                          </label>
+                          <textarea
+                            value={changeReqNote}
+                            onChange={(e) => setChangeReqNote(e.target.value)}
+                            rows={2}
+                            className="w-full p-2.5 rounded-xl bg-[#0F0E0C] border border-[#2D2319] text-xs text-white outline-none focus:border-[#FFA048]"
+                            placeholder={language === 'en' ? 'Why are you changing this?' : 'لماذا تريد التغيير؟'}
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          disabled={changeReqBusy}
+                          onClick={(e) => void handleSubmitChangeRequest(e as unknown as React.FormEvent)}
+                          className="w-full py-2.5 rounded-xl bg-[#FFA048] text-black text-[10px] font-extrabold uppercase tracking-wider disabled:opacity-50"
+                          id="btn-submit-change-request"
+                        >
+                          {changeReqBusy
+                            ? (language === 'en' ? 'Sending…' : 'جارٍ الإرسال…')
+                            : (language === 'en' ? 'Send request to admin' : 'إرسال الطلب للمشرف')}
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
 
             <div>
               <label className="block text-xs text-gray-400 mb-1">{t.description}*</label>
@@ -1271,14 +1498,25 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
 
               <form onSubmit={handleProfileUpdate} className="space-y-4" id="form-edit-biz">
                 <div>
-                  <label className="block text-xs text-gray-450 mb-1">{t.businessName}</label>
-                  <input
-                    type="text"
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                    className="w-full p-2.5 rounded-xl bg-[#0F0E0C] border border-[#2D2319] text-xs text-[#F4E3D7]"
-                    required
-                  />
+                  <label className="block text-xs text-gray-450 mb-1">
+                    {t.businessName}
+                    <span className="ml-1 text-[9px] text-amber-500 font-bold uppercase">(locked)</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={editName}
+                      readOnly
+                      className="w-full p-2.5 rounded-xl bg-[#0F0E0C] border border-[#2D2319] text-xs text-[#F4E3D7] opacity-80 cursor-not-allowed pr-9"
+                      required
+                    />
+                    <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-amber-500/80" />
+                  </div>
+                  <p className="mt-1 text-[9px] text-gray-500">
+                    {language === 'en'
+                      ? 'Use Manage listing → Request name / photo change for admin approval.'
+                      : 'استخدم إدارة الإدراج ← طلب تغيير الاسم/الصورة لموافقة المشرف.'}
+                  </p>
                 </div>
 
                 <div>
@@ -1321,11 +1559,12 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                   images={editImages}
                   onChange={setEditImages}
                   language={language}
-                  label={language === 'en' ? 'Business logo / photos*' : 'شعار / صور النشاط*'}
+                  readOnly
+                  label={language === 'en' ? 'Business logo / photos' : 'شعار / صور النشاط'}
                   hint={
                     language === 'en'
-                      ? 'First image is your profile logo.'
-                      : 'الصورة الأولى هي الشعار.'
+                      ? 'Locked. Request a photo change from Manage listing.'
+                      : 'مقفل. اطلب تغيير الصورة من إدارة الإدراج.'
                   }
                 />
 
@@ -1336,6 +1575,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                   onChange={(next) => setEditCover(next[0] || '')}
                   language={language}
                   maxImages={1}
+                  readOnly
                   label={
                     language === 'en'
                       ? 'Background / cover photo (banner)'
@@ -1343,8 +1583,8 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                   }
                   hint={
                     language === 'en'
-                      ? 'Wide banner at the top of your listing page.'
-                      : 'بانر عريض أعلى صفحة نشاطك.'
+                      ? 'Locked. Request a cover change from Manage listing.'
+                      : 'مقفل. اطلب تغيير الغلاف من إدارة الإدراج.'
                   }
                 />
 

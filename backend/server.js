@@ -127,6 +127,9 @@ app.use('/api/favorites', require('./routes/favorites'));
 // Community integrity reports — flagged listings
 app.use('/api/reports', require('./routes/reports'));
 
+// Listing name / photo change requests (owner → admin approval)
+app.use('/api/change-requests', require('./routes/changeRequests'));
+
 // Categories + notifications + device push tokens
 app.use('/api/categories', require('./routes/categories'));
 app.use('/api/notifications', require('./routes/notifications'));
@@ -179,6 +182,7 @@ app.get('/api', (_req, res) => {
       payments:  '/api/payments  — GET /  GET /ledger  GET /mine  POST /renew',
       favorites: '/api/favorites — GET /  POST /:businessId  DELETE /:businessId',
       reports:   '/api/reports   — GET /  POST /  PATCH /:id/resolve',
+      changeRequests: '/api/change-requests — GET /  GET /mine  POST /  POST /:id/approve  POST /:id/reject',
       notifications: '/api/notifications — GET /  POST /  PATCH /read-all  DELETE /',
       devices:   '/api/devices   — POST /register  DELETE /register (FCM push tokens)',
       health:    '/api/health    — GET /',

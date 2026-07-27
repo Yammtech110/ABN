@@ -118,6 +118,23 @@ export const AdminPanelTab: React.FC = () => {
   const [reportsError, setReportsError] = useState('');
   const [reportFilter, setReportFilter] = useState<'all' | 'open' | 'resolved'>('open');
 
+  type ChangeRequestRow = {
+    id: string;
+    businessId: string;
+    currentName: string;
+    proposedName: string | null;
+    proposedImageUrl: string | null;
+    proposedCoverUrl: string | null;
+    note: string;
+    status: 'pending' | 'approved' | 'rejected';
+    ownerEmail: string;
+    date: string;
+  };
+  const [changeRequests, setChangeRequests] = useState<ChangeRequestRow[]>([]);
+  const [changeReqLoading, setChangeReqLoading] = useState(false);
+  const [changeReqError, setChangeReqError] = useState('');
+  const [changeReqBusyId, setChangeReqBusyId] = useState<string | null>(null);
+
   const [adminJobs, setAdminJobs] = useState<Job[]>([]);
   const [jobsLoading, setJobsLoading] = useState(false);
   const [jobsError, setJobsError] = useState('');
@@ -133,8 +150,86 @@ export const AdminPanelTab: React.FC = () => {
       refreshDirectory(currentUser);
       refreshPayments(apiToken, 'admin');
       loadIntegrityReports();
+      loadChangeRequests();
     }
   }, [isAdmin]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const loadChangeRequests = async () => {
+    if (!apiToken) return;
+    setChangeReqLoading(true);
+    setChangeReqError('');
+    try {
+      const res = await apiFetch('/api/change-requests?status=pending', {
+        headers: { Authorization: `Bearer ${apiToken}` },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setChangeReqError(data.error || 'Failed to load change requests.');
+        setChangeRequests([]);
+        return;
+      }
+      setChangeRequests(Array.isArray(data.requests) ? data.requests : []);
+    } catch {
+      setChangeReqError('Cannot reach server.');
+      setChangeRequests([]);
+    } finally {
+      setChangeReqLoading(false);
+    }
+  };
+
+  const approveChangeRequest = async (req: ChangeRequestRow) => {
+    if (!apiToken) return;
+    setChangeReqBusyId(req.id);
+    try {
+      const res = await apiFetch(`/api/change-requests/${req.id}/approve`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiToken}`,
+        },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        showAdminToast(data.error || 'Could not approve request.');
+        return;
+      }
+      setChangeRequests((prev) => prev.filter((r) => r.id !== req.id));
+      await refreshDirectory(currentUser);
+      showAdminToast(`Approved name/photo change for ${req.currentName}.`);
+    } catch {
+      showAdminToast('Cannot reach server.');
+    } finally {
+      setChangeReqBusyId(null);
+    }
+  };
+
+  const rejectChangeRequest = async (req: ChangeRequestRow) => {
+    if (!apiToken) return;
+    const note = window.prompt('Optional note to owner (why declined):') || '';
+    setChangeReqBusyId(req.id);
+    try {
+      const res = await apiFetch(`/api/change-requests/${req.id}/reject`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiToken}`,
+        },
+        body: JSON.stringify({ adminNotes: note }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        showAdminToast(data.error || 'Could not reject request.');
+        return;
+      }
+      setChangeRequests((prev) => prev.filter((r) => r.id !== req.id));
+      showAdminToast(`Declined change request for ${req.currentName}.`);
+    } catch {
+      showAdminToast('Cannot reach server.');
+    } finally {
+      setChangeReqBusyId(null);
+    }
+  };
 
   const loadDirectoryUsers = async () => {
     if (!apiToken) return;
@@ -806,6 +901,89 @@ export const AdminPanelTab: React.FC = () => {
               <Award className="w-10 h-10 text-green-500 absolute right-3 top-3 opacity-10" />
               <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">Active Listings</p>
               <h3 className="text-xl font-black text-green-400">{activePaidListings.length}</h3>
+            </div>
+          </div>
+
+          {/* Name / photo change requests from listing owners */}
+          <div className="p-4 rounded-3xl bg-[#13110E] border border-amber-900/40 space-y-3" id="admin-change-requests">
+            <div className="flex items-center justify-between gap-2">
+              <h4 className="text-xs font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                <AlertTriangle className="w-4 h-4" />
+                Name / Photo Change Requests
+                {!changeReqLoading && (
+                  <span className="text-[9px] text-gray-500 font-bold normal-case">({changeRequests.length} pending)</span>
+                )}
+              </h4>
+              <button
+                type="button"
+                onClick={() => void loadChangeRequests()}
+                className="text-[9px] font-bold text-[#FFA048] hover:underline"
+              >
+                Refresh
+              </button>
+            </div>
+            {changeReqLoading && <p className="text-[10px] text-gray-500 text-center py-2">Loading…</p>}
+            {changeReqError && <p className="text-[10px] text-red-400">{changeReqError}</p>}
+            {!changeReqLoading && !changeReqError && changeRequests.length === 0 && (
+              <p className="text-[10px] text-gray-500 text-center py-2">
+                No pending name or photo change requests.
+              </p>
+            )}
+            <div className="space-y-2">
+              {changeRequests.map((req) => (
+                <div key={req.id} className="p-3 rounded-xl bg-[#0F0E0C] border border-[#2D2319] space-y-2 text-xs">
+                  <div className="flex justify-between gap-2 text-[9px] text-gray-500">
+                    <span>{req.date}</span>
+                    <span className="text-amber-400 font-bold uppercase">Pending</span>
+                  </div>
+                  <p>
+                    <strong className="text-white">Listing:</strong> {req.currentName}
+                    {req.ownerEmail ? ` · ${req.ownerEmail}` : ''}
+                  </p>
+                  {req.proposedName && (
+                    <p>
+                      <strong className="text-[#FFA048]">New name:</strong> {req.proposedName}
+                    </p>
+                  )}
+                  {(req.proposedImageUrl || req.proposedCoverUrl) && (
+                    <div className="flex gap-2 flex-wrap">
+                      {req.proposedImageUrl && (
+                        <div className="space-y-1">
+                          <span className="text-[9px] text-gray-500 block">New logo</span>
+                          <img src={req.proposedImageUrl} alt="Proposed logo" className="w-16 h-16 rounded-lg object-cover border border-[#2D2319]" />
+                        </div>
+                      )}
+                      {req.proposedCoverUrl && (
+                        <div className="space-y-1">
+                          <span className="text-[9px] text-gray-500 block">New cover</span>
+                          <img src={req.proposedCoverUrl} alt="Proposed cover" className="h-16 max-w-[140px] rounded-lg object-cover border border-[#2D2319]" />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {req.note && (
+                    <p className="text-[11px] text-gray-400">Note: &quot;{req.note}&quot;</p>
+                  )}
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      type="button"
+                      disabled={changeReqBusyId === req.id}
+                      onClick={() => void approveChangeRequest(req)}
+                      className="px-2.5 py-1 text-[9px] font-bold rounded bg-green-600/20 text-green-400 hover:bg-green-600/30 disabled:opacity-50"
+                    >
+                      Approve
+                    </button>
+                    <button
+                      type="button"
+                      disabled={changeReqBusyId === req.id}
+                      onClick={() => void rejectChangeRequest(req)}
+                      className="px-2.5 py-1 text-[9px] font-bold rounded bg-red-600/20 text-red-400 hover:bg-red-600/30 disabled:opacity-50"
+                    >
+                      Decline
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 

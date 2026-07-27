@@ -19,6 +19,8 @@ interface ImageUploadGridProps {
   errorMessage?: string | null;
   /** Max images for this grid (default 5). Use 1 for cover/background. */
   maxImages?: number;
+  /** When true, show images only — no add/remove (locked listing photos). */
+  readOnly?: boolean;
 }
 
 export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
@@ -31,6 +33,7 @@ export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
   required = false,
   errorMessage = null,
   maxImages = MAX_UPLOAD_IMAGES,
+  readOnly = false,
 }) => {
   const limit = Math.max(1, Math.min(maxImages, MAX_UPLOAD_IMAGES));
   const countMessage = maxCountMessage(limit);
@@ -123,16 +126,16 @@ export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
   };
 
   const slots = Array.from({ length: limit }, (_, i) => images[i] ?? null);
-  const canAddMore = images.length < limit;
+  const canAddMore = !readOnly && images.length < limit;
 
   return (
     <div id={id}>
       {label && (
         <label className="block text-xs text-gray-400 mb-2">
           {label}
-          {required && <span className="text-[#FFA048] ml-0.5">*</span>}
+          {required && !readOnly && <span className="text-[#FFA048] ml-0.5">*</span>}
           <span className="ml-1 text-[10px] text-gray-600">
-            ({images.length}/{limit})
+            ({images.length}/{limit}{readOnly ? (language === 'en' ? ' · locked' : ' · مقفل') : ''})
           </span>
         </label>
       )}
@@ -149,7 +152,7 @@ export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
 
       <div className={`grid gap-2 ${limit === 1 ? 'grid-cols-1' : 'grid-cols-5'}`} id={`${id}-grid`}>
         {slots.map((src, index) => {
-          const isAddSlot = !src && index === images.length && canAddMore;
+          const isAddSlot = !readOnly && !src && index === images.length && canAddMore;
           const isEmptySlot = !src && !isAddSlot;
           const tileAspect = limit === 1 ? 'aspect-[2/1] w-full max-w-md' : 'aspect-square';
 
@@ -191,6 +194,7 @@ export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
               className={`relative ${tileAspect} rounded-xl bg-[#0F0E0C] border border-[#2D2319] overflow-hidden group`}
             >
               <img src={src!} alt={`Upload ${index + 1}`} className="w-full h-full object-cover" />
+              {!readOnly && (
               <button
                 type="button"
                 onClick={() => removeImage(index)}
@@ -199,6 +203,7 @@ export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
               >
                 <X className="w-3 h-3" />
               </button>
+              )}
               {index === 0 && (
                 <span className="absolute bottom-0 inset-x-0 bg-[#FFA048]/90 text-[7px] font-extrabold text-black text-center py-0.5">
                   {language === 'en' ? (limit === 1 ? 'COVER' : 'MAIN') : (limit === 1 ? 'غلاف' : 'رئيسية')}

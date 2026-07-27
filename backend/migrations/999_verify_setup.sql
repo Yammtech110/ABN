@@ -20,6 +20,7 @@ from (
     ('membership_payments'),
     ('user_favorites'),
     ('listing_reports'),
+    ('listing_change_requests'),
     ('directory_categories'),
     ('app_notifications'),
     ('user_blocks')

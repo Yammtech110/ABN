@@ -304,12 +304,29 @@ router.put('/:id', authenticate, async (req, res, next) => {
       subscriptionStatus, isVerified,
     } = req.body;
 
+    const isAdmin = req.user.role === 'admin';
+    // Owners cannot change name/logo/cover directly — use /api/change-requests
+    if (!isAdmin) {
+      const wantsName =
+        businessName !== undefined &&
+        String(businessName).trim() !== String(existing.businessName || '').trim();
+      const wantsLogo = imageUrl !== undefined && typeof imageUrl === 'string' && imageUrl.startsWith('data:image/');
+      const wantsCover = coverUrl !== undefined && typeof coverUrl === 'string' && coverUrl.startsWith('data:image/');
+      if (wantsName || wantsLogo || wantsCover) {
+        return res.status(403).json({
+          error:
+            'Name and photos cannot be changed directly. Submit a change request for admin approval.',
+          code: 'CHANGE_REQUEST_REQUIRED',
+        });
+      }
+    }
+
     let updated = { ...existing };
-    if (businessName       !== undefined) updated.businessName       = businessName;
+    if (businessName !== undefined && isAdmin) updated.businessName = businessName;
     if (category           !== undefined) updated.category           = category;
     if (description        !== undefined) updated.description        = description;
-    if (imageUrl           !== undefined) updated.imageUrl           = normalizeIncomingImage(imageUrl, existing.imageUrl);
-    if (coverUrl           !== undefined) updated.coverUrl           = normalizeIncomingImage(coverUrl, existing.coverUrl);
+    if (imageUrl !== undefined && isAdmin) updated.imageUrl = normalizeIncomingImage(imageUrl, existing.imageUrl);
+    if (coverUrl !== undefined && isAdmin) updated.coverUrl = normalizeIncomingImage(coverUrl, existing.coverUrl);
     if (address            !== undefined) updated.address            = address;
     if (area               !== undefined) updated.area               = area;
     if (city               !== undefined) updated.city               = city;
@@ -319,8 +336,8 @@ router.put('/:id', authenticate, async (req, res, next) => {
     if (workingHours       !== undefined) updated.workingHours       = workingHours;
     if (membershipExpiry   !== undefined) updated.membershipExpiry   = membershipExpiry;
     // Only admins may change trust/billing state — non-admins silently skip these fields
-    if (subscriptionStatus !== undefined && req.user.role === 'admin') updated.subscriptionStatus = subscriptionStatus;
-    if (isVerified         !== undefined && req.user.role === 'admin') updated.isVerified         = isVerified;
+    if (subscriptionStatus !== undefined && isAdmin) updated.subscriptionStatus = subscriptionStatus;
+    if (isVerified         !== undefined && isAdmin) updated.isVerified         = isVerified;
 
     const logoChanged =
       (imageUrl !== undefined && updated.imageUrl !== existing.imageUrl) ||
