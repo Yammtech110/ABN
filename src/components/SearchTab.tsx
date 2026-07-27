@@ -15,15 +15,14 @@ interface SearchTabProps {
   onSwitchTab: (tabId: string) => void;
 }
 
-const CITIES: ('All' | 'New York' | 'Los Angeles' | 'Chicago' | 'Houston' | 'Miami' | 'Dearborn' | 'Dallas')[] = [
-  'All',
+const FALLBACK_CITIES = [
   'New York',
   'Los Angeles',
   'Chicago',
   'Houston',
   'Miami',
   'Dearborn',
-  'Dallas'
+  'Dallas',
 ];
 
 // ── Open Now helper (shared logic) ───────────────────────────
@@ -82,8 +81,16 @@ export const SearchTab: React.FC<SearchTabProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const [selectedCity, setSelectedCity] = useState<'All' | 'New York' | 'Los Angeles' | 'Chicago' | 'Houston' | 'Miami' | 'Dearborn' | 'Dallas'>('All');
+  const [selectedCity, setSelectedCity] = useState<string>('All');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
+
+  const CITIES = useMemo(() => {
+    const fromListings = businesses
+      .filter(isLiveDirectoryListing)
+      .map((b) => b.city)
+      .filter(Boolean);
+    return ['All', ...Array.from(new Set([...FALLBACK_CITIES, ...fromListings])).sort((a, b) => a.localeCompare(b))];
+  }, [businesses]);
 
   // Debounce search input by 300ms
   useEffect(() => {

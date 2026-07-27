@@ -32,7 +32,7 @@ export interface Business {
   subcategory: { en: string; ar: string };
   listingType?: ListingType;
   address: string;
-  city: 'New York' | 'Los Angeles' | 'Chicago' | 'Houston' | 'Miami' | 'Dearborn' | 'Dallas';
+  city: string;
   area: string;
   isVerified: boolean;
   status: BusinessStatus;

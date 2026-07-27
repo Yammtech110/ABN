@@ -165,14 +165,21 @@ export const HomeTab: React.FC<HomeTabProps> = ({
   const [apiResults, setApiResults] = useState<Business[] | null>(null);
   const [isSearching, setIsSearching] = useState(false);
 
-  const CITY_KEYS = [
-    { key: 'all', label: t.allCities },
-    { key: 'New York', label: t.newyork },
-    { key: 'Los Angeles', label: t.losangeles },
-    { key: 'Chicago', label: t.chicago },
-    { key: 'Houston', label: t.houston },
-    { key: 'Miami', label: t.miami },
-  ];
+  const CITY_KEYS = useMemo(() => {
+    const fromListings = businesses
+      .filter(isLiveDirectoryListing)
+      .map((b) => b.city)
+      .filter(Boolean);
+    const popular = ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Miami', 'Dearborn', 'Dallas'];
+    const cities = Array.from(new Set([...popular, ...fromListings])).sort((a, b) => a.localeCompare(b));
+    return [
+      { key: 'all', label: t.allCities },
+      ...cities.map((city) => ({
+        key: city,
+        label: (t[city.replace(/\s+/g, '').toLowerCase() as keyof typeof t] as string) || city,
+      })),
+    ];
+  }, [businesses, t]);
 
   // ── Live API search: fires when search text or city changes ──────────────
   // Falls back to local filtering silently if backend is unreachable.

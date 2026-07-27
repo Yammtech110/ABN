@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { Business, PaymentRecord } from '../types';
 import { US_STATES } from '../data/usStates';
+import { citiesForState, cityBelongsToState } from '../data/usCitiesByState';
 import {
   formatUSPhoneInput,
   formatZipInput,
@@ -1159,7 +1160,14 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
               <label className="block text-xs app-label mb-1">{t.state}*</label>
               <select
                 value={regState}
-                onChange={(e) => setRegState(e.target.value)}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  setRegState(next);
+                  // Clear city if it does not belong to the newly selected state
+                  if (regCity && !cityBelongsToState(regCity, next)) {
+                    setRegCity('');
+                  }
+                }}
                 className="w-full p-2.5 rounded-xl border text-xs app-field outline-none focus:border-[#FFA048]"
                 required
               >
@@ -1178,17 +1186,24 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                 <select
                   value={regCity}
                   onChange={(e) => setRegCity(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border text-xs app-field outline-none focus:border-[#FFA048]"
+                  disabled={!regState}
+                  className="w-full p-2.5 rounded-xl border text-xs app-field outline-none focus:border-[#FFA048] disabled:opacity-50 disabled:cursor-not-allowed"
                   required
                 >
-                  <option value="" disabled>{language === 'en' ? 'Select City' : 'اختر المدينة'}</option>
-                  <option value="New York">{t.newyork}</option>
-                  <option value="Los Angeles">{t.losangeles}</option>
-                  <option value="Chicago">{t.chicago}</option>
-                  <option value="Houston">{t.houston}</option>
-                  <option value="Miami">{t.miami}</option>
-                  <option value="Dearborn">{t.dearborn}</option>
-                  <option value="Dallas">{t.dallas}</option>
+                  <option value="">
+                    {!regState
+                      ? (language === 'en' ? 'Select state first…' : 'أولاً اختر الولاية…')
+                      : (language === 'en' ? 'Select city…' : 'اختر المدينة…')}
+                  </option>
+                  {citiesForState(regState).map((cityName) => (
+                    <option key={cityName} value={cityName}>
+                      {cityName}
+                    </option>
+                  ))}
+                  {/* Keep current city selectable if managing an older listing with a city not in the list */}
+                  {regCity && regState && !cityBelongsToState(regCity, regState) && (
+                    <option value={regCity}>{regCity}</option>
+                  )}
                 </select>
               </div>
               <div>
