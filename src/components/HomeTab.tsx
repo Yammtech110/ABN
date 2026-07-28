@@ -606,6 +606,22 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           </div>
         </section>
 
+        {/* Register CTA — directly under Featured Businesses */}
+        {currentUser &&
+          !businesses.some((b) => b.ownerId === currentUser?.id || b.ownerId === currentUser?.email) && (
+          <button
+            onClick={() => onSwitchTab('business')}
+            className="w-full p-4 rounded-2xl bg-gradient-to-r from-[#1B5BFF] to-[#0B3FCC] text-white shadow-lg flex items-center justify-between"
+            id="btn-register-banner"
+          >
+            <div className="text-left">
+              <h2 className="text-sm font-black text-white">Register as a Business / Service Provider</h2>
+              <p className="text-[11px] font-semibold text-white/90">Join the community directory today</p>
+            </div>
+            <ArrowRight className="w-5 h-5 text-white" />
+          </button>
+        )}
+
         {/* Browse Businesses */}
         <section id="home-categories-block">
           <div className="flex items-center justify-between mb-3">
@@ -618,17 +634,15 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               See all <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
-          <div className="grid grid-cols-4 gap-3" id="home-categories-scroll">
+          <div className="grid grid-cols-4 gap-y-4 gap-x-2" id="home-categories-scroll">
             {categoryGrid.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => handleCategoryClick(cat.id)}
-                className="flex flex-col items-center gap-1.5 text-center"
+                className="flex flex-col items-center gap-1.5 text-center bg-transparent border-0 shadow-none p-0"
                 id={`cat-card-${cat.id}`}
               >
-                <div className="w-12 h-12 flex items-center justify-center">
-                  {renderCategoryIcon(cat.iconName, 'w-7 h-7 text-[#1B5BFF]')}
-                </div>
+                {renderCategoryIcon(cat.iconName, 'w-7 h-7 text-[#1B5BFF]')}
                 <span className="text-[10px] font-semibold text-[#0A1B4A] leading-tight line-clamp-2 w-full">
                   {cat.name.en}
                 </span>
@@ -636,12 +650,10 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             ))}
             <button
               onClick={() => onSwitchTab('search')}
-              className="flex flex-col items-center gap-1.5 text-center"
+              className="flex flex-col items-center gap-1.5 text-center bg-transparent border-0 shadow-none p-0"
               id="cat-card-more"
             >
-              <div className="w-12 h-12 flex items-center justify-center">
-                <Grid3X3 className="w-7 h-7 text-[#1B5BFF]" strokeWidth={2} />
-              </div>
+              <Grid3X3 className="w-7 h-7 text-[#1B5BFF]" strokeWidth={2} />
               <span className="text-[10px] font-semibold text-[#0A1B4A]">More</span>
             </button>
           </div>
@@ -666,9 +678,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               Post a Job <ArrowRight className="w-3.5 h-3.5 text-white" />
             </button>
           </div>
-          <div className="w-[72px] h-[72px] rounded-2xl bg-[#EEF3FF] border border-blue-100 flex items-center justify-center flex-shrink-0">
-            <Briefcase className="w-8 h-8 text-[#1B5BFF]" />
-          </div>
+          <Briefcase className="w-9 h-9 text-[#1B5BFF] flex-shrink-0" />
         </section>
 
         {/* Find the Right Talent */}
@@ -685,15 +695,13 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             <button
               type="button"
               onClick={() => onSwitchTab('job-board')}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-white text-white text-[11px] font-extrabold hover:bg-white/10"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-white bg-transparent text-white text-[11px] font-extrabold"
               id="btn-see-all-jobs"
             >
-              Explore Jobs <ArrowRight className="w-3.5 h-3.5" />
+              Explore Jobs <ArrowRight className="w-3.5 h-3.5 text-white" />
             </button>
           </div>
-          <div className="w-16 h-16 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0">
-            <Search className="w-7 h-7 text-[#8EB6FF]" />
-          </div>
+          <Search className="w-8 h-8 text-[#8EB6FF] flex-shrink-0" />
         </section>
 
         {activeJobs.length > 0 && (
@@ -708,7 +716,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                   id={`home-job-card-${job.id}`}
                 >
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-xl overflow-hidden bg-[#EEF3FF] border border-blue-100 flex-shrink-0">
+                    <div className="w-8 h-8 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
                       <BusinessThumbnail
                         business={{ id: job.businessId, name: job.businessName, logoUrl: job.imageUrl || job.businessLogoUrl }}
                         className="w-full h-full object-cover"
@@ -741,12 +749,12 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               <button
                 type="button"
                 onClick={() => onSwitchTab('search')}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-[#1B5BFF] text-[#1B5BFF] text-[11px] font-extrabold"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-[#1B5BFF] text-[#1B5BFF] text-[11px] font-extrabold bg-transparent"
               >
                 Learn More
               </button>
             </div>
-            <div className="relative w-[132px] h-[132px] flex-shrink-0" id="home-community-handshake">
+            <div className="relative w-[132px] h-[132px] flex-shrink-0 bg-transparent" id="home-community-handshake">
               <svg viewBox="0 0 132 132" className="absolute inset-0 w-full h-full" aria-hidden>
                 <circle cx="66" cy="66" r="54" fill="none" stroke="#D7E0EA" strokeWidth="1" strokeDasharray="3 4" />
                 <line x1="66" y1="66" x2="66" y2="18" stroke="#B8C9E8" strokeWidth="1" />
@@ -769,7 +777,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               ].map((n) => (
                 <span
                   key={n.label}
-                  className={`absolute ${n.style} text-[7px] font-bold text-[#1B5BFF] bg-[#EEF3FF] border border-blue-100 px-1 py-0.5 rounded whitespace-nowrap`}
+                  className={`absolute ${n.style} text-[7px] font-bold text-[#1B5BFF] whitespace-nowrap`}
                 >
                   {n.label}
                 </span>
@@ -777,22 +785,6 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             </div>
           </div>
         </section>
-
-        {/* Register CTA — after mockup sections */}
-        {currentUser &&
-          !businesses.some((b) => b.ownerId === currentUser?.id || b.ownerId === currentUser?.email) && (
-          <button
-            onClick={() => onSwitchTab('business')}
-            className="w-full p-4 rounded-2xl bg-gradient-to-r from-[#1B5BFF] to-[#0B3FCC] text-white shadow-lg flex items-center justify-between"
-            id="btn-register-banner"
-          >
-            <div className="text-left">
-              <h2 className="text-sm font-black text-white">Register as a Business / Service Provider</h2>
-              <p className="text-[11px] font-semibold text-white/90">Join the community directory today</p>
-            </div>
-            <ArrowRight className="w-5 h-5 text-white" />
-          </button>
-        )}
       </div>
     </div>
   );

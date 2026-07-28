@@ -204,15 +204,15 @@ html.light #btn-post-job-cta svg {
   color: #FFFFFF !important;
 }
 
-/* See All Jobs — white pill, navy label */
+/* See All Jobs / Explore Jobs — keep transparent; override old white pill */
 html.light #btn-see-all-jobs,
 html.light #btn-see-all-jobs svg {
-  background-color: #FFFFFF !important;
-  color: #0A1B4A !important;
+  background-color: transparent !important;
+  color: #FFFFFF !important;
 }
 html.light #btn-see-all-jobs .text-\[\#1B5BFF\],
 html.light #btn-see-all-jobs svg.text-\[\#1B5BFF\] {
-  color: #1B5BFF !important;
+  color: #FFFFFF !important;
 }
 
 /* Stronger Together handshake — white on navy */
@@ -361,22 +361,26 @@ html.light .account-role-badge-admin {
   border-color: #FDBA74 !important;
 }
 
-/* ── Category cards ─────────────────────────────────────── */
+/* Category browse — no white tile boxes behind icons */
 html.light #home-categories-scroll button {
-  background: linear-gradient(to bottom, #FFFFFF, #F9FAFB) !important;
-  border-color: var(--color-border) !important;
-  box-shadow: var(--shadow-sm) !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 html.light #home-categories-scroll button:hover {
-  border-color: rgba(249,115,22,0.4) !important;
-  background: linear-gradient(to bottom, #FFF7ED, #FFFFFF) !important;
-}
-html.light #home-categories-scroll .bg-\[\#201B15\] {
-  background-color: #FFF7ED !important;
-  border-color: #FED7AA !important;
+  background: transparent !important;
+  border: none !important;
 }
 html.light #home-categories-scroll span {
-  color: #374151 !important;
+  color: #0A1B4A !important;
+}
+
+/* Explore Jobs — outlined on navy banner (not solid white search-like pill) */
+html.light #btn-see-all-jobs,
+html.light #btn-see-all-jobs svg {
+  background-color: transparent !important;
+  border: 1.5px solid #FFFFFF !important;
+  color: #FFFFFF !important;
 }
 
 /* ── Business list-item cards ────────────────────────────── */
