@@ -278,11 +278,29 @@ html.light .bg-\[\#201B15\] {
   border-color: #FED7AA !important;
 }
 
-/* ── Legacy dark city pills only (do NOT wipe all rounded buttons) ─ */
-html.light .bg-\[\#13110E\].rounded-full {
-  background-color: #F8FAFC !important;
-  border-color: var(--color-border) !important;
-  color: #475569 !important;
+/* Active city chip — white label on navy (escape light .text-white remap) */
+html.light #home-city-filter .city-pill-active,
+html.light #home-city-filter .city-pill-active span,
+html.light #home-city-filter .city-pill-active svg,
+html.light #home-city-filter .city-pill[data-active="true"],
+html.light #home-city-filter .city-pill[data-active="true"] span,
+html.light #home-city-filter .city-pill[data-active="true"] svg {
+  color: #FFFFFF !important;
+}
+html.light #home-city-filter .city-pill-active .city-pill-count,
+html.light #home-city-filter .city-pill[data-active="true"] .city-pill-count {
+  background-color: #00A859 !important;
+  color: #FFFFFF !important;
+}
+html.light #home-city-filter .city-pill:not([data-active="true"]) {
+  color: #0B2545 !important;
+}
+html.light #home-city-filter .city-pill:not([data-active="true"]) svg {
+  color: #00A859 !important;
+}
+html.light #home-city-filter .city-pill:not([data-active="true"]) .city-pill-count {
+  background-color: #ECFDF5 !important;
+  color: #00A859 !important;
 }
 
 /* Theme-safe on/off switch (Hiring Active, etc.) */
