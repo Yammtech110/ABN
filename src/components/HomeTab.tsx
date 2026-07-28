@@ -409,11 +409,11 @@ export const HomeTab: React.FC<HomeTabProps> = ({
   }
 
   return (
-    <div className="space-y-5 pb-4" id="home-tab-container">
+    <div className="pb-4" id="home-tab-container">
 
-      {/* ── Hero ─────────────────────────────────────────────── */}
+      {/* ── Hero (full-bleed) ────────────────────────────────── */}
       <section
-        className="relative overflow-hidden rounded-[28px] px-4 pt-3 pb-5 animate-fade-in-up min-h-[280px]"
+        className="relative overflow-hidden px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-6 animate-fade-in-up min-h-[300px]"
         id="home-hero"
         style={{
           background:
@@ -469,6 +469,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         </div>
       </section>
 
+      <div className="space-y-5 px-4 pt-4">
       {/* ── Search ───────────────────────────────────────────── */}
       <form
         onSubmit={handleSearchSubmit}
@@ -846,6 +847,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           ))}
         </div>
       </section>
+      </div>
     </div>
   );
 };
