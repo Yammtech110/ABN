@@ -224,17 +224,24 @@ export const HomeTab: React.FC<HomeTabProps> = ({
   );
 
   const CITY_KEYS = useMemo(() => {
-    const fromListings = liveListings.map((b) => b.city).filter(Boolean);
-    const popular = ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Miami', 'Dearborn', 'Dallas'];
-    const cities = Array.from(new Set([...popular, ...fromListings])).sort((a, b) => a.localeCompare(b));
+    const withListings = Array.from(
+      new Set(liveListings.map((b) => b.city).filter(Boolean)),
+    ).sort((a, b) => a.localeCompare(b));
     return [
       { key: 'all', label: t.allCities },
-      ...cities.map((city) => ({
+      ...withListings.map((city) => ({
         key: city,
         label: (t[city.replace(/\s+/g, '').toLowerCase() as keyof typeof t] as string) || city,
       })),
     ];
   }, [liveListings, t]);
+
+  React.useEffect(() => {
+    if (selectedCity === 'all') return;
+    if (!CITY_KEYS.some((c) => c.key === selectedCity)) {
+      setSelectedCity('all');
+    }
+  }, [CITY_KEYS, selectedCity]);
 
   const searchTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   React.useEffect(() => {
@@ -774,55 +781,6 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             ))}
           </div>
         </div>
-      )}
-
-      {(apiResults !== null || inputSearch.trim() || selectedCity !== 'all') && (
-        <section className="space-y-3 animate-fade-in-up" id="home-listings-block">
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="text-[15px] font-extrabold text-[#0B2545]">
-              {apiResults !== null ? 'Search Results' : t.allBusinesses}
-            </h3>
-            {apiResults !== null && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-[#00A859] border border-emerald-200">
-                {activeBusinesses.length} found
-              </span>
-            )}
-          </div>
-          <div className="space-y-3" id="home-all-listings-list">
-            {activeBusinesses.map((biz) => {
-              const isOpen = isBusinessOpenNow(biz.workingHours.en);
-              return (
-                <div
-                  key={biz.id}
-                  onClick={() => onSelectBusiness(biz)}
-                  className="flex items-center gap-3.5 p-3 rounded-[20px] bg-white border border-[#D7E0EA] shadow-sm hover:border-[#00A859]/35 transition-all cursor-pointer"
-                  id={`list-item-${biz.id}`}
-                >
-                  <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 border border-[#D7E0EA] flex-shrink-0">
-                    <BusinessThumbnail business={biz} eager />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-xs font-black text-[#0B2545] truncate">{biz.name}</h4>
-                    <p className="text-[10px] text-slate-500 capitalize mt-0.5">{textEn(biz.subcategory)}</p>
-                    <span className="text-[9px] text-slate-500 flex items-center gap-0.5 mt-1">
-                      <MapPin className="w-3 h-3 text-[#00A859]" />
-                      {biz.city}{biz.area ? ` (${biz.area})` : ''}
-                    </span>
-                  </div>
-                  <div className="text-right flex flex-col items-end gap-1 flex-shrink-0">
-                    {biz.isVerified && <CheckCircle className="w-3.5 h-3.5 text-sky-500" />}
-                    <span className="text-[10px] font-black text-amber-500">★ {biz.rating}</span>
-                    {isOpen !== null && (
-                      <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded ${isOpen ? 'badge-open' : 'badge-closed'}`}>
-                        {isOpen ? 'Open' : 'Closed'}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
       )}
 
       {/* ── Stronger Together ────────────────────────────────── */}
