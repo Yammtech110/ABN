@@ -480,10 +480,10 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           id="btn-register-banner"
         >
           <div className="text-left">
-            <h2 className="text-base font-black">Register as a Business / Service Provider</h2>
-            <p className="text-xs font-semibold opacity-90">Join the community directory today</p>
+            <h2 className="text-base font-black text-white">Register as a Business / Service Provider</h2>
+            <p className="text-xs font-semibold text-white/95">Join the community directory today</p>
           </div>
-          <ArrowRight className="w-5 h-5" />
+          <ArrowRight className="w-5 h-5 text-white" />
         </button>
       )}
 
@@ -494,17 +494,20 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         style={{ animationDelay: '0.05s' }}
         id="home-search-form"
       >
-        <div className="relative flex items-center bg-white rounded-full border border-[#D7E0EA] shadow-[0_8px_24px_rgba(11,37,69,0.08)] px-1.5 py-1.5">
+        <div
+          className="relative flex items-center bg-white rounded-[22px] border-2 border-[#00A859] shadow-[0_8px_24px_rgba(11,37,69,0.08)] px-1.5 py-1.5"
+          id="home-search-box"
+        >
           {isSearching
             ? <span className="absolute left-4 w-4 h-4 border-2 border-[#00A859] border-t-transparent rounded-full animate-spin" />
-            : <Search className="absolute left-4 w-4 h-4 text-slate-400" />
+            : <Search className="absolute left-4 w-4 h-4 text-[#00A859]" />
           }
           <input
             type="text"
             value={inputSearch}
             onChange={(e) => { setInputSearch(e.target.value); if (!e.target.value.trim()) setApiResults(null); }}
             placeholder="Search businesses, services or professionals..."
-            className="w-full pl-10 pr-[7.5rem] py-2.5 bg-transparent text-[13px] text-[#0B2545] placeholder:text-slate-400 outline-none"
+            className="w-full pl-10 pr-[7.5rem] py-2.5 bg-transparent text-[13px] text-[#0B2545] placeholder:text-slate-500 outline-none rounded-[18px]"
             id="home-search-input"
           />
           <button
@@ -515,7 +518,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               setSearchQueryText(query);
               onSwitchTab('search');
             }}
-            className="absolute right-1.5 px-3 py-2 rounded-full bg-[#00A859] text-white font-bold text-[11px] flex items-center gap-1 shadow-sm hover:bg-[#008C4A] transition-colors"
+            className="absolute right-1.5 px-3 py-2 rounded-[14px] bg-[#00A859] text-white font-bold text-[11px] flex items-center gap-1 shadow-sm hover:bg-[#008C4A] transition-colors"
             id="home-location-badge-btn"
           >
             <MapPin className="w-3.5 h-3.5" />
@@ -717,9 +720,9 @@ export const HomeTab: React.FC<HomeTabProps> = ({
       >
         <div className="flex-1 min-w-0">
           <h3 className="text-[15px] font-extrabold text-white leading-snug mb-1">
-            Find the right talent. <span className="text-[#00A859]">Grow your business.</span>
+            Find the right talent. <span className="text-[#5DFFB0]">Grow your business.</span>
           </h3>
-          <p className="text-[11px] text-white/70 mb-3">
+          <p className="text-[11px] text-white/85 mb-3">
             {activeJobs.length > 0
               ? `${activeJobs.length} active opening${activeJobs.length === 1 ? '' : 's'} right now.`
               : 'Browse community job openings and apply by email.'}
@@ -733,7 +736,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             See All Jobs <ArrowRight className="w-3.5 h-3.5 text-[#00A859]" />
           </button>
         </div>
-        <div className="w-16 h-16 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0">
+        <div className="w-16 h-16 rounded-2xl bg-white/15 border border-white/25 flex items-center justify-center flex-shrink-0">
           <Briefcase className="w-7 h-7 text-white" />
         </div>
       </section>

@@ -168,10 +168,51 @@ html.light .text-gray-600 {
   color: #64748B !important;
 }
 
-/* Home-tab section headings */
+/* Home-tab section headings — dark banners keep light text */
 html.light #home-tab-container h1,
 html.light #home-tab-container h3 {
   color: #0F172A !important;
+}
+html.light #home-jobs-banner h3,
+html.light #home-jobs-banner p,
+html.light #home-jobs-banner .text-white,
+html.light #home-jobs-banner svg {
+  color: #FFFFFF !important;
+}
+html.light #home-jobs-banner .text-\[\#5DFFB0\],
+html.light #home-jobs-banner span.text-\[\#5DFFB0\] {
+  color: #5DFFB0 !important;
+}
+html.light #home-jobs-banner .text-white\/85,
+html.light #home-jobs-banner .text-white\/70 {
+  color: rgba(255, 255, 255, 0.88) !important;
+}
+
+/* Green CTAs keep white text in light mode */
+html.light #btn-register-banner,
+html.light #btn-register-banner h2,
+html.light #btn-register-banner p,
+html.light #btn-register-banner svg,
+html.light #btn-post-job-cta,
+html.light #btn-post-job-cta svg {
+  color: #FFFFFF !important;
+}
+
+/* Curved green search box — keep rounded corners */
+html.light #home-search-box {
+  border-radius: 22px !important;
+  border: 2px solid #00A859 !important;
+  background-color: #FFFFFF !important;
+}
+html.light #home-search-box #home-location-badge-btn {
+  border-radius: 14px !important;
+  background-color: #00A859 !important;
+  color: #FFFFFF !important;
+}
+html.light #home-search-input {
+  border-color: transparent !important;
+  background-color: transparent !important;
+  color: #0B2545 !important;
 }
 
 /* Brand orange remapped → emerald in light mode */

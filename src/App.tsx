@@ -201,7 +201,7 @@ function BottomNav({
 
   const tabClass = (active: boolean) =>
     `flex flex-col items-center justify-center flex-1 py-2 transition-all ${
-      active ? 'text-[#00A859] scale-105 font-black' : 'text-slate-400 hover:text-[#0B2545]'
+      active ? 'text-[#00A859] scale-105 font-black' : 'text-slate-600 hover:text-[#0B2545]'
     }`;
 
   return (
