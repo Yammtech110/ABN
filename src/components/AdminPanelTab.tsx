@@ -709,9 +709,9 @@ export const AdminPanelTab: React.FC = () => {
 
   if (isNativeApp()) {
     return (
-      <div className="p-8 text-center rounded-3xl bg-[#13110E] border border-[#2D2319] text-gray-400" id="admin-web-only-state">
-        <ShieldAlert className="w-12 h-12 text-[#FFA048] mx-auto mb-3" />
-        <h3 className="text-sm font-black text-[#FFA048] uppercase tracking-widest">{t.adminPanel}</h3>
+      <div className="p-8 text-center rounded-3xl bg-white border border-[#D7E0EA] text-gray-400" id="admin-web-only-state">
+        <ShieldAlert className="w-12 h-12 text-[#00A859] mx-auto mb-3" />
+        <h3 className="text-sm font-black text-[#00A859] uppercase tracking-widest">{t.adminPanel}</h3>
         <p className="text-xs text-gray-500 mt-2 max-w-sm mx-auto leading-relaxed">
           The admin panel is available only on the web app. Approvals and changes you make there appear automatically in the Android and iOS apps.
         </p>
@@ -721,7 +721,7 @@ export const AdminPanelTab: React.FC = () => {
 
   if (!isAdmin) {
     return (
-      <div className="p-8 text-center rounded-3xl bg-[#13110E] border border-red-950/40 text-gray-400" id="admin-forbidden-state">
+      <div className="p-8 text-center rounded-3xl bg-white border border-red-950/40 text-gray-400" id="admin-forbidden-state">
         <ShieldAlert className="w-12 h-12 text-red-500 mx-auto mb-3" />
         <h3 className="text-sm font-black text-red-400 uppercase tracking-widest">{t.adminPanel} Restricted</h3>
         <p className="text-xs text-gray-500 mt-2 max-w-sm mx-auto leading-relaxed">
@@ -847,10 +847,10 @@ export const AdminPanelTab: React.FC = () => {
     <div className="space-y-6" id="admin-panel-container">
       
       {/* Title */}
-      <div className="pb-1.5 border-b border-[#2D2319] flex justify-between items-center" id="admin-main-header">
+      <div className="pb-1.5 border-b border-[#D7E0EA] flex justify-between items-center" id="admin-main-header">
         <div>
-          <h2 className="text-xl font-extrabold text-[#F4E3D7] flex items-center gap-2">
-            <Sliders className="w-5 h-5 text-[#FFA048]" />
+          <h2 className="text-xl font-extrabold text-[#0B2545] flex items-center gap-2">
+            <Sliders className="w-5 h-5 text-[#00A859]" />
             {t.adminTitle}
           </h2>
           <p className="text-[10px] text-gray-500 font-medium">Platform-wide control, dues audit, and directory indexing</p>
@@ -858,18 +858,18 @@ export const AdminPanelTab: React.FC = () => {
       </div>
 
       {adminToast && (
-        <div className="px-4 py-2.5 rounded-xl bg-green-950/40 border border-green-800/50 text-green-300 text-xs font-semibold flex items-center gap-2 animate-scale-up">
+        <div className="px-4 py-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-[#008C4A] text-xs font-semibold flex items-center gap-2 animate-scale-up">
           <CheckCircle className="w-4 h-4 shrink-0" />
           {adminToast}
         </div>
       )}
 
       {/* Internal Navigation tabs */}
-      <div className="grid grid-cols-6 gap-1 p-1 rounded-2xl bg-[#13110E] border border-[#2D2319]" id="admin-segment-bar">
+      <div className="grid grid-cols-6 gap-1 p-1 rounded-2xl bg-white border border-[#D7E0EA]" id="admin-segment-bar">
         <button
           onClick={() => setAdminTab('biz')}
           className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
-            adminTab === 'biz' ? 'bg-[#FFA048] text-black shadow-md' : 'text-gray-400 hover:text-[#F4E3D7]'
+            adminTab === 'biz' ? 'bg-[#00A859] text-white shadow-md' : 'text-gray-400 hover:text-[#0B2545]'
           }`}
         >
           <Award className="w-4 h-4" />
@@ -884,7 +884,7 @@ export const AdminPanelTab: React.FC = () => {
         <button
           onClick={() => setAdminTab('pay')}
           className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
-            adminTab === 'pay' ? 'bg-[#FFA048] text-black shadow-md' : 'text-gray-400 hover:text-[#F4E3D7]'
+            adminTab === 'pay' ? 'bg-[#00A859] text-white shadow-md' : 'text-gray-400 hover:text-[#0B2545]'
           }`}
         >
           <DollarSign className="w-4 h-4" />
@@ -894,7 +894,7 @@ export const AdminPanelTab: React.FC = () => {
         <button
           onClick={() => setAdminTab('jobs')}
           className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
-            adminTab === 'jobs' ? 'bg-[#FFA048] text-black shadow-md' : 'text-gray-400 hover:text-[#F4E3D7]'
+            adminTab === 'jobs' ? 'bg-[#00A859] text-white shadow-md' : 'text-gray-400 hover:text-[#0B2545]'
           }`}
         >
           <Briefcase className="w-4 h-4" />
@@ -909,7 +909,7 @@ export const AdminPanelTab: React.FC = () => {
         <button
           onClick={() => setAdminTab('cat')}
           className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
-            adminTab === 'cat' ? 'bg-[#FFA048] text-black shadow-md' : 'text-gray-400 hover:text-[#F4E3D7]'
+            adminTab === 'cat' ? 'bg-[#00A859] text-white shadow-md' : 'text-gray-400 hover:text-[#0B2545]'
           }`}
         >
           <Grid className="w-4 h-4" />
@@ -919,7 +919,7 @@ export const AdminPanelTab: React.FC = () => {
         <button
           onClick={() => setAdminTab('users')}
           className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
-            adminTab === 'users' ? 'bg-[#FFA048] text-black shadow-md' : 'text-gray-400 hover:text-[#F4E3D7]'
+            adminTab === 'users' ? 'bg-[#00A859] text-white shadow-md' : 'text-gray-400 hover:text-[#0B2545]'
           }`}
         >
           <Users className="w-4 h-4" />
@@ -934,7 +934,7 @@ export const AdminPanelTab: React.FC = () => {
         <button
           onClick={() => setAdminTab('log')}
           className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
-            adminTab === 'log' ? 'bg-[#FFA048] text-black shadow-md' : 'text-gray-400 hover:text-[#F4E3D7]'
+            adminTab === 'log' ? 'bg-[#00A859] text-white shadow-md' : 'text-gray-400 hover:text-[#0B2545]'
           }`}
         >
           <ScrollText className="w-4 h-4" />
@@ -948,32 +948,32 @@ export const AdminPanelTab: React.FC = () => {
           
           {/* Financial Controls Analytics */}
           <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="bg-[#1C1914] border border-[#2D2319] p-4 rounded-2xl relative overflow-hidden">
-              <DollarSign className="w-10 h-10 text-[#FFA048] absolute right-3 top-3 opacity-10" />
+            <div className="bg-[#F8FAFC] border border-[#D7E0EA] p-4 rounded-2xl relative overflow-hidden">
+              <DollarSign className="w-10 h-10 text-[#00A859] absolute right-3 top-3 opacity-10" />
               <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">Collected Revenue</p>
-              <h3 className="text-xl font-black text-white">{formatUsd(platformRevenue)}</h3>
+              <h3 className="text-xl font-black text-[#0B2545]">{formatUsd(platformRevenue)}</h3>
             </div>
-            <div className="bg-[#1C1914] border border-[#2D2319] p-4 rounded-2xl relative overflow-hidden">
+            <div className="bg-[#F8FAFC] border border-[#D7E0EA] p-4 rounded-2xl relative overflow-hidden">
               <Award className="w-10 h-10 text-green-500 absolute right-3 top-3 opacity-10" />
               <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">Active Listings</p>
-              <h3 className="text-xl font-black text-green-400">{activePaidListings.length}</h3>
+              <h3 className="text-xl font-black text-[#00A859]">{activePaidListings.length}</h3>
             </div>
           </div>
 
           {/* Name / photo change requests from listing owners */}
-          <div className="p-4 rounded-3xl bg-[#13110E] border border-amber-900/40 space-y-3" id="admin-change-requests">
+          <div className="p-4 rounded-3xl bg-white border border-amber-200 space-y-3" id="admin-change-requests">
             <div className="flex items-center justify-between gap-2">
-              <h4 className="text-xs font-black uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+              <h4 className="text-xs font-black uppercase tracking-wider text-amber-600 flex items-center gap-1.5">
                 <AlertTriangle className="w-4 h-4" />
                 Name / Photo Change Requests
                 {!changeReqLoading && (
-                  <span className="text-[9px] text-gray-500 font-bold normal-case">({changeRequests.length} pending)</span>
+                  <span className="text-[9px] text-slate-500 font-bold normal-case">({changeRequests.length} pending)</span>
                 )}
               </h4>
               <button
                 type="button"
                 onClick={() => void loadChangeRequests()}
-                className="text-[9px] font-bold text-[#FFA048] hover:underline"
+                className="text-[9px] font-bold text-[#00A859] hover:underline"
               >
                 Refresh
               </button>
@@ -987,18 +987,18 @@ export const AdminPanelTab: React.FC = () => {
             )}
             <div className="space-y-2">
               {changeRequests.map((req) => (
-                <div key={req.id} className="p-3 rounded-xl bg-[#0F0E0C] border border-[#2D2319] space-y-2 text-xs">
+                <div key={req.id} className="p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] space-y-2 text-xs">
                   <div className="flex justify-between gap-2 text-[9px] text-gray-500">
                     <span>{req.date}</span>
                     <span className="text-amber-400 font-bold uppercase">Pending</span>
                   </div>
                   <p>
-                    <strong className="text-white">Listing:</strong> {req.currentName}
+                    <strong className="text-[#0B2545]">Listing:</strong> {req.currentName}
                     {req.ownerEmail ? ` · ${req.ownerEmail}` : ''}
                   </p>
                   {req.proposedName && (
                     <p>
-                      <strong className="text-[#FFA048]">New name:</strong> {req.proposedName}
+                      <strong className="text-[#00A859]">New name:</strong> {req.proposedName}
                     </p>
                   )}
                   {(req.proposedImageUrl || req.proposedCoverUrl) && (
@@ -1006,13 +1006,13 @@ export const AdminPanelTab: React.FC = () => {
                       {req.proposedImageUrl && (
                         <div className="space-y-1">
                           <span className="text-[9px] text-gray-500 block">New logo</span>
-                          <img src={req.proposedImageUrl} alt="Proposed logo" className="w-16 h-16 rounded-lg object-cover border border-[#2D2319]" />
+                          <img src={req.proposedImageUrl} alt="Proposed logo" className="w-16 h-16 rounded-lg object-cover border border-[#D7E0EA]" />
                         </div>
                       )}
                       {req.proposedCoverUrl && (
                         <div className="space-y-1">
                           <span className="text-[9px] text-gray-500 block">New cover</span>
-                          <img src={req.proposedCoverUrl} alt="Proposed cover" className="h-16 max-w-[140px] rounded-lg object-cover border border-[#2D2319]" />
+                          <img src={req.proposedCoverUrl} alt="Proposed cover" className="h-16 max-w-[140px] rounded-lg object-cover border border-[#D7E0EA]" />
                         </div>
                       )}
                     </div>
@@ -1044,26 +1044,26 @@ export const AdminPanelTab: React.FC = () => {
           </div>
 
           <div className="flex items-center justify-between gap-2">
-            <h3 className="text-xs font-black uppercase tracking-wider text-[#FFA048]">
+            <h3 className="text-xs font-black uppercase tracking-wider text-[#00A859]">
               Directory Index approvals & Status Locking
             </h3>
             <button
               type="button"
               onClick={loadVettingData}
-              className="text-[9px] font-bold text-[#FFA048] hover:underline shrink-0"
+              className="text-[9px] font-bold text-[#00A859] hover:underline shrink-0"
             >
               {vettingLoading ? 'Refreshing…' : 'Refresh'}
             </button>
           </div>
           
-          <div className="flex items-center bg-[#13110E] border border-[#2D2319] rounded-xl px-4 py-3 mb-2">
+          <div className="flex items-center bg-white border border-[#D7E0EA] rounded-xl px-4 py-3 mb-2">
             <Search className="w-4 h-4 text-gray-500 mr-3" />
             <input 
               type="text" 
               placeholder="Search vendors by name, email, or city..." 
               value={vendorSearch}
               onChange={(e) => setVendorSearch(e.target.value)}
-              className="bg-transparent border-none text-[#F4E3D7] text-sm outline-none w-full placeholder:text-gray-500"
+              className="bg-transparent border-none text-[#0B2545] text-sm outline-none w-full placeholder:text-gray-500"
             />
           </div>
 
@@ -1081,20 +1081,20 @@ export const AdminPanelTab: React.FC = () => {
                 className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all flex items-center gap-1.5 ${
                   bizFilter === key
                     ? key === 'all'
-                      ? 'bg-[#2D2319] text-[#F4E3D7] border border-[#3A2E22]'
+                      ? 'bg-[#EEF2F6] text-[#0B2545] border border-[#D7E0EA]'
                       : key === 'submissions'
-                      ? 'bg-[#FFA048] text-black shadow-lg shadow-[#FFA048]/20'
+                      ? 'bg-[#00A859] text-white shadow-lg shadow-[#00A859]/20'
                       : key === 'active'
-                        ? 'bg-green-500/20 text-green-400 border border-green-500/50'
+                        ? 'bg-emerald-50 text-[#00A859] border border-emerald-200'
                         : key === 'pending'
                           ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50'
                           : 'bg-red-500/20 text-red-400 border border-red-500/50'
-                    : 'bg-[#13110E] text-gray-400 border border-[#2D2319]'
+                    : 'bg-white text-gray-400 border border-[#D7E0EA]'
                 }`}
               >
                 {label}
                 <span className={`px-1.5 py-0.5 rounded-full text-[8px] ${
-                  bizFilter === key ? 'bg-black/20' : 'bg-[#2D2319] text-gray-500'
+                  bizFilter === key ? 'bg-white/30' : 'bg-[#EEF2F6] text-gray-500'
                 }`}>
                   {count}
                 </span>
@@ -1103,7 +1103,7 @@ export const AdminPanelTab: React.FC = () => {
           </div>
 
           {vettingCounts.submissions > 0 && (
-            <div className="flex items-start gap-2 p-3 rounded-xl bg-[#FFA048]/10 border border-[#FFA048]/30 text-[10px] text-[#FFA048]">
+            <div className="flex items-start gap-2 p-3 rounded-xl bg-[#00A859]/10 border border-[#00A859]/30 text-[10px] text-[#00A859]">
               <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
               <p>
                 {language === 'en'
@@ -1119,7 +1119,7 @@ export const AdminPanelTab: React.FC = () => {
             )}
 
             {!vettingLoading && filteredVettingListings.length === 0 && (
-              <div className="p-6 rounded-2xl bg-[#13110E] border border-dashed border-[#2D2319] text-center text-gray-500 text-xs space-y-2">
+              <div className="p-6 rounded-2xl bg-white border border-dashed border-[#D7E0EA] text-center text-gray-500 text-xs space-y-2">
                 {bizFilter === 'submissions' ? (
                   <>
                     <p>
@@ -1128,7 +1128,7 @@ export const AdminPanelTab: React.FC = () => {
                         : 'لا توجد طلبات تسجيل جديدة بانتظار الموافقة.'}
                     </p>
                     {vettingCounts.active > 0 && (
-                      <p className="text-[10px] text-[#FFA048]">
+                      <p className="text-[10px] text-[#00A859]">
                         {language === 'en'
                           ? `${vettingCounts.active} listing(s) already approved — open All Listings or Registered / Active to manage them.`
                           : `${vettingCounts.active} نشاط/أنشطة موافق عليها — افتح "كل القوائم" أو "مسجل / نشط" لإدارتها.`}
@@ -1150,14 +1150,14 @@ export const AdminPanelTab: React.FC = () => {
               const awaitingApproval = isPendingSubmission(biz);
               const descPreview = (biz.description?.en || '').trim();
               return (
-                <div key={biz.id} className="p-4 rounded-3xl bg-[#13110E] border border-[#2D2319] space-y-3.5">
+                <div key={biz.id} className="p-4 rounded-3xl bg-white border border-[#D7E0EA] space-y-3.5">
                   <AdminListingPhotos business={biz} language={language} />
 
                   <div className="flex justify-between items-start gap-2">
                     <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h4 className="text-xs font-black text-white truncate">{biz.name}</h4>
-                          <span className="px-1.5 py-0.5 rounded text-[7px] font-bold uppercase bg-[#2D2319] text-gray-400">
+                          <h4 className="text-xs font-black text-[#0B2545] truncate">{biz.name}</h4>
+                          <span className="px-1.5 py-0.5 rounded text-[7px] font-bold uppercase bg-[#EEF2F6] text-gray-400">
                             {biz.listingType === 'service' ? 'Service' : 'Business'}
                           </span>
                         </div>
@@ -1181,13 +1181,13 @@ export const AdminPanelTab: React.FC = () => {
 
                     <div className="text-right space-y-1 shrink-0">
                       {awaitingApproval && (
-                        <span className="px-2 py-0.5 rounded-full text-[8px] font-bold tracking-widest uppercase block bg-[#FFA048]/15 text-[#FFA048]">
+                        <span className="px-2 py-0.5 rounded-full text-[8px] font-bold tracking-widest uppercase block bg-[#00A859]/15 text-[#00A859]">
                           AWAITING APPROVAL
                         </span>
                       )}
                       <span className={`px-2 py-0.5 rounded-full text-[8px] font-bold tracking-widest uppercase block ${
-                        biz.status === 'active' ? 'bg-green-500/10 text-green-400' :
-                        biz.status === 'pending' ? 'bg-blue-500/10 text-blue-400' : 'bg-red-500/10 text-red-400'
+                        biz.status === 'active' ? 'bg-emerald-50 text-[#00A859]' :
+                        biz.status === 'pending' ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-600'
                       }`}>
                         {biz.status.toUpperCase()}
                       </span>
@@ -1205,7 +1205,7 @@ export const AdminPanelTab: React.FC = () => {
                   </div>
 
                   {/* Actions area */}
-                  <div className="flex flex-wrap gap-2 pt-2 border-t border-[#2D2319]/45 justify-between items-center text-xs" id={`vet-actions-${biz.id}`}>
+                  <div className="flex flex-wrap gap-2 pt-2 border-t border-[#D7E0EA]/45 justify-between items-center text-xs" id={`vet-actions-${biz.id}`}>
                     <div className="flex gap-2 w-full justify-between flex-wrap">
                       {awaitingApproval && (
                         <div className="flex gap-2">
@@ -1230,7 +1230,7 @@ export const AdminPanelTab: React.FC = () => {
                         <button
                           onClick={() => handleMarkAsPaid(biz)}
                           disabled={isBusy}
-                          className="px-3 py-1 rounded bg-[#FFA048]/20 text-[#FFA048] hover:bg-[#FFA048]/30 border border-[#FFA048]/50 font-bold text-[10px] flex items-center gap-1 disabled:opacity-50"
+                          className="px-3 py-1 rounded bg-[#00A859]/20 text-[#00A859] hover:bg-[#00A859]/30 border border-[#00A859]/50 font-bold text-[10px] flex items-center gap-1 disabled:opacity-50"
                         >
                           <DollarSign className="w-3 h-3" /> {isBusy ? 'Recording…' : 'Mark as Paid'}
                         </button>
@@ -1254,7 +1254,7 @@ export const AdminPanelTab: React.FC = () => {
                       <button
                         onClick={() => handleDeleteListing(biz)}
                         disabled={isBusy}
-                        className="p-1 px-2 rounded bg-stone-900 hover:bg-stone-850 text-gray-400 hover:text-red-400 disabled:opacity-50"
+                        className="p-1 px-2 rounded bg-slate-100 hover:bg-stone-850 text-gray-400 hover:text-red-400 disabled:opacity-50"
                         title="Delete listing"
                       >
                         <Trash className="w-3.5 h-3.5" />
@@ -1272,13 +1272,13 @@ export const AdminPanelTab: React.FC = () => {
       {adminTab === 'pay' && (
         <div className="space-y-4 animate-scale-up" id="admin-pay-section">
           <div className="flex items-center justify-between gap-2">
-            <h3 className="text-xs font-black uppercase tracking-wider text-[#FFA048]">
+            <h3 className="text-xs font-black uppercase tracking-wider text-[#00A859]">
               {t.payments} — Membership Fees Register (2-month free trial, then $30–$50/mo)
             </h3>
             <button
               type="button"
               onClick={loadDuesLedger}
-              className="text-[9px] font-bold text-[#FFA048] hover:underline shrink-0"
+              className="text-[9px] font-bold text-[#00A859] hover:underline shrink-0"
             >
               Refresh
             </button>
@@ -1300,7 +1300,7 @@ export const AdminPanelTab: React.FC = () => {
               {
                 label: language === 'en' ? 'Total Transactions' : 'عدد المعاملات',
                 value: duesStats.transactionCount,
-                color: 'text-[#FFA048]',
+                color: 'text-[#00A859]',
                 hint: language === 'en' ? 'Paid renewals' : 'تجديدات مدفوعة',
               },
               {
@@ -1310,7 +1310,7 @@ export const AdminPanelTab: React.FC = () => {
                 hint: language === 'en' ? 'Including free trial' : 'يشمل التجربة المجانية',
               }
             ].map(({ label, value, color, hint }) => (
-              <div key={label} className="p-3.5 rounded-2xl bg-[#13110E] border border-[#2D2319] text-center">
+              <div key={label} className="p-3.5 rounded-2xl bg-white border border-[#D7E0EA] text-center">
                 <span className={`text-xl font-black block ${color}`}>{value}</span>
                 <span className="text-[9px] text-gray-500 font-bold uppercase tracking-wider block mt-0.5">{label}</span>
                 <span className="text-[8px] text-gray-600 block mt-0.5">{hint}</span>
@@ -1319,7 +1319,7 @@ export const AdminPanelTab: React.FC = () => {
           </div>
 
           {/* Payment Records Table */}
-          <div className="p-4 rounded-3xl bg-[#13110E] border border-[#2D2319] space-y-3">
+          <div className="p-4 rounded-3xl bg-white border border-[#D7E0EA] space-y-3">
             {duesLoading && (
               <p className="text-[10px] text-gray-500 py-4 text-center">Loading dues ledger…</p>
             )}
@@ -1333,7 +1333,7 @@ export const AdminPanelTab: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-[11px] border-collapse" id="admin-payments-table">
                 <thead>
-                  <tr className="border-b border-[#2D2319] text-gray-500 font-bold uppercase tracking-wider">
+                  <tr className="border-b border-[#D7E0EA] text-gray-500 font-bold uppercase tracking-wider">
                     <th className="py-2 pr-2">{language === 'en' ? 'Business' : 'النشاط التجاري'}</th>
                     <th className="py-2 pr-2">{t.amount}</th>
                     <th className="py-2 pr-2">{t.date}</th>
@@ -1341,7 +1341,7 @@ export const AdminPanelTab: React.FC = () => {
                     <th className="py-2">{t.refNo}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#2D2319]/45 text-gray-300">
+                <tbody className="divide-y divide-[#D7E0EA]/45 text-gray-300">
                   {duesLedger.map((row) => {
                     const today = new Date();
                     const expiry = row.expires && row.expires !== '—' ? new Date(row.expires) : null;
@@ -1357,14 +1357,14 @@ export const AdminPanelTab: React.FC = () => {
                           <div className="flex items-center gap-1.5">
                             {biz && <BusinessThumbnail business={biz} eager className="w-6 h-6 rounded object-cover" />}
                             <div>
-                              <span className="font-semibold text-white text-[10px] block">{row.businessName}</span>
+                              <span className="font-semibold text-[#0B2545] text-[10px] block">{row.businessName}</span>
                               {row.status === 'trial' && (
                                 <span className="text-[8px] text-green-400 font-bold">FREE TRIAL</span>
                               )}
                             </div>
                           </div>
                         </td>
-                        <td className="py-3 pr-2 font-mono font-bold text-[#FFA048]">
+                        <td className="py-3 pr-2 font-mono font-bold text-[#00A859]">
                           {row.amount === 0 ? '$0' : `$${row.amount}`}
                         </td>
                         <td className="py-3 pr-2 text-gray-400">{row.date}</td>
@@ -1387,8 +1387,8 @@ export const AdminPanelTab: React.FC = () => {
           </div>
 
           {/* Subscription status overview */}
-          <div className="p-4 rounded-3xl bg-[#13110E] border border-[#2D2319] space-y-2">
-            <h4 className="text-[10px] font-black uppercase tracking-wider text-[#FFA048] mb-3">
+          <div className="p-4 rounded-3xl bg-white border border-[#D7E0EA] space-y-2">
+            <h4 className="text-[10px] font-black uppercase tracking-wider text-[#00A859] mb-3">
               {language === 'en' ? 'All Business Subscription Status' : 'حالة اشتراك جميع النشاطات'}
             </h4>
             {businesses.map((biz) => {
@@ -1403,10 +1403,10 @@ export const AdminPanelTab: React.FC = () => {
                 : Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
               const onTrial = ledgerRow?.status === 'trial';
               return (
-                <div key={biz.id} className="flex items-center justify-between py-2 border-b border-[#2D2319]/40 last:border-0">
+                <div key={biz.id} className="flex items-center justify-between py-2 border-b border-[#D7E0EA]/40 last:border-0">
                   <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full flex-shrink-0 ${biz.status === 'active' ? 'bg-green-400 animate-pulse' : 'bg-red-500'}`} />
-                    <span className="text-[10px] font-semibold text-white">{biz.name}</span>
+                    <span className="text-[10px] font-semibold text-[#0B2545]">{biz.name}</span>
                   </div>
                   <div className="flex items-center gap-2 text-[9px]">
                     <span className="text-gray-500">{expiryStr}</span>
@@ -1437,13 +1437,13 @@ export const AdminPanelTab: React.FC = () => {
       {adminTab === 'jobs' && (
         <div className="space-y-4 animate-scale-up" id="admin-jobs-section">
           <div className="flex items-center justify-between gap-2">
-            <h3 className="text-xs font-black uppercase tracking-wider text-[#FFA048]">
+            <h3 className="text-xs font-black uppercase tracking-wider text-[#00A859]">
               Job Board — Business Postings
             </h3>
             <button
               type="button"
               onClick={loadAdminJobs}
-              className="text-[9px] font-bold text-[#FFA048] hover:underline shrink-0"
+              className="text-[9px] font-bold text-[#00A859] hover:underline shrink-0"
             >
               {jobsLoading ? 'Refreshing…' : 'Refresh'}
             </button>
@@ -1451,7 +1451,7 @@ export const AdminPanelTab: React.FC = () => {
 
           <div className="grid grid-cols-3 gap-3">
             {([
-              ['all', language === 'en' ? 'Total Jobs' : 'إجمالي الوظائف', jobCounts.all, 'text-[#FFA048]'],
+              ['all', language === 'en' ? 'Total Jobs' : 'إجمالي الوظائف', jobCounts.all, 'text-[#00A859]'],
               ['active', language === 'en' ? 'Active' : 'نشطة', jobCounts.active, 'text-green-400'],
               ['blocked', language === 'en' ? 'Blocked' : 'محظورة', jobCounts.blocked, 'text-red-400'],
             ] as const).map(([key, label, count, color]) => (
@@ -1461,8 +1461,8 @@ export const AdminPanelTab: React.FC = () => {
                 onClick={() => setJobFilter(key)}
                 className={`p-3.5 rounded-2xl border text-center transition-all ${
                   jobFilter === key
-                    ? 'bg-[#FFA048]/10 border-[#FFA048]/40'
-                    : 'bg-[#13110E] border-[#2D2319]'
+                    ? 'bg-[#00A859]/10 border-[#00A859]/40'
+                    : 'bg-white border-[#D7E0EA]'
                 }`}
               >
                 <span className={`text-xl font-black block ${color}`}>{count}</span>
@@ -1471,14 +1471,14 @@ export const AdminPanelTab: React.FC = () => {
             ))}
           </div>
 
-          <div className="flex items-center bg-[#13110E] border border-[#2D2319] rounded-xl px-4 py-3">
+          <div className="flex items-center bg-white border border-[#D7E0EA] rounded-xl px-4 py-3">
             <Search className="w-4 h-4 text-gray-500 mr-3 shrink-0" />
             <input
               type="text"
               placeholder="Search by job title, business, category, or email…"
               value={jobSearch}
               onChange={(e) => setJobSearch(e.target.value)}
-              className="bg-transparent border-none text-[#F4E3D7] text-sm outline-none w-full placeholder:text-gray-500"
+              className="bg-transparent border-none text-[#0B2545] text-sm outline-none w-full placeholder:text-gray-500"
             />
           </div>
 
@@ -1490,7 +1490,7 @@ export const AdminPanelTab: React.FC = () => {
             )}
 
             {!jobsLoading && filteredAdminJobs.length === 0 && (
-              <div className="p-6 rounded-2xl bg-[#13110E] border border-dashed border-[#2D2319] text-center text-gray-500 text-xs">
+              <div className="p-6 rounded-2xl bg-white border border-dashed border-[#D7E0EA] text-center text-gray-500 text-xs">
                 {language === 'en'
                   ? 'No job postings match this filter.'
                   : 'لا توجد وظائف مطابقة لهذا الفلتر.'}
@@ -1504,10 +1504,10 @@ export const AdminPanelTab: React.FC = () => {
               return (
                 <div
                   key={job.id}
-                  className="p-4 rounded-3xl bg-[#13110E] border border-[#2D2319] space-y-3"
+                  className="p-4 rounded-3xl bg-white border border-[#D7E0EA] space-y-3"
                 >
                   {jobPoster ? (
-                    <div className="relative h-28 rounded-xl overflow-hidden border border-[#2D2319] bg-[#0F0E0C]">
+                    <div className="relative h-28 rounded-xl overflow-hidden border border-[#D7E0EA] bg-[#EEF2F6]">
                       <img
                         src={listingMediaUrl(jobPoster) || jobPoster}
                         alt={job.title}
@@ -1517,7 +1517,7 @@ export const AdminPanelTab: React.FC = () => {
                           (e.target as HTMLImageElement).style.display = 'none';
                         }}
                       />
-                      <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-wider bg-black/70 text-[#FFA048]">
+                      <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-wider bg-black/70 text-[#00A859]">
                         Job image
                       </span>
                     </div>
@@ -1531,14 +1531,14 @@ export const AdminPanelTab: React.FC = () => {
                           logoUrl: jobPoster || job.businessLogoUrl,
                         }}
                         eager
-                        className="w-11 h-11 rounded-lg object-cover bg-[#1C1914] border border-[#2D2319] shrink-0"
+                        className="w-11 h-11 rounded-lg object-cover bg-[#F8FAFC] border border-[#D7E0EA] shrink-0"
                       />
                       <div className="min-w-0">
-                        <h4 className="text-xs font-black text-white truncate">{job.title}</h4>
+                        <h4 className="text-xs font-black text-[#0B2545] truncate">{job.title}</h4>
                         <span className="text-[9px] text-gray-500 block uppercase tracking-wider mt-0.5">
                           {job.businessName}
                         </span>
-                        <span className="text-[8px] text-[#FFA048] font-bold block mt-0.5">{job.category}</span>
+                        <span className="text-[8px] text-[#00A859] font-bold block mt-0.5">{job.category}</span>
                         <span className="text-[8px] text-gray-600 block truncate">{job.hiringEmail}</span>
                         {job.requirements && (
                           <p className="text-[9px] text-gray-500 mt-1.5 line-clamp-2">{job.requirements}</p>
@@ -1565,7 +1565,7 @@ export const AdminPanelTab: React.FC = () => {
                     </span>
                   </div>
 
-                  <div className="flex flex-wrap gap-2 pt-2 border-t border-[#2D2319]/45">
+                  <div className="flex flex-wrap gap-2 pt-2 border-t border-[#D7E0EA]/45">
                     <button
                       type="button"
                       onClick={() => handleToggleJobBlock(job)}
@@ -1582,7 +1582,7 @@ export const AdminPanelTab: React.FC = () => {
                       type="button"
                       onClick={() => handleDeleteJob(job)}
                       disabled={isBusy}
-                      className="p-1 px-2 rounded bg-stone-900 hover:bg-stone-850 text-gray-400 hover:text-red-400 disabled:opacity-50"
+                      className="p-1 px-2 rounded bg-slate-100 hover:bg-stone-850 text-gray-400 hover:text-red-400 disabled:opacity-50"
                       title="Delete job"
                     >
                       <Trash className="w-3.5 h-3.5" />
@@ -1598,12 +1598,12 @@ export const AdminPanelTab: React.FC = () => {
       {/* SEGMENT 3: DYNAMIC CATEGORY CREATOR */}
       {adminTab === 'cat' && (
         <div className="space-y-4 animate-scale-up" id="admin-cat-section">
-          <h3 className="text-xs font-black uppercase tracking-wider text-[#FFA048]">
+          <h3 className="text-xs font-black uppercase tracking-wider text-[#00A859]">
             Create Categories & Subcategories
           </h3>
 
           {/* Creation Form */}
-          <form onSubmit={handleAddCategorySubmit} className="p-4 rounded-3xl bg-[#13110E] border border-[#2D2319] space-y-3.5" id="admin-cat-form">
+          <form onSubmit={handleAddCategorySubmit} className="p-4 rounded-3xl bg-white border border-[#D7E0EA] space-y-3.5" id="admin-cat-form">
             {catSuccess && <p className="text-xs text-green-400 mb-1">{catSuccess}</p>}
             {catError && <p className="text-xs text-red-400 mb-1">{catError}</p>}
             <div>
@@ -1613,7 +1613,7 @@ export const AdminPanelTab: React.FC = () => {
                 placeholder="e.g. Construction"
                 value={newCatNameEn}
                 onChange={(e) => setNewCatNameEn(e.target.value)}
-                className="w-full p-2 rounded-xl bg-[#0F0E0C] border border-[#2D2319] text-xs text-white"
+                className="w-full p-2 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#0B2545]"
                 required
               />
             </div>
@@ -1635,7 +1635,7 @@ export const AdminPanelTab: React.FC = () => {
             <button
               type="submit"
               disabled={catSubmitting}
-              className="w-full py-2 bg-[#FFA048] hover:bg-opacity-95 text-black font-extrabold text-xs rounded-xl disabled:opacity-60"
+              className="w-full py-2 bg-[#00A859] hover:bg-opacity-95 text-white font-extrabold text-xs rounded-xl disabled:opacity-60"
               id="btn-admin-add-cat-submit"
             >
               {catSubmitting ? 'Saving…' : '+ Create Category Record'}
@@ -1643,7 +1643,7 @@ export const AdminPanelTab: React.FC = () => {
           </form>
 
           {/* Existing Categories list */}
-          <div className="p-4 rounded-3xl bg-[#13110E] border border-[#2D2319]" id="admin-cats-list">
+          <div className="p-4 rounded-3xl bg-white border border-[#D7E0EA]" id="admin-cats-list">
             <div className="flex items-center justify-between mb-3">
               <span className="text-[10px] text-gray-500 uppercase font-black">
                 Currently Configured Directory Tags ({categories.length})
@@ -1651,7 +1651,7 @@ export const AdminPanelTab: React.FC = () => {
               <button
                 type="button"
                 onClick={() => refreshCategories()}
-                className="text-[9px] font-bold text-[#FFA048] hover:underline"
+                className="text-[9px] font-bold text-[#00A859] hover:underline"
               >
                 Refresh
               </button>
@@ -1669,10 +1669,10 @@ export const AdminPanelTab: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-72 overflow-y-auto scrollbar-thin" id="admin-cats-grid">
               {categories.map((c) => (
-                <div key={c.id} className="p-2.5 rounded-xl bg-[#0F0E0C] border border-[#2D2319]/40 flex justify-between items-center gap-2">
+                <div key={c.id} className="p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA]/40 flex justify-between items-center gap-2">
                   <div className="min-w-0">
-                    <span className="text-xs font-bold text-white block truncate">{c.name.en}</span>
-                    <span className="text-[8px] text-[#FFA048] font-bold block">{c.group}</span>
+                    <span className="text-xs font-bold text-[#0B2545] block truncate">{c.name.en}</span>
+                    <span className="text-[8px] text-[#00A859] font-bold block">{c.group}</span>
                   </div>
                   <button
                     type="button"
@@ -1701,7 +1701,7 @@ export const AdminPanelTab: React.FC = () => {
       {/* SEGMENT 4: USER MANAGEMENT & ABUSE REPORTS */}
       {adminTab === 'users' && (
         <div className="space-y-4 animate-scale-up" id="admin-users-section">
-          <div className="p-4 rounded-3xl bg-[#13110E] border border-[#2D2319] space-y-3">
+          <div className="p-4 rounded-3xl bg-white border border-[#D7E0EA] space-y-3">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <h4 className="text-xs font-black uppercase tracking-wider text-[#FFA500] flex items-center gap-1">
                 <Users className="w-4 h-4" /> Active Directory Members
@@ -1716,7 +1716,7 @@ export const AdminPanelTab: React.FC = () => {
                   value={userSearch}
                   onChange={(e) => setUserSearch(e.target.value)}
                   placeholder="Search users..."
-                  className="w-full sm:w-48 pl-8 pr-3 py-1.5 text-[10px] rounded-lg bg-[#0F0E0C] border border-[#2D2319] text-gray-300 placeholder:text-gray-600"
+                  className="w-full sm:w-48 pl-8 pr-3 py-1.5 text-[10px] rounded-lg bg-[#EEF2F6] border border-[#D7E0EA] text-gray-300 placeholder:text-gray-600"
                 />
               </div>
             </div>
@@ -1730,7 +1730,7 @@ export const AdminPanelTab: React.FC = () => {
                 <p className="text-[10px] text-red-400">{usersError}</p>
                 <button
                   onClick={loadDirectoryUsers}
-                  className="text-[9px] font-bold text-[#FFA048] hover:underline"
+                  className="text-[9px] font-bold text-[#00A859] hover:underline"
                 >
                   Retry
                 </button>
@@ -1743,7 +1743,7 @@ export const AdminPanelTab: React.FC = () => {
               </p>
             )}
 
-            <div className="divide-y divide-[#2D2319]/45 text-xs text-gray-300">
+            <div className="divide-y divide-[#D7E0EA]/45 text-xs text-gray-300">
               {filteredDirectoryUsers.map((user) => (
                 <div key={user.id} className="py-2.5 flex justify-between items-center gap-3">
                   <div className="min-w-0">
@@ -1753,7 +1753,7 @@ export const AdminPanelTab: React.FC = () => {
                     </span>
                   </div>
                   {user.role === 'admin' ? (
-                    <span className="shrink-0 px-2.5 py-1 text-[9px] font-bold rounded bg-[#FFA048]/15 text-[#FFA048]">
+                    <span className="shrink-0 px-2.5 py-1 text-[9px] font-bold rounded bg-[#00A859]/15 text-[#00A859]">
                       Admin
                     </span>
                   ) : (
@@ -1762,7 +1762,7 @@ export const AdminPanelTab: React.FC = () => {
                       className={`shrink-0 px-2.5 py-1 text-[9px] font-bold rounded ${
                         user.isBlocked
                           ? 'bg-green-600/20 text-green-400 hover:bg-green-600/30 border border-green-800/40'
-                          : 'bg-stone-900 text-red-400 hover:bg-stone-850'
+                          : 'bg-slate-100 text-red-400 hover:bg-stone-850'
                       }`}
                     >
                       {user.isBlocked ? 'Unblock' : 'Block User'}
@@ -1774,7 +1774,7 @@ export const AdminPanelTab: React.FC = () => {
           </div>
 
           {/* Abuse reporting index */}
-          <div className="p-4 rounded-3xl bg-[#13110E] border border-[#2D2319] space-y-3">
+          <div className="p-4 rounded-3xl bg-white border border-[#D7E0EA] space-y-3">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <h4 className="text-xs font-black uppercase tracking-wider text-[#FFA500] flex items-center gap-1.5 text-amber-400">
                 <AlertTriangle className="w-4 h-4 text-amber-400" />
@@ -1790,8 +1790,8 @@ export const AdminPanelTab: React.FC = () => {
                     onClick={() => setReportFilter(filter)}
                     className={`px-2 py-1 text-[9px] font-bold rounded uppercase ${
                       reportFilter === filter
-                        ? 'bg-[#FFA048] text-black'
-                        : 'bg-stone-900 text-gray-400 hover:text-[#F4E3D7]'
+                        ? 'bg-[#00A859] text-white'
+                        : 'bg-slate-100 text-gray-400 hover:text-[#0B2545]'
                     }`}
                   >
                     {filter}
@@ -1809,7 +1809,7 @@ export const AdminPanelTab: React.FC = () => {
                 <p className="text-[10px] text-red-400">{reportsError}</p>
                 <button
                   onClick={loadIntegrityReports}
-                  className="text-[9px] font-bold text-[#FFA048] hover:underline"
+                  className="text-[9px] font-bold text-[#00A859] hover:underline"
                 >
                   Retry
                 </button>
@@ -1826,7 +1826,7 @@ export const AdminPanelTab: React.FC = () => {
 
             <div className="space-y-2" id="admin-reports-list">
               {filteredIntegrityReports.map((rep) => (
-                <div key={rep.id} className="p-3 rounded-xl bg-[#0F0E0C] border border-red-950/20 space-y-1 text-xs">
+                <div key={rep.id} className="p-3 rounded-xl bg-[#EEF2F6] border border-red-950/20 space-y-1 text-xs">
                   <div className="flex justify-between items-start gap-2 text-[9px] text-gray-500">
                     <span>Date: {rep.date}</span>
                     <span className={`font-bold text-right ${rep.status === 'open' ? 'text-red-400' : 'text-green-400'}`}>
@@ -1834,11 +1834,11 @@ export const AdminPanelTab: React.FC = () => {
                     </span>
                   </div>
                   <p>
-                    <strong className="text-white">Reporter:</strong> {rep.reporterName}
+                    <strong className="text-[#0B2545]">Reporter:</strong> {rep.reporterName}
                     {rep.reporterEmail ? ` (${rep.reporterEmail})` : ''}
                   </p>
                   <p>
-                    <strong className="text-white">Flagged Listing:</strong> {rep.businessName}
+                    <strong className="text-[#0B2545]">Flagged Listing:</strong> {rep.businessName}
                   </p>
                   <p className="text-gray-400 text-[11px] leading-relaxed mt-1">
                     <strong className="text-gray-350">Incident details: </strong>
@@ -1863,13 +1863,13 @@ export const AdminPanelTab: React.FC = () => {
         <div className="space-y-4 animate-fade-in-up" id="admin-activity-log">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-bold text-[#F4E3D7]">Admin activity log</h3>
+              <h3 className="text-sm font-bold text-[#0B2545]">Admin activity log</h3>
               <p className="text-[10px] text-gray-500">Who approved, suspended, or declined what</p>
             </div>
             <button
               type="button"
               onClick={() => void loadActivityLogs()}
-              className="px-3 py-1.5 rounded-xl text-[10px] font-bold bg-[#191613] border border-[#2D2319] text-[#FFA048]"
+              className="px-3 py-1.5 rounded-xl text-[10px] font-bold bg-[#EEF2F6] border border-[#D7E0EA] text-[#00A859]"
             >
               Refresh
             </button>
@@ -1881,7 +1881,7 @@ export const AdminPanelTab: React.FC = () => {
             <p className="text-xs text-red-400">{activityError}</p>
           )}
           {!activityLoading && activityLogs.length === 0 && !activityError && (
-            <p className="text-xs text-gray-500 p-4 rounded-2xl border border-dashed border-[#2D2319]">
+            <p className="text-xs text-gray-500 p-4 rounded-2xl border border-dashed border-[#D7E0EA]">
               No admin actions logged yet. Approvals and suspensions will appear here.
             </p>
           )}
@@ -1889,10 +1889,10 @@ export const AdminPanelTab: React.FC = () => {
             {activityLogs.map((row) => (
               <div
                 key={row.id}
-                className="p-3.5 rounded-2xl bg-[#13110E] border border-[#2D2319] space-y-1"
+                className="p-3.5 rounded-2xl bg-white border border-[#D7E0EA] space-y-1"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <span className="text-[11px] font-black uppercase tracking-wide text-[#FFA048]">
+                  <span className="text-[11px] font-black uppercase tracking-wide text-[#00A859]">
                     {row.action.replace(/_/g, ' ')}
                   </span>
                   <span className="text-[9px] text-gray-500 whitespace-nowrap">
@@ -1901,7 +1901,7 @@ export const AdminPanelTab: React.FC = () => {
                       : row.date}
                   </span>
                 </div>
-                <p className="text-xs text-[#F4E3D7] font-semibold">
+                <p className="text-xs text-[#0B2545] font-semibold">
                   {row.targetName || row.targetId || '—'}
                   <span className="text-gray-500 font-normal"> · {row.targetType}</span>
                 </p>

@@ -3,25 +3,27 @@
 
 @import "tailwindcss";
 
-/* ─── Design Tokens — Dark (default) ───────────────────────── */
+/* ─── Design Tokens — Dark ─────────────────────────────────── */
 :root {
-  /* Brand */
-  --color-primary:        #FFA048;
-  --color-primary-dark:   #D87D2E;
-  --color-primary-hover:  #FFB36B;
+  /* Brand — navy + emerald (ABN redesign) */
+  --color-primary:        #00A859;
+  --color-primary-dark:   #008C4A;
+  --color-primary-hover:  #12C06E;
+  --color-navy:           #0B2545;
+  --color-navy-soft:      #123B5D;
 
   /* Backgrounds */
-  --color-bg:             #0A0705;
-  --color-surface:        #0F0E0C;
-  --color-card:           #13110E;
-  --color-card-hover:     #191613;
+  --color-bg:             #07111F;
+  --color-surface:        #0C1829;
+  --color-card:           #102038;
+  --color-card-hover:     #152843;
 
   /* Borders */
-  --color-border:         #2D2319;
-  --color-border-subtle:  #231C13;
+  --color-border:         #1E334D;
+  --color-border-subtle:  #16263A;
 
   /* Text */
-  --color-text:           #F4E3D7;
+  --color-text:           #E8EEF6;
   --color-text-secondary: #9CA3AF;
   --color-text-muted:     #6B7280;
 
@@ -38,31 +40,32 @@
   --radius-pill:  999px;
 }
 
-/* ─── Design Tokens — Light (premium override) ──────────────── */
+/* ─── Design Tokens — Light (default consumer look) ─────────── */
 html.light {
-  /* Brand stays the same — orange on white pops beautifully */
-  --color-primary:        #F97316;
-  --color-primary-dark:   #EA580C;
-  --color-primary-hover:  #FB923C;
+  --color-primary:        #00A859;
+  --color-primary-dark:   #008C4A;
+  --color-primary-hover:  #12C06E;
+  --color-navy:           #0B2545;
+  --color-navy-soft:      #123B5D;
 
   /* Backgrounds */
-  --color-bg:             #F4F5F7;
+  --color-bg:             #EEF2F6;
   --color-surface:        #FFFFFF;
   --color-card:           #FFFFFF;
-  --color-card-hover:     #F9FAFB;
+  --color-card-hover:     #F8FAFC;
 
   /* Borders */
-  --color-border:         #E2E8F0;
-  --color-border-subtle:  #EEF2F6;
+  --color-border:         #D7E0EA;
+  --color-border-subtle:  #E8EEF4;
 
   /* Text */
-  --color-text:           #0F172A;
+  --color-text:           #0B2545;
   --color-text-secondary: #475569;
   --color-text-muted:     #94A3B8;
 
-  /* Shadows — very soft, Airbnb-style */
-  --shadow-card:          0 4px 12px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.04);
-  --shadow-sm:            0 2px 6px  rgba(0,0,0,0.04);
+  /* Shadows */
+  --shadow-card:          0 8px 24px rgba(11, 37, 69, 0.08), 0 1px 3px rgba(11, 37, 69, 0.04);
+  --shadow-sm:            0 2px 8px  rgba(11, 37, 69, 0.06);
 }
 
 /* ─── Light-mode structural overrides ──────────────────────── */
@@ -171,9 +174,21 @@ html.light #home-tab-container h3 {
   color: #0F172A !important;
 }
 
-/* Brand orange stays orange — reinforce on light bg */
+/* Brand orange remapped → emerald in light mode */
 html.light .text-\[\#FFA048\] {
   color: var(--color-primary) !important;
+}
+html.light .bg-\[\#FFA048\] {
+  background-color: var(--color-primary) !important;
+}
+html.light .border-\[\#FFA048\] {
+  border-color: var(--color-primary) !important;
+}
+html.light .from-\[\#FFA048\] {
+  --tw-gradient-from: #00A859 var(--tw-gradient-from-position);
+}
+html.light .to-\[\#D87D2E\] {
+  --tw-gradient-to: #008C4A var(--tw-gradient-to-position);
 }
 
 /* ── Search input ────────────────────────────────────────── */
@@ -220,8 +235,8 @@ html.light button.rounded-full:not(.app-toggle):hover {
   border-color: #5A5048 !important;
 }
 .app-toggle-on {
-  background-color: #FFA048 !important;
-  border-color: #E8913A !important;
+  background-color: #00A859 !important;
+  border-color: #008C4A !important;
 }
 .app-toggle-knob {
   background-color: #FFFFFF !important;
@@ -232,8 +247,8 @@ html.light .app-toggle-off {
   border-color: #94A3B8 !important;
 }
 html.light .app-toggle-on {
-  background-color: #F97316 !important;
-  border-color: #EA580C !important;
+  background-color: #00A859 !important;
+  border-color: #008C4A !important;
 }
 html.light .app-toggle-knob {
   background-color: #FFFFFF !important;
@@ -386,7 +401,7 @@ html.light nav .text-gray-500 {
 
 /* ── Mobile root ─────────────────────────────────────────── */
 html.light #app-root-mobile {
-  background: linear-gradient(to bottom, #F4F5F7, #FFFFFF) !important;
+  background: #EEF2F6 !important;
 }
 html.light #app-root-mobile > .flex-shrink-0 {
   background-color: rgba(255,255,255,0.92) !important;
@@ -414,11 +429,11 @@ html.light #admin-main-header p,
 html.light #app-root-web > main p:not(.page-card-body):not(.page-meta):not(.page-error) {
   color: #475569 !important;
 }
-html.light #app-root-web #web-top-nav button:not([class*="bg-[#FFA048]"]) {
+html.light #app-root-web #web-top-nav button:not([class*="bg-[#00A859]"]) {
   color: #475569 !important;
 }
-html.light #app-root-web #web-top-nav button:not([class*="bg-[#FFA048]"]):hover {
-  color: #0F172A !important;
+html.light #app-root-web #web-top-nav button:not([class*="bg-[#00A859]"]):hover {
+  color: #0B2545 !important;
   background-color: #F1F5F9 !important;
 }
 
@@ -567,11 +582,11 @@ html.light #admin-panel-container h4 {
 html.light #admin-panel-container .text-\[\#F4E3D7\] {
   color: #0F172A !important;
 }
-html.light #admin-segment-bar button:not([class*="bg-[#FFA048]"]) {
+html.light #admin-segment-bar button:not([class*="bg-[#00A859]"]) {
   color: #475569 !important;
 }
-html.light #admin-segment-bar button:not([class*="bg-[#FFA048]"]):hover {
-  color: #0F172A !important;
+html.light #admin-segment-bar button:not([class*="bg-[#00A859]"]):hover {
+  color: #0B2545 !important;
   background-color: #F1F5F9 !important;
 }
 html.light #admin-biz-section .bg-white\/10.text-white,
@@ -701,11 +716,11 @@ html.light #auth-screen-root .border-\[\#3A2E22\]\/90 {
 
 /* ─── Sheet / bottom-sheet cards (Legal, FAQ, Notifications) ─ */
 .sheet-panel-title {
-  color: #FFA048;
+  color: #00A859;
 }
 .sheet-panel-icon,
 .sheet-card-icon {
-  color: #FFA048;
+  color: #00A859;
 }
 .sheet-panel-meta {
   color: #8A7A68;
@@ -903,13 +918,13 @@ html.light .fixed.inset-0 .bg-\[\#13110E\] {
 /* Contact action buttons — keep high contrast in both themes */
 html.light #action-btn-call,
 html.dark #action-btn-call {
-  background-color: #FFA048 !important;
-  border-color: #e8913a !important;
-  color: #0A0705 !important;
+  background-color: #00A859 !important;
+  border-color: #008C4A !important;
+  color: #FFFFFF !important;
 }
 html.light #action-btn-call *,
 html.dark #action-btn-call * {
-  color: #0A0705 !important;
+  color: #FFFFFF !important;
 }
 
 html.light #action-btn-whatsapp,
@@ -1125,13 +1140,13 @@ html.light .skeleton {
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
 }
 .card-hover:hover {
-  border-color: rgba(255,160,72,0.35) !important;
-  box-shadow: 0 0 0 1px rgba(255,160,72,0.15);
+  border-color: rgba(0,168,89,0.35) !important;
+  box-shadow: 0 0 0 1px rgba(0,168,89,0.15);
   transform: translateY(-1px);
 }
 html.light .card-hover:hover {
-  border-color: rgba(249,115,22,0.30) !important;
-  box-shadow: 0 6px 20px rgba(249,115,22,0.10), 0 2px 8px rgba(0,0,0,0.05);
+  border-color: rgba(0,168,89,0.30) !important;
+  box-shadow: 0 6px 20px rgba(0,168,89,0.10), 0 2px 8px rgba(0,0,0,0.05);
 }
 
 /* ─── Open / Closed badge ────────────────────────────────── */
@@ -1156,7 +1171,7 @@ button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  outline: 2px solid #FFA048;
+  outline: 2px solid #00A859;
   outline-offset: 2px;
 }
 html.light button:focus-visible,
@@ -1182,7 +1197,7 @@ img.lazy-image.loaded { opacity: 1; }
 }
 
 /* ─── Selection color ────────────────────────────────────── */
-::selection { background-color: #FFA048; color: black; }
+::selection { background-color: #00A859; color: white; }
 html.light ::selection { background-color: var(--color-primary); color: white; }
 
 /* ─── Tab transition wrapper ─────────────────────────────── */

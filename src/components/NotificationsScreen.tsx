@@ -66,7 +66,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ onBack
           aria-label="Back"
           id="notifications-page-back"
         >
-          <ArrowLeft className="w-4 h-4 text-[#FFA048]" />
+          <ArrowLeft className="w-4 h-4 text-[#00A859]" />
         </button>
         <div className="min-w-0 flex-1">
           <h1 className="page-title text-sm font-black uppercase tracking-wider flex items-center gap-2">
@@ -112,7 +112,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ onBack
         {!notificationsLoading && visible.length === 0 && !notificationsError && (
           <div className="text-center py-16 px-4">
             <div className="page-empty-icon mx-auto mb-3 w-12 h-12 rounded-2xl flex items-center justify-center">
-              <Bell className="w-6 h-6 text-[#FFA048]/70" />
+              <Bell className="w-6 h-6 text-[#00A859]/70" />
             </div>
             <p className="page-card-title text-xs font-semibold">No notifications yet</p>
             <p className="page-meta text-[10px] mt-2 leading-relaxed">

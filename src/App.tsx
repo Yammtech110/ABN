@@ -21,6 +21,7 @@ import { NotificationsScreen } from './components/NotificationsScreen';
 import { Business } from './types';
 import { LegalDocId } from './data/legalContent';
 import { getUserListing, canPostJobs } from './utils/listingAccess';
+import { countUnreadNotifications } from './utils/notifications';
 import { useOpenNotificationsOnPush, usePushNotifications } from './hooks/usePushNotifications';
 import {
   Home,
@@ -30,6 +31,7 @@ import {
   Shield,
   ArrowLeft,
   Loader2,
+  MessageCircle,
 } from 'lucide-react';
 
 // Native APK only — browser (abn-1.onrender.com) uses the web layout.
@@ -160,15 +162,15 @@ function TabContent({
       {activeTab === 'admin' && (
         <TabView tabKey="admin">
           <div className="space-y-5">
-            <div className="subpage-header flex items-center gap-3 pb-3 border-b border-[#2D2319]">
+            <div className="subpage-header flex items-center gap-3 pb-3 border-b border-[#D7E0EA]">
               <button
                 onClick={() => setActiveTab('account')}
-                className="p-2 rounded-full bg-[#191613] hover:bg-[#2D251C] border border-[#2D2319] transition-colors"
+                className="p-2 rounded-full bg-white hover:bg-slate-100 border border-[#D7E0EA] transition-colors"
                 aria-label="Back to Account"
               >
-                <ArrowLeft className="w-4 h-4 text-[#FFA048]" />
+                <ArrowLeft className="w-4 h-4 text-[#00A859]" />
               </button>
-              <span className="text-xs font-bold text-[#FFA048] uppercase tracking-wider">Admin Panel</span>
+              <span className="text-xs font-bold text-[#00A859] uppercase tracking-wider">Admin Panel</span>
             </div>
             <AdminPanelTab />
           </div>
@@ -185,23 +187,31 @@ function BottomNav({
   setSearchQueryText,
   t,
   isAdmin,
+  unreadCount = 0,
 }: {
   activeTab: string;
   setActiveTab: (t: string) => void;
   setSearchQueryText: (q: string) => void;
   t: Record<string, string>;
   isAdmin?: boolean;
+  unreadCount?: number;
 }) {
-  const isAccountActive = activeTab === 'account' || activeTab === 'portal-management' || activeTab === 'job-management' || activeTab === 'notifications' || activeTab === 'legal';
+  const isAccountActive = activeTab === 'account' || activeTab === 'portal-management' || activeTab === 'job-management' || activeTab === 'legal';
+  const isMessagesActive = activeTab === 'notifications';
+
+  const tabClass = (active: boolean) =>
+    `flex flex-col items-center justify-center flex-1 py-2 transition-all ${
+      active ? 'text-[#00A859] scale-105 font-black' : 'text-slate-400 hover:text-[#0B2545]'
+    }`;
 
   return (
-    <nav className="flex justify-between items-center h-full px-2">
+    <nav className="flex justify-between items-center h-full px-1">
 
       {!isAdmin && (
         <>
           <button
             onClick={() => { setSearchQueryText(''); setActiveTab('home'); }}
-            className={`flex flex-col items-center justify-center flex-1 py-2 transition-all ${activeTab === 'home' ? 'text-[#FFA048] scale-110 font-black' : 'text-gray-500 hover:text-white'}`}
+            className={tabClass(activeTab === 'home')}
             id="tab-btn-home"
           >
             <Home className="w-5 h-5 mb-0.5" />
@@ -209,7 +219,7 @@ function BottomNav({
           </button>
           <button
             onClick={() => setActiveTab('search')}
-            className={`flex flex-col items-center justify-center flex-1 py-2 transition-all ${activeTab === 'search' ? 'text-[#FFA048] scale-110 font-black' : 'text-gray-500 hover:text-white'}`}
+            className={tabClass(activeTab === 'search')}
             id="tab-btn-search"
           >
             <Search className="w-5 h-5 mb-0.5" />
@@ -217,11 +227,24 @@ function BottomNav({
           </button>
           <button
             onClick={() => setActiveTab('saved')}
-            className={`flex flex-col items-center justify-center flex-1 py-2 transition-all ${activeTab === 'saved' ? 'text-[#FFA048] scale-110 font-black' : 'text-gray-500 hover:text-white'}`}
+            className={tabClass(activeTab === 'saved')}
             id="tab-btn-saved"
           >
             <Heart className="w-5 h-5 mb-0.5" />
             <span className="text-[9px] tracking-tight">{t.saved}</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('notifications')}
+            className={`relative ${tabClass(isMessagesActive)}`}
+            id="tab-btn-messages"
+          >
+            <MessageCircle className="w-5 h-5 mb-0.5" />
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-[22%] min-w-[14px] h-[14px] px-0.5 rounded-full bg-[#00A859] text-white text-[8px] font-black flex items-center justify-center">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+            <span className="text-[9px] tracking-tight">Messages</span>
           </button>
         </>
       )}
@@ -229,7 +252,7 @@ function BottomNav({
       {isAdmin && (
         <button
           onClick={() => setActiveTab('admin')}
-          className={`flex flex-col items-center justify-center flex-1 py-2 transition-all ${activeTab === 'admin' ? 'text-[#FFA048] scale-110 font-black' : 'text-gray-500 hover:text-white'}`}
+          className={tabClass(activeTab === 'admin')}
           id="tab-btn-admin"
         >
           <Shield className="w-5 h-5 mb-0.5" />
@@ -237,10 +260,9 @@ function BottomNav({
         </button>
       )}
 
-      {/* Account tab — always visible; highlights for account, portal-management, and admin sub-pages */}
       <button
         onClick={() => setActiveTab('account')}
-        className={`flex flex-col items-center justify-center flex-1 py-2 transition-all ${isAccountActive ? 'text-[#FFA048] scale-110 font-black' : 'text-gray-500 hover:text-white'}`}
+        className={tabClass(isAccountActive)}
         id="tab-btn-account"
       >
         <User className="w-5 h-5 mb-0.5" />
@@ -268,7 +290,6 @@ function WebTopNav({
     activeTab === 'account' ||
     activeTab === 'portal-management' ||
     activeTab === 'job-management' ||
-    activeTab === 'notifications' ||
     activeTab === 'legal';
 
   const navBtn = (tab: string, label: string, icon: React.ReactNode, onClick?: () => void) => (
@@ -277,8 +298,8 @@ function WebTopNav({
       onClick={onClick ?? (() => setActiveTab(tab))}
       className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-all ${
         activeTab === tab || (tab === 'account' && isAccountActive)
-          ? 'bg-[#FFA048] text-black shadow-[0_0_15px_rgba(255,160,72,0.35)]'
-          : 'text-gray-400 hover:text-white hover:bg-[#191613]'
+          ? 'bg-[#00A859] text-white shadow-[0_0_15px_rgba(0,168,89,0.35)]'
+          : 'text-slate-500 hover:text-[#0B2545] hover:bg-slate-100'
       }`}
       id={`web-tab-${tab}`}
     >
@@ -297,6 +318,7 @@ function WebTopNav({
           })}
           {navBtn('search', t.search, <Search className="w-4 h-4" />)}
           {navBtn('saved', t.saved, <Heart className="w-4 h-4" />)}
+          {navBtn('notifications', 'Messages', <MessageCircle className="w-4 h-4" />)}
         </>
       )}
       {isAdmin && navBtn('admin', t.adminPanel || 'Admin', <Shield className="w-4 h-4" />)}
@@ -306,9 +328,10 @@ function WebTopNav({
 }
 
 function DirectoryAppContent() {
-  const { language, currentUser, businesses, authReady, isAuthenticated, apiToken } = useDirectory();
+  const { language, currentUser, businesses, authReady, isAuthenticated, apiToken, notifications } = useDirectory();
   const t = TRANSLATIONS[language];
   const nativeApp = isNativeApp();
+  const unreadCount = countUnreadNotifications(notifications, currentUser);
 
   const [activeTab, setActiveTab] = useState<string>('home');
   const [legalDocId, setLegalDocId] = useState<LegalDocId | null>(null);
@@ -336,7 +359,7 @@ function DirectoryAppContent() {
       'job-management': 'account',
       'portal-management': 'account',
       'job-board': 'home',
-      notifications: 'account',
+      notifications: 'home',
       legal: 'account',
       admin: 'account',
     };
@@ -404,8 +427,8 @@ function DirectoryAppContent() {
           className="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-[#191512] to-[#0A0705] text-[#F4E3D7]"
           id="auth-boot-loading"
         >
-          <Loader2 className="w-8 h-8 text-[#FFA048] animate-spin mb-3" />
-          <p className="text-xs text-gray-500 font-medium">Checking session…</p>
+          <Loader2 className="w-8 h-8 text-[#00A859] animate-spin mb-3" />
+          <p className="text-xs text-slate-500 font-medium">Checking session…</p>
         </div>
       </>
     );
@@ -427,7 +450,7 @@ function DirectoryAppContent() {
       <>
       {splashOverlay}
       <div
-        className="fixed inset-0 flex flex-col bg-gradient-to-b from-[#191512] to-[#0A0705] text-[#F4E3D7]"
+        className="fixed inset-0 flex flex-col bg-[#EEF2F6] text-[#0B2545]"
         id="app-root-mobile"
         style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
@@ -446,7 +469,7 @@ function DirectoryAppContent() {
 
         {/* Native Bottom Navigation Bar */}
         <div
-          className="flex-shrink-0 bg-[#0A0705]/80 backdrop-blur-md border-t border-[#2D2319] z-30"
+          className="flex-shrink-0 bg-white/95 backdrop-blur-md border-t border-[#D7E0EA] z-30 shadow-[0_-4px_20px_rgba(11,37,69,0.06)]"
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
           <div className="h-14">
@@ -456,6 +479,7 @@ function DirectoryAppContent() {
               setSearchQueryText={setSearchQueryText}
               t={t as unknown as Record<string, string>}
               isAdmin={isAdmin}
+              unreadCount={unreadCount}
             />
           </div>
         </div>
@@ -483,13 +507,16 @@ function DirectoryAppContent() {
   return (
     <>
       {splashOverlay}
-      <div className="min-h-screen bg-[#0A0705] text-[#F4E3D7] font-sans flex flex-col antialiased" id="app-root-web">
-        <header className="border-b border-[#2D2319] bg-[#0A0705]/90 backdrop-blur-md p-4 sticky top-0 z-40 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+      <div className="min-h-screen bg-[#EEF2F6] text-[#0B2545] font-sans flex flex-col antialiased" id="app-root-web">
+        <header className="border-b border-[#D7E0EA] bg-white/95 backdrop-blur-md p-4 sticky top-0 z-40 shadow-[0_4px_24px_rgba(11,37,69,0.06)]">
           <div className="max-w-7xl mx-auto flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center justify-between gap-3 min-w-0">
               <div className="min-w-0">
-                <h1 className="text-2xl font-black text-[#FFA048] tracking-widest uppercase">ABN</h1>
-                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest truncate">{t.tagline}</p>
+                <h1 className="text-2xl font-black tracking-tight">
+                  <span className="text-[#0B2545]">AHLE</span>
+                  <span className="text-[#00A859]">BAIT</span>
+                </h1>
+                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest truncate">{t.tagline}</p>
               </div>
             </div>
             <WebTopNav
@@ -514,9 +541,9 @@ function DirectoryAppContent() {
           />
         </main>
 
-        <footer className="border-t border-[#2D2319] bg-[#0F0E0C] py-6 text-center text-xs text-gray-500">
+        <footer className="border-t border-[#D7E0EA] bg-white py-6 text-center text-xs text-slate-500">
           <p>© 2026 Ahle Bait Network (ABN). All rights reserved.</p>
-          <p className="mt-1 text-[10px] text-gray-600">
+          <p className="mt-1 text-[10px] text-slate-400">
             {verifiedActiveCount} active listings · Admin panel available on web
           </p>
         </footer>

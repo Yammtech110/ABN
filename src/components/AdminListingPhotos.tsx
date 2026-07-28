@@ -31,7 +31,7 @@ const PhotoTile: React.FC<PhotoTileProps> = ({ url, fallback, label, onExpand })
     <button
       type="button"
       onClick={onExpand}
-      className="group relative aspect-[4/3] rounded-xl overflow-hidden border border-[#2D2319] bg-[#0F0E0C] text-left"
+      className="group relative aspect-[4/3] rounded-xl overflow-hidden border border-[#D7E0EA] bg-[#EEF2F6] text-left"
       title={label}
     >
       <img
@@ -75,7 +75,7 @@ export const AdminListingPhotos: React.FC<AdminListingPhotosProps> = ({ business
 
   return (
     <div className="space-y-2" id={`admin-photos-${business.id}`}>
-      <div className="relative h-24 rounded-xl overflow-hidden border border-[#2D2319] bg-[#0F0E0C]">
+      <div className="relative h-24 rounded-xl overflow-hidden border border-[#D7E0EA] bg-[#EEF2F6]">
         <img
           src={coverSrc}
           alt={`${business.name} cover`}
@@ -87,7 +87,7 @@ export const AdminListingPhotos: React.FC<AdminListingPhotosProps> = ({ business
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
         <div className="absolute bottom-2 left-2 flex items-end gap-2">
-          <div className="w-12 h-12 rounded-lg overflow-hidden border-2 border-[#FFA048]/60 bg-[#13110E] shrink-0">
+          <div className="w-12 h-12 rounded-lg overflow-hidden border-2 border-[#00A859]/60 bg-white shrink-0">
             <img
               src={logoSrc}
               alt={`${business.name} logo`}
@@ -107,7 +107,7 @@ export const AdminListingPhotos: React.FC<AdminListingPhotosProps> = ({ business
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
-        className="flex items-center gap-1.5 text-[9px] font-bold text-[#FFA048] hover:underline"
+        className="flex items-center gap-1.5 text-[9px] font-bold text-[#00A859] hover:underline"
       >
         <ImageIcon className="w-3.5 h-3.5" />
         {expanded

@@ -92,7 +92,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
       ? 'account-plan-suspended bg-red-950/40 text-red-300 border-red-700/40'
       : planBadge === 'Pending Approval'
         ? 'account-plan-pending bg-amber-950/30 text-amber-300 border-amber-700/40'
-        : 'bg-[#201B15] text-gray-400 border-[#2D2319]';
+        : 'bg-[#EEF2F6] text-gray-400 border-[#D7E0EA]';
 
   if (!currentUser) return null;
 
@@ -148,26 +148,26 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
 
   return (
     <div className="space-y-6" id="account-tab-container">
-      <div className="pb-1 border-b border-[#2D2319]" id="account-header">
-        <h2 className="text-xl font-extrabold text-[#F4E3D7]">{t.account}</h2>
+      <div className="pb-1 border-b border-[#D7E0EA]" id="account-header">
+        <h2 className="text-xl font-extrabold text-[#0B2545]">{t.account}</h2>
         <p className="text-[10px] text-gray-500 font-medium">Manage your profile and preferences.</p>
       </div>
 
       <div className={`flex flex-col ${isAdmin ? 'gap-0' : 'gap-4'}`}>
-        <div className="p-4.5 rounded-3xl bg-[#13110E] border border-[#2D2319] flex items-center gap-3" id="signedin-profile-card">
-          <div className="w-12 h-12 rounded-2xl bg-[#201B15] border border-[#2D2319] flex items-center justify-center text-[#FFA048]">
+        <div className="p-4.5 rounded-3xl bg-white border border-[#D7E0EA] flex items-center gap-3" id="signedin-profile-card">
+          <div className="w-12 h-12 rounded-2xl bg-[#EEF2F6] border border-[#D7E0EA] flex items-center justify-center text-[#00A859]">
             {isAdmin ? <Shield className="w-6 h-6" /> : kind === 'service' ? <Zap className="w-6 h-6 text-blue-400" /> : <User className="w-6 h-6" />}
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-bold text-white truncate">{currentUser.name}</h3>
+            <h3 className="text-sm font-bold text-[#0B2545] truncate">{currentUser.name}</h3>
             <p className="text-[10px] text-gray-500 truncate">{currentUser.email}</p>
             <div className="flex flex-wrap gap-1.5 mt-1.5">
               <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border account-role-badge ${
                 isAdmin
-                  ? 'account-role-badge-admin bg-[#FFA048]/15 text-[#FFA048] border-[#FFA048]/30'
+                  ? 'account-role-badge-admin bg-[#00A859]/15 text-[#00A859] border-[#00A859]/30'
                   : kind === 'service'
-                    ? 'account-role-badge-service bg-blue-900/40 text-blue-200 border-blue-600/50'
-                    : 'account-role-badge-user bg-[#201B15] text-gray-400 border-[#2D2319]'
+                    ? 'account-role-badge-service bg-blue-50 text-blue-700 border-blue-200'
+                    : 'account-role-badge-user bg-[#EEF2F6] text-gray-400 border-[#D7E0EA]'
               }`}>
                 {roleBadgeLabel()}
               </span>
@@ -181,8 +181,8 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
         </div>
 
         {isAdmin && isNativeApp() && (
-          <div className="p-3.5 rounded-2xl bg-[#1C130D]/75 border border-[#3D2C1E]/50" id="admin-web-only-note">
-            <p className="text-[10px] text-[#C9A887] leading-relaxed">
+          <div className="p-3.5 rounded-2xl bg-emerald-50/75 border border-emerald-200/50" id="admin-web-only-note">
+            <p className="text-[10px] text-slate-600 leading-relaxed">
               Admin tools are available on the web app only. Changes you make there sync to Android and iOS automatically.
             </p>
           </div>
@@ -192,11 +192,11 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
           <button
             type="button"
             onClick={() => setIsEditingProfile(true)}
-            className="w-full flex items-center justify-between p-4 rounded-2xl bg-[#13110E] border border-[#2D2319] hover:border-[#FFA048]/40 transition-colors"
+            className="w-full flex items-center justify-between p-4 rounded-2xl bg-white border border-[#D7E0EA] hover:border-[#00A859]/40 transition-colors"
             id="btn-edit-user-profile"
           >
-            <span className="flex items-center gap-3 text-xs text-gray-300 font-semibold">
-              <Eye className="w-4.5 h-4.5 text-[#FFA048]" />
+            <span className="flex items-center gap-3 text-xs text-[#0B2545] font-semibold">
+              <Eye className="w-4.5 h-4.5 text-[#00A859]" />
               Edit Profile
             </span>
             <ChevronRight className="w-4 h-4 text-gray-600" />
@@ -204,27 +204,27 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
         )}
       </div>
 
-      <div className="py-2.5 rounded-3xl bg-[#13110E] border border-[#2D2319] divide-y divide-[#2D2319]/40" id="account-options-list">
+      <div className="py-2.5 rounded-3xl bg-white border border-[#D7E0EA] divide-y divide-[#D7E0EA]/40" id="account-options-list">
         {canManage && (
           <button
             type="button"
             onClick={() => onSwitchTab('portal-management')}
-            className="w-full flex items-center justify-between p-4 hover:bg-stone-900/10 transition-colors group"
+            className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors group"
             id="row-manage-listing"
           >
-            <span className="flex items-center gap-3 text-xs text-gray-300 font-semibold">
-              {kind === 'service' ? <Zap className="w-4.5 h-4.5 text-blue-400" /> : <Briefcase className="w-4.5 h-4.5 text-[#FFA048]" />}
+            <span className="flex items-center gap-3 text-xs text-[#0B2545] font-semibold">
+              {kind === 'service' ? <Zap className="w-4.5 h-4.5 text-blue-400" /> : <Briefcase className="w-4.5 h-4.5 text-[#00A859]" />}
               {kind === 'service' ? 'Manage Service' : 'Manage Business'}
             </span>
-            <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-white" />
+            <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-[#0B2545]" />
           </button>
         )}
 
         {canUseJobs && myListing && (
           <>
             <div className="flex items-center justify-between p-4" id="row-hiring-active">
-              <span className="flex items-center gap-3 text-xs text-gray-300 font-semibold">
-                <Briefcase className="w-4.5 h-4.5 text-[#FFA048]" />
+              <span className="flex items-center gap-3 text-xs text-[#0B2545] font-semibold">
+                <Briefcase className="w-4.5 h-4.5 text-[#00A859]" />
                 Hiring Active
               </span>
               <button
@@ -252,29 +252,29 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
             <button
               type="button"
               onClick={() => onSwitchTab('job-management')}
-              className="w-full flex items-center justify-between p-4 hover:bg-stone-900/10 transition-colors group"
+              className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors group"
               id="row-manage-jobs"
             >
-              <span className="flex items-center gap-3 text-xs text-gray-300 font-semibold">
-                <Briefcase className="w-4.5 h-4.5 text-[#FFA048]" />
+              <span className="flex items-center gap-3 text-xs text-[#0B2545] font-semibold">
+                <Briefcase className="w-4.5 h-4.5 text-[#00A859]" />
                 Manage Jobs
               </span>
-              <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-white" />
+              <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-[#0B2545]" />
             </button>
           </>
         )}
 
         <div className="flex items-center justify-between p-4" id="row-theme-switch">
-          <span className="flex items-center gap-3 text-xs text-gray-300 font-semibold">
-            <Eye className="w-4.5 h-4.5 text-[#FFA048]" />
+          <span className="flex items-center gap-3 text-xs text-[#0B2545] font-semibold">
+            <Eye className="w-4.5 h-4.5 text-[#00A859]" />
             Theme
           </span>
-          <div className="flex rounded-xl bg-[#0F0E0C] border border-[#2D2319] p-0.5">
+          <div className="flex rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] p-0.5">
             <button
               type="button"
               onClick={() => setTheme('light')}
               className={`px-2.5 py-1 rounded-lg text-[10px] font-bold ${
-                theme === 'light' ? 'bg-[#FFA048] text-black' : 'text-gray-400'
+                theme === 'light' ? 'bg-[#00A859] text-white' : 'text-gray-400'
               }`}
             >
               Light
@@ -283,7 +283,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
               type="button"
               onClick={() => setTheme('dark')}
               className={`px-2.5 py-1 rounded-lg text-[10px] font-bold ${
-                theme === 'dark' ? 'bg-[#FFA048] text-black' : 'text-gray-400'
+                theme === 'dark' ? 'bg-[#00A859] text-white' : 'text-gray-400'
               }`}
             >
               Dark
@@ -293,11 +293,11 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
 
         <button
           onClick={handleOpenNotificationCenter}
-          className="w-full flex items-center justify-between p-4 hover:bg-stone-900/10 transition-colors group"
+          className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors group"
           id="row-notif-trigger"
         >
-          <span className="flex items-center gap-3 text-xs text-gray-300 font-semibold">
-            <Bell className="w-4.5 h-4.5 text-[#FFA048]" />
+          <span className="flex items-center gap-3 text-xs text-[#0B2545] font-semibold">
+            <Bell className="w-4.5 h-4.5 text-[#00A859]" />
             {t.notifications}
             {unreadCount > 0 && (
               <span className="p-0.5 px-1.5 rounded-full bg-red-500 text-white text-[8px] font-bold">
@@ -305,7 +305,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
               </span>
             )}
           </span>
-          <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-white" />
+          <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-[#0B2545]" />
         </button>
 
         {(
@@ -322,30 +322,30 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
             key={id}
             type="button"
             onClick={() => onOpenLegal(id)}
-            className="w-full flex items-center justify-between p-4 hover:bg-stone-900/10 transition-colors group"
+            className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors group"
             id={`row-legal-${id}`}
           >
-            <span className="flex items-center gap-3 text-xs text-gray-300 font-semibold">
-              <Icon className="w-4.5 h-4.5 text-[#FFA048]" />
+            <span className="flex items-center gap-3 text-xs text-[#0B2545] font-semibold">
+              <Icon className="w-4.5 h-4.5 text-[#00A859]" />
               {label}
             </span>
-            <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-white" />
+            <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-[#0B2545]" />
           </button>
         ))}
 
         <a
           href={SUPPORT_MAILTO}
-          className="w-full flex items-center justify-between p-4 hover:bg-stone-900/10 transition-colors group"
+          className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors group"
           id="row-contact-support"
         >
-          <span className="flex items-center gap-3 text-xs text-gray-300 font-semibold min-w-0">
-            <Mail className="w-4.5 h-4.5 text-[#FFA048] shrink-0" />
+          <span className="flex items-center gap-3 text-xs text-[#0B2545] font-semibold min-w-0">
+            <Mail className="w-4.5 h-4.5 text-[#00A859] shrink-0" />
             <span className="min-w-0 flex flex-col items-start gap-0.5">
               <span>Contact Support</span>
-              <span className="text-[10px] font-medium text-[#FFA048]/90 truncate">{SUPPORT_EMAIL}</span>
+              <span className="text-[10px] font-medium text-[#00A859]/90 truncate">{SUPPORT_EMAIL}</span>
             </span>
           </span>
-          <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-white shrink-0" />
+          <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-[#0B2545] shrink-0" />
         </a>
       </div>
 

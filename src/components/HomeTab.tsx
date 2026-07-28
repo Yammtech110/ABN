@@ -17,7 +17,6 @@ import {
   RefreshCw,
   CheckCircle,
   ArrowRight,
-  Sparkles,
   Shirt,
   ShoppingBag,
   BookOpen,
@@ -34,21 +33,30 @@ import {
   Croissant,
   Soup,
   HelpCircle,
-  Clock,
   Settings,
   Calculator,
   Building2,
-  Sparkles as SparklesIcon
+  Sparkles as SparklesIcon,
+  Menu,
+  Star,
+  Heart,
+  Briefcase,
+  Users,
+  Store,
+  Handshake,
+  Grid3X3,
 } from 'lucide-react';
-import { Business, BusinessStatus, Category } from '../types';
+import { Business, BusinessStatus } from '../types';
+
+const NAVY = '#0B2545';
 
 const JOB_CATEGORY_COLORS: Record<JobCategory, string> = {
-  'IT':               'bg-blue-900/40 text-blue-300 border-blue-700/40',
-  'Graphic Designing':'bg-purple-900/40 text-purple-300 border-purple-700/40',
-  'Developer':        'bg-green-900/40 text-green-300 border-green-700/40',
-  'Chef':             'bg-amber-900/40 text-amber-300 border-amber-700/40',
-  'Maid':             'bg-pink-900/40 text-pink-300 border-pink-700/40',
-  'Others':           'bg-gray-800/60 text-gray-300 border-gray-600/40',
+  'IT':               'bg-blue-100 text-blue-700 border-blue-200',
+  'Graphic Designing':'bg-purple-100 text-purple-700 border-purple-200',
+  'Developer':        'bg-emerald-100 text-emerald-700 border-emerald-200',
+  'Chef':             'bg-amber-100 text-amber-700 border-amber-200',
+  'Maid':             'bg-pink-100 text-pink-700 border-pink-200',
+  'Others':           'bg-slate-100 text-slate-600 border-slate-200',
 };
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -80,10 +88,8 @@ interface HomeTabProps {
   setSearchQueryText: (query: string) => void;
 }
 
-// ── Open Now helper ───────────────────────────────────────────
 function isBusinessOpenNow(workingHours: string): boolean | null {
   try {
-    // Parse format like "8:00 AM - 11:00 PM" or "9:00 AM - 9:00 PM (24/7 Available for emergency)"
     const cleaned = workingHours.replace(/\(.*?\)/g, '').trim();
     const parts = cleaned.split('-').map((s) => s.trim());
     if (parts.length < 2) return null;
@@ -106,10 +112,7 @@ function isBusinessOpenNow(workingHours: string): boolean | null {
     const now = new Date();
     const cur = now.getHours() * 60 + now.getMinutes();
 
-    if (close < open) {
-      // Crosses midnight
-      return cur >= open || cur <= close;
-    }
+    if (close < open) return cur >= open || cur <= close;
     return cur >= open && cur <= close;
   } catch {
     return null;
@@ -133,6 +136,8 @@ export const HomeTab: React.FC<HomeTabProps> = ({
     markNotificationsAsRead,
     jobs,
     hiringActive,
+    favorites,
+    toggleFavorite,
   } = useDirectory();
   const t = TRANSLATIONS[language];
 
@@ -161,15 +166,16 @@ export const HomeTab: React.FC<HomeTabProps> = ({
 
   const [inputSearch, setInputSearch] = useState('');
   const [selectedCity, setSelectedCity] = useState<string>('all');
-  // Live API search results — null means "use local data"
   const [apiResults, setApiResults] = useState<Business[] | null>(null);
   const [isSearching, setIsSearching] = useState(false);
 
+  const liveListings = useMemo(
+    () => businesses.filter(isLiveDirectoryListing),
+    [businesses],
+  );
+
   const CITY_KEYS = useMemo(() => {
-    const fromListings = businesses
-      .filter(isLiveDirectoryListing)
-      .map((b) => b.city)
-      .filter(Boolean);
+    const fromListings = liveListings.map((b) => b.city).filter(Boolean);
     const popular = ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Miami', 'Dearborn', 'Dallas'];
     const cities = Array.from(new Set([...popular, ...fromListings])).sort((a, b) => a.localeCompare(b));
     return [
@@ -179,15 +185,13 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         label: (t[city.replace(/\s+/g, '').toLowerCase() as keyof typeof t] as string) || city,
       })),
     ];
-  }, [businesses, t]);
+  }, [liveListings, t]);
 
-  // ── Live API search: fires when search text or city changes ──────────────
-  // Falls back to local filtering silently if backend is unreachable.
   const searchTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   React.useEffect(() => {
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-    const q      = inputSearch.trim();
-    const city   = selectedCity !== 'all' ? selectedCity : '';
+    const q = inputSearch.trim();
+    const city = selectedCity !== 'all' ? selectedCity : '';
     const hasFilter = q.length > 0 || city.length > 0;
 
     if (!hasFilter) { setApiResults(null); return; }
@@ -196,12 +200,11 @@ export const HomeTab: React.FC<HomeTabProps> = ({
       setIsSearching(true);
       try {
         const params = new URLSearchParams();
-        if (q)    params.set('search', q);
-        if (city) params.set('city',   city);
-        const res  = await apiFetch(`/api/directory?${params.toString()}`);
+        if (q) params.set('search', q);
+        if (city) params.set('city', city);
+        const res = await apiFetch(`/api/directory?${params.toString()}`);
         if (res.ok) {
           const data = await res.json();
-          // Map API response shape → Business type (same mapper used in context)
           const mapped: Business[] = data.map((p: Record<string, unknown>) => ({
             id:                   String(p.id ?? ''),
             ownerId:              String(p.email ?? ''),
@@ -227,50 +230,50 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           }));
           setApiResults(mapped);
         } else {
-          setApiResults(null); // fallback to local
+          setApiResults(null);
         }
       } catch {
-        setApiResults(null); // backend offline — use local filter
+        setApiResults(null);
       } finally {
         setIsSearching(false);
       }
-    }, 350); // 350ms debounce
+    }, 350);
 
     return () => { if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current); };
   }, [inputSearch, selectedCity, categories]);
 
-  // Unread notifications count — shown on bell when signed in
-
-  // Use live API results when available; otherwise filter the local businesses array
   const activeBusinesses = useMemo(() => {
     const source = apiResults ?? businesses;
     if (apiResults) return source.filter((b) => isLiveDirectoryListing(b));
     const q = inputSearch.trim().toLowerCase();
     return source.filter((b) => {
       const matchCity = selectedCity === 'all' || b.city === selectedCity;
-      const matchQ    = !q || b.name.toLowerCase().includes(q) ||
+      const matchQ = !q || b.name.toLowerCase().includes(q) ||
                         b.subcategory.en.toLowerCase().includes(q) ||
                         b.description.en.toLowerCase().includes(q);
       return isLiveDirectoryListing(b) && matchCity && matchQ;
     });
   }, [businesses, apiResults, inputSearch, selectedCity]);
 
-  // Featured = active + verified, sorted best rating first
   const featuredBusinesses = useMemo(
-    () => businesses
-      .filter((b) => isLiveDirectoryListing(b))
+    () => liveListings
+      .slice()
       .sort((a, b) => b.rating - a.rating)
-      .slice(0, 3),
-    [businesses]
+      .slice(0, 8),
+    [liveListings]
   );
 
-  // Active job openings from Supabase-backed jobs state
   const activeJobs = useMemo(
     () => jobs.filter((j) => j.isActive && hiringActive[j.businessId] === true),
     [jobs, hiringActive]
   );
 
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+
+  const cityCount = useMemo(
+    () => new Set(liveListings.map((b) => b.city).filter(Boolean)).size,
+    [liveListings],
+  );
 
   const handleOverlayBack = useCallback((): boolean => {
     if (selectedJob) {
@@ -284,10 +287,8 @@ export const HomeTab: React.FC<HomeTabProps> = ({
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // If the API search already returned results, we stay on home and show them inline.
-    // If there's no query, forward to the Search tab as before.
     if (!inputSearch.trim()) return;
-    if (apiResults !== null) return; // already showing live results inline
+    if (apiResults !== null) return;
     setSearchQueryText(inputSearch);
     onSwitchTab('search');
   };
@@ -297,31 +298,29 @@ export const HomeTab: React.FC<HomeTabProps> = ({
     onSwitchTab('search');
   };
 
-  const renderCategoryIcon = (iconName: string) => {
-    const iconClass = 'w-5 h-5 text-[#FFA048]';
+  const renderCategoryIcon = (iconName: string, className = 'w-5 h-5 text-[#00A859]') => {
     const IconComponent = ICON_MAP[iconName] || HelpCircle;
-    return <IconComponent className={iconClass} />;
+    return <IconComponent className={className} />;
   };
 
-  // ── Inline job detail overlay ─────────────────────────────────
+  const categoryGrid = useMemo(() => categories.slice(0, 7), [categories]);
+
   if (selectedJob) {
     return (
       <div className="space-y-5" id="home-job-detail-overlay">
-        <div className="flex items-center gap-3 pb-3 border-b border-[#2D2319]">
+        <div className="flex items-center gap-3 pb-3 border-b border-[#D7E0EA]">
           <button
             onClick={() => setSelectedJob(null)}
-            className="p-2 rounded-full bg-[#191613] hover:bg-[#2D251C] border border-[#2D2319] transition-colors"
+            className="p-2 rounded-full bg-white hover:bg-slate-50 border border-[#D7E0EA] transition-colors"
             aria-label="Back to home"
           >
-            <ArrowRight className="w-4 h-4 text-[#FFA048] rotate-180" />
+            <ArrowRight className="w-4 h-4 text-[#00A859] rotate-180" />
           </button>
-          <h2 className="text-sm font-extrabold text-[#F4E3D7] flex-1 truncate">
-            {language === 'en' ? 'Job Details' : 'تفاصيل الوظيفة'}
-          </h2>
+          <h2 className="text-sm font-extrabold text-[#0B2545] flex-1 truncate">Job Details</h2>
         </div>
-        <div className="p-5 rounded-3xl bg-[#13110E] border border-[#2D2319] space-y-5">
+        <div className="p-5 rounded-3xl bg-white border border-[#D7E0EA] shadow-sm space-y-5">
           <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl overflow-hidden bg-[#0F0E0C] border border-[#2D2319] flex-shrink-0">
+            <div className="w-14 h-14 rounded-2xl overflow-hidden bg-slate-100 border border-[#D7E0EA] flex-shrink-0">
               <BusinessThumbnail
                 business={{ id: selectedJob.businessId, name: selectedJob.businessName, logoUrl: selectedJob.imageUrl || selectedJob.businessLogoUrl }}
                 className="w-full h-full object-cover"
@@ -329,39 +328,31 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               />
             </div>
             <div className="min-w-0">
-              <h3 className="text-sm font-extrabold text-white leading-tight">{selectedJob.title}</h3>
-              <p className="text-[10px] text-gray-400 mt-0.5 truncate">{selectedJob.businessName}</p>
+              <h3 className="text-sm font-extrabold text-[#0B2545] leading-tight">{selectedJob.title}</h3>
+              <p className="text-[10px] text-slate-500 mt-0.5 truncate">{selectedJob.businessName}</p>
             </div>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${JOB_CATEGORY_COLORS[selectedJob.category]}`}>
               {selectedJob.category}
             </span>
-            <span className="text-[10px] font-extrabold text-green-400 bg-green-900/20 border border-green-700/30 px-2.5 py-1 rounded-full">
+            <span className="text-[10px] font-extrabold text-[#00A859] bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
               ${selectedJob.salaryMin.toLocaleString()} – ${selectedJob.salaryMax.toLocaleString()}/mo
             </span>
-            <span className="text-[9px] text-gray-500 ml-auto">{language === 'en' ? 'Posted' : 'نُشر'} {selectedJob.postedDate}</span>
           </div>
           <div>
-            <h4 className="text-[10px] font-extrabold text-[#FFA048] uppercase tracking-wider mb-2">
-              {language === 'en' ? 'Requirements & Skills' : 'المتطلبات والمهارات'}
+            <h4 className="text-[10px] font-extrabold text-[#00A859] uppercase tracking-wider mb-2">
+              Requirements & Skills
             </h4>
-            <p className="text-xs text-gray-300 leading-relaxed whitespace-pre-wrap">
-              {selectedJob.requirements || (language === 'en' ? 'No specific requirements listed.' : 'لا توجد متطلبات محددة.')}
+            <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-wrap">
+              {selectedJob.requirements || 'No specific requirements listed.'}
             </p>
           </div>
-          <div className="flex items-center gap-2 p-3 rounded-xl bg-[#0F0E0C] border border-[#2D2319]">
-            <CheckCircle className="w-3.5 h-3.5 text-[#FFA048] flex-shrink-0" />
-            <div className="min-w-0">
-              <p className="text-[9px] text-gray-500">{language === 'en' ? 'Send CV to' : 'أرسل السيرة إلى'}</p>
-              <p className="text-xs text-white font-bold truncate">{selectedJob.hiringEmail}</p>
-            </div>
-          </div>
           <a
-            href={`mailto:${selectedJob.hiringEmail}?subject=Job Application: ${encodeURIComponent(selectedJob.title)} at ${encodeURIComponent(selectedJob.businessName)}&body=${encodeURIComponent(`Hello,\n\nI would like to apply for the ${selectedJob.title} position at ${selectedJob.businessName}.\n\nPlease find my CV attached.\n\nBest regards`)}`}
-            className="flex items-center justify-center gap-2 w-full py-3.5 bg-[#FFA048] hover:bg-opacity-95 text-black font-extrabold rounded-2xl text-sm transition-all shadow-lg active:scale-95 no-underline"
+            href={`mailto:${selectedJob.hiringEmail}?subject=Job Application: ${encodeURIComponent(selectedJob.title)} at ${encodeURIComponent(selectedJob.businessName)}`}
+            className="flex items-center justify-center gap-2 w-full py-3.5 bg-[#00A859] hover:bg-[#008C4A] text-white font-extrabold rounded-2xl text-sm transition-all shadow-lg active:scale-95 no-underline"
           >
-            📧 {language === 'en' ? 'Apply via Email (Submit CV)' : 'التقديم بالبريد الإلكتروني'}
+            Apply via Email
           </a>
         </div>
       </div>
@@ -369,25 +360,37 @@ export const HomeTab: React.FC<HomeTabProps> = ({
   }
 
   return (
-    <div className="space-y-6" id="home-tab-container">
-      
-      {/* Top Navigation Banner & Search */}
-      <div className="space-y-4 animate-fade-in-up" id="home-top-section">
-        {/* Header — premium orange wordmark */}
-        <div className="pt-1 pb-0.5 flex items-center justify-between gap-3">
-          <h1 className="text-3xl font-black text-[#FFA048] tracking-widest uppercase">ABN</h1>
-          <div className="flex items-center gap-2" id="home-header-actions">
-            <button
-              type="button"
-              onClick={() => void handleRefreshApp()}
-              disabled={isRefreshing}
-              className="relative p-2 rounded-xl bg-[#13110E] border border-[#2D2319] hover:border-[#FFA048]/40 transition-colors disabled:opacity-60"
-              aria-label="Refresh"
-              title="Refresh"
-              id="btn-home-refresh"
-            >
-              <RefreshCw className={`w-4 h-4 text-[#FFA048] ${isRefreshing ? 'animate-spin' : ''}`} />
-            </button>
+    <div className="space-y-5 pb-4" id="home-tab-container">
+
+      {/* ── Hero ─────────────────────────────────────────────── */}
+      <section
+        className="relative overflow-hidden rounded-[28px] px-4 pt-3 pb-5 animate-fade-in-up"
+        id="home-hero"
+        style={{
+          background:
+            'radial-gradient(120% 90% at 80% 10%, rgba(0,168,89,0.12) 0%, transparent 55%), linear-gradient(165deg, #E8F1F8 0%, #F4F7FA 45%, #EEF6F1 100%)',
+        }}
+      >
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.35]"
+          style={{
+            backgroundImage:
+              'radial-gradient(circle at 20% 30%, rgba(11,37,69,0.08) 1.5px, transparent 2px), radial-gradient(circle at 70% 60%, rgba(0,168,89,0.12) 1.5px, transparent 2px)',
+            backgroundSize: '42px 42px, 56px 56px',
+          }}
+        />
+        <div className="relative flex items-center justify-between mb-4">
+          <button
+            type="button"
+            onClick={() => void handleRefreshApp()}
+            disabled={isRefreshing}
+            className="p-2.5 rounded-full bg-white/80 border border-white shadow-sm text-[#0B2545] disabled:opacity-60"
+            aria-label="Refresh"
+            id="btn-home-refresh"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          </button>
+          <div className="flex items-center gap-2">
             {currentUser && (
               <button
                 type="button"
@@ -396,43 +399,77 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                   void markNotificationsAsRead();
                   onSwitchTab('notifications');
                 }}
-                className="relative p-2 rounded-xl bg-[#13110E] border border-[#2D2319] hover:border-[#FFA048]/40 transition-colors"
+                className="relative p-2.5 rounded-full bg-white/80 border border-white shadow-sm text-[#0B2545]"
                 aria-label="Notifications"
                 id="btn-home-notifications"
               >
-                <Bell className="w-4 h-4 text-[#FFA048]" />
+                <Bell className="w-4 h-4" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[8px] font-black flex items-center justify-center">
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-[#00A859] text-white text-[8px] font-black flex items-center justify-center">
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 )}
               </button>
             )}
+            <button
+              type="button"
+              onClick={() => onSwitchTab('account')}
+              className="p-2.5 rounded-full bg-[#0B2545] text-white shadow-md"
+              aria-label="Menu"
+              id="btn-home-menu"
+            >
+              <Menu className="w-4 h-4" />
+            </button>
           </div>
         </div>
 
-        {/* Search Bar (Relocated) */}
-        <form onSubmit={handleSearchSubmit} className="relative flex items-center" id="home-search-form">
-          <div className="relative w-full">
-            {isSearching
-              ? <span className="absolute left-3.5 top-3.5 w-4 h-4 border-2 border-[#FFA048] border-t-transparent rounded-full animate-spin" />
-              : <Search className="absolute left-3.5 top-3.5 w-4 h-4 text-gray-500" />
-            }
-            <input
-              type="text"
-              value={inputSearch}
-              onChange={(e) => { setInputSearch(e.target.value); if (!e.target.value.trim()) setApiResults(null); }}
-              placeholder={t.searchPlaceholder}
-              className="w-full pl-10 pr-24 py-3 bg-[#0F0E0C] border border-[#2E2419] rounded-2xl text-xs text-[#F4E3D7] placeholder-gray-500 outline-none focus:border-[#FFA048] transition-all"
-              id="home-search-input"
-            />
-            {inputSearch && (
-              <button type="button" onClick={() => { setInputSearch(''); setApiResults(null); }}
-                className="absolute right-24 top-3 text-gray-500 hover:text-[#FFA048] text-xs px-1"
-                aria-label="Clear search">✕</button>
-            )}
-          </div>
+        <p className="relative text-[11px] font-bold tracking-[0.18em] uppercase text-[#00A859] mb-1">
+          Welcome to ABN
+        </p>
+        <h1 className="relative leading-[0.95] mb-2">
+          <span className="block text-[34px] sm:text-[40px] font-black tracking-tight text-[#0B2545]">AHLEBAIT</span>
+          <span className="block text-[34px] sm:text-[40px] font-black tracking-tight text-[#00A859]">NETWORK</span>
+        </h1>
+        <p className="relative text-[13px] text-slate-600 font-medium mb-4 max-w-[280px]">
+          Connecting Businesses. Empowering Our Community.
+        </p>
 
+        <div className="relative flex flex-wrap gap-x-4 gap-y-2 text-[11px] font-semibold text-[#0B2545]">
+          <span className="inline-flex items-center gap-1.5">
+            <Store className="w-3.5 h-3.5 text-[#00A859]" />
+            {liveListings.length.toLocaleString()}+ Businesses
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <MapPin className="w-3.5 h-3.5 text-[#00A859]" />
+            {Math.max(cityCount, 1)}+ Cities
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <Users className="w-3.5 h-3.5 text-[#00A859]" />
+            Community Members
+          </span>
+        </div>
+      </section>
+
+      {/* ── Search ───────────────────────────────────────────── */}
+      <form
+        onSubmit={handleSearchSubmit}
+        className="relative animate-fade-in-up"
+        style={{ animationDelay: '0.05s' }}
+        id="home-search-form"
+      >
+        <div className="relative flex items-center bg-white rounded-full border border-[#D7E0EA] shadow-[0_8px_24px_rgba(11,37,69,0.08)] px-1.5 py-1.5">
+          {isSearching
+            ? <span className="absolute left-4 w-4 h-4 border-2 border-[#00A859] border-t-transparent rounded-full animate-spin" />
+            : <Search className="absolute left-4 w-4 h-4 text-slate-400" />
+          }
+          <input
+            type="text"
+            value={inputSearch}
+            onChange={(e) => { setInputSearch(e.target.value); if (!e.target.value.trim()) setApiResults(null); }}
+            placeholder="Search businesses, services or professionals..."
+            className="w-full pl-10 pr-[7.5rem] py-2.5 bg-transparent text-[13px] text-[#0B2545] placeholder:text-slate-400 outline-none"
+            id="home-search-input"
+          />
           <button
             type="button"
             onClick={() => {
@@ -441,37 +478,38 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               setSearchQueryText(query);
               onSwitchTab('search');
             }}
-            className="absolute right-2 px-2.5 py-1.5 rounded-xl bg-[#201B15] text-[#FFA048] font-bold text-[10px] border border-[#3A2F22] flex items-center gap-1 hover:bg-[#2D251C] transition-colors"
+            className="absolute right-1.5 px-3 py-2 rounded-full bg-[#00A859] text-white font-bold text-[11px] flex items-center gap-1 shadow-sm hover:bg-[#008C4A] transition-colors"
             id="home-location-badge-btn"
           >
-            <MapPin className="w-3 h-3 text-[#FFA048]" />
-            {CITY_KEYS.find(c => c.key === selectedCity)?.label || t.allCities}
+            <MapPin className="w-3.5 h-3.5" />
+            {CITY_KEYS.find((c) => c.key === selectedCity)?.label || t.allCities}
           </button>
-        </form>
-      </div>
+        </div>
+      </form>
 
-      {/* City Quick-Filter Pills */}
-      <div className="space-y-2 animate-fade-in-up" style={{animationDelay:'0.08s'}} id="home-city-filter">
+      {/* ── City chips ───────────────────────────────────────── */}
+      <div className="animate-fade-in-up" style={{ animationDelay: '0.08s' }} id="home-city-filter">
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none snap-x">
           {CITY_KEYS.map(({ key, label }) => {
             const count = key === 'all'
-              ? businesses.filter((b) => isLiveDirectoryListing(b)).length
-              : businesses.filter((b) => isLiveDirectoryListing(b) && b.city === key).length;
+              ? liveListings.length
+              : liveListings.filter((b) => b.city === key).length;
+            const active = selectedCity === key;
             return (
               <button
                 key={key}
                 onClick={() => setSelectedCity(key)}
-                className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold border transition-all snap-start ${
-                  selectedCity === key
-                    ? 'bg-[#FFA048] text-black border-[#FFA048] shadow-md'
-                    : 'bg-[#13110E] text-gray-400 border-[#2D2319] hover:border-[#FFA048]/40 hover:text-white'
+                className={`flex-shrink-0 flex items-center gap-1.5 pl-3 pr-2 py-2 rounded-full text-[11px] font-bold border transition-all snap-start ${
+                  active
+                    ? 'bg-[#0B2545] text-white border-[#0B2545] shadow-md'
+                    : 'bg-white text-[#0B2545] border-[#D7E0EA] hover:border-[#00A859]/50'
                 }`}
                 id={`city-pill-${key}`}
               >
-                <MapPin className="w-3 h-3" />
+                <MapPin className="w-3 h-3 text-[#00A859]" />
                 {label}
-                <span className={`text-[9px] px-1 py-0.5 rounded-full font-black ${
-                  selectedCity === key ? 'bg-black/20 text-black' : 'bg-[#201B15] text-[#FFA048]'
+                <span className={`min-w-[18px] h-[18px] px-1 rounded-full text-[9px] font-black flex items-center justify-center ${
+                  active ? 'bg-[#00A859] text-white' : 'bg-emerald-50 text-[#00A859]'
                 }`}>{count}</span>
               </button>
             );
@@ -479,203 +517,311 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         </div>
       </div>
 
-
-      <div className="space-y-3 animate-fade-in-up" style={{animationDelay:'0.10s'}} id="home-categories-block">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-extrabold tracking-medium text-[#F4E3D7] uppercase">
-            {t.categories}
-          </h3>
+      {/* ── Browse by Category ───────────────────────────────── */}
+      <section
+        className="rounded-[24px] bg-white border border-[#D7E0EA] shadow-sm p-4 animate-fade-in-up"
+        style={{ animationDelay: '0.1s' }}
+        id="home-categories-block"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-[15px] font-extrabold text-[#0B2545]">Browse By Category</h3>
           <button
             onClick={() => onSwitchTab('search')}
-            className="text-[10px] text-[#FFA048] font-extrabold flex items-center gap-1 hover:underline"
+            className="text-[12px] text-[#00A859] font-bold flex items-center gap-0.5 hover:underline"
             id="btn-categories-seeall"
           >
-            {t.seeAll} <ArrowRight className="w-3 h-3" />
+            See all <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
-
-        {/* Scroll grid row — shows ALL 15 categories */}
-        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none snap-x stagger-children" id="home-categories-scroll">
-          {categories.map((cat) => (
+        <div className="grid grid-cols-4 gap-3" id="home-categories-scroll">
+          {categoryGrid.map((cat) => (
             <button
               key={cat.id}
               onClick={() => handleCategoryClick(cat.id)}
-              className="flex-shrink-0 w-24 p-2.5 rounded-2xl bg-gradient-to-b from-[#191512] to-[#0F0E0C] border border-[#2D2319] flex flex-col items-center justify-center hover:border-[#FFA048]/60 hover:from-[#201B15] hover:to-[#13110E] transition-all text-center snap-start animate-scale-up card-hover shadow-lg"
+              className="flex flex-col items-center gap-2 text-center"
               id={`cat-card-${cat.id}`}
             >
-              <div className="w-10 h-10 rounded-xl bg-[#201B15] border border-[#3A2E22] flex items-center justify-center mb-2 shadow-inner">
-                {renderCategoryIcon(cat.iconName)}
+              <div className="w-14 h-14 rounded-full bg-[#F0F7F3] border border-emerald-100 flex items-center justify-center shadow-sm">
+                {renderCategoryIcon(cat.iconName, 'w-6 h-6 text-[#00A859]')}
               </div>
-              <span className="text-[10px] font-black text-gray-300 tracking-tight block truncate w-full">
+              <span className="text-[10px] font-bold text-[#0B2545] leading-tight line-clamp-2 w-full">
                 {cat.name.en}
               </span>
             </button>
           ))}
-        </div>
-      </div>
-
-
-
-      {/* Register Banner — any signed-in user without a listing yet */}
-      {currentUser &&
-        !businesses.some((b) => b.ownerId === currentUser?.id || b.ownerId === currentUser?.email) && (
-        <div className="animate-fade-in-up" style={{animationDelay:'0.15s'}}>
           <button
-            onClick={() => onSwitchTab('business')}
-            className="w-full p-4 rounded-3xl bg-gradient-to-r from-[#FFA048] to-[#D87D2E] text-black shadow-lg hover:shadow-xl transition-all active:scale-95 flex items-center justify-between"
-            id="btn-register-banner"
+            onClick={() => onSwitchTab('search')}
+            className="flex flex-col items-center gap-2 text-center"
+            id="cat-card-more"
           >
-            <div className="text-left">
-              <h2 className="text-lg font-black">{language === 'en' ? 'Register as a Business' : 'سجل كصاحب عمل'}</h2>
-              <p className="text-xs font-semibold opacity-80">{language === 'en' ? 'Join the community directory today' : 'انضم لدليل المجتمع اليوم'}</p>
+            <div className="w-14 h-14 rounded-full bg-[#EEF2F6] border border-[#D7E0EA] flex items-center justify-center shadow-sm">
+              <Grid3X3 className="w-6 h-6 text-[#0B2545]" />
             </div>
-            <ArrowRight className="w-6 h-6" />
+            <span className="text-[10px] font-bold text-[#0B2545]">More</span>
           </button>
         </div>
-      )}
+      </section>
 
-      {/* ── Active Job Openings Row — always visible; empty state when no jobs ── */}
-      <div className="space-y-3 animate-fade-in-up" style={{animationDelay:'0.18s'}} id="home-jobs-row">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-extrabold text-[#F4E3D7] uppercase tracking-medium">
-            🔥 {language === 'en' ? 'Active Job Openings' : 'الوظائف المتاحة'}
-          </h3>
+      {/* ── Looking to Hire? ─────────────────────────────────── */}
+      <section
+        className="rounded-[24px] bg-[#E8F7EF] border border-emerald-100 p-4 flex gap-3 items-center animate-fade-in-up"
+        style={{ animationDelay: '0.12s' }}
+        id="home-hire-card"
+      >
+        <div className="flex-1 min-w-0">
+          <h3 className="text-[16px] font-extrabold text-[#0B2545] mb-1">Looking to Hire?</h3>
+          <p className="text-[12px] text-slate-600 leading-snug mb-3">
+            Post a job and reach professionals across the Ahlebait community.
+          </p>
           <button
+            type="button"
+            onClick={() => onSwitchTab(currentUser ? 'job-board' : 'account')}
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[#00A859] text-white text-[12px] font-extrabold shadow-sm hover:bg-[#008C4A] transition-colors"
+            id="btn-post-job-cta"
+          >
+            Post a Job <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+        <div className="w-20 h-20 rounded-2xl bg-white/70 border border-emerald-100 flex items-center justify-center flex-shrink-0">
+          <Briefcase className="w-9 h-9 text-[#00A859]" />
+        </div>
+      </section>
+
+      {/* ── Jobs banner ──────────────────────────────────────── */}
+      <section
+        className="rounded-[24px] p-4 flex items-center gap-3 animate-fade-in-up"
+        style={{
+          animationDelay: '0.14s',
+          background: `linear-gradient(120deg, ${NAVY} 0%, #123B5D 55%, #0E3A2A 100%)`,
+        }}
+        id="home-jobs-banner"
+      >
+        <div className="flex-1 min-w-0">
+          <h3 className="text-[15px] font-extrabold text-white leading-snug mb-1">
+            Find the right talent. Grow your business.
+          </h3>
+          <p className="text-[11px] text-white/70 mb-3">
+            {activeJobs.length > 0
+              ? `${activeJobs.length} active opening${activeJobs.length === 1 ? '' : 's'} right now.`
+              : 'Browse community job openings and apply by email.'}
+          </p>
+          <button
+            type="button"
             onClick={() => onSwitchTab('job-board')}
-            className="text-[10px] text-[#FFA048] font-extrabold flex items-center gap-1 hover:underline"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white text-[#0B2545] text-[11px] font-extrabold hover:bg-emerald-50 transition-colors"
             id="btn-see-all-jobs"
           >
-            {language === 'en' ? 'See All Jobs' : 'كل الوظائف'} <ArrowRight className="w-3 h-3" />
+            See All Jobs <ArrowRight className="w-3.5 h-3.5 text-[#00A859]" />
           </button>
         </div>
+        <div className="w-16 h-16 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center flex-shrink-0">
+          <Search className="w-7 h-7 text-[#00A859]" />
+        </div>
+      </section>
 
-        {activeJobs.length === 0 ? (
-          <div className="p-4 rounded-2xl bg-[#13110E] border border-[#2D2319] text-center">
-            <p className="text-xs text-gray-500">
-              {language === 'en'
-                ? 'No active job openings yet. Business owners: Account → turn on Hiring Active → Manage Job Postings.'
-                : 'لا توجد وظائف نشطة حالياً. يمكن لأصحاب الأعمال نشر الوظائف من الحساب.'}
-            </p>
-          </div>
-        ) : (
-          /* Horizontal scrollable job cards */
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none snap-x" id="home-jobs-scroll">
+      {activeJobs.length > 0 && (
+        <div className="space-y-3 animate-fade-in-up" style={{ animationDelay: '0.15s' }} id="home-jobs-row">
+          <h3 className="text-[15px] font-extrabold text-[#0B2545]">Active Job Openings</h3>
+          <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none snap-x" id="home-jobs-scroll">
             {activeJobs.map((job) => (
               <button
                 key={job.id}
                 onClick={() => setSelectedJob(job)}
-                className="flex-shrink-0 w-52 p-3.5 rounded-2xl bg-[#13110E] border border-[#2D2319] hover:border-[#FFA048]/30 transition-all text-left space-y-2 snap-start group"
+                className="flex-shrink-0 w-52 p-3.5 rounded-2xl bg-white border border-[#D7E0EA] shadow-sm hover:border-[#00A859]/40 transition-all text-left space-y-2 snap-start"
                 id={`home-job-card-${job.id}`}
               >
-                {/* Business logo + title */}
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl overflow-hidden bg-[#0F0E0C] border border-[#2D2319] flex-shrink-0">
+                  <div className="w-8 h-8 rounded-xl overflow-hidden bg-slate-100 border border-[#D7E0EA] flex-shrink-0">
                     <BusinessThumbnail
                       business={{ id: job.businessId, name: job.businessName, logoUrl: job.imageUrl || job.businessLogoUrl }}
                       className="w-full h-full object-cover"
                       eager
                     />
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-[9px] text-gray-500 truncate">{job.businessName}</p>
-                  </div>
+                  <p className="text-[9px] text-slate-500 truncate">{job.businessName}</p>
                 </div>
-
-                <h4 className="text-[11px] font-extrabold text-white group-hover:text-[#FFA048] transition-colors leading-tight line-clamp-2">
-                  {job.title}
-                </h4>
-
+                <h4 className="text-[12px] font-extrabold text-[#0B2545] leading-tight line-clamp-2">{job.title}</h4>
                 <span className={`inline-block text-[8px] font-bold px-2 py-0.5 rounded-full border ${JOB_CATEGORY_COLORS[job.category]}`}>
                   {job.category}
                 </span>
-
-                <div className="text-[9px] font-extrabold text-green-400">
+                <div className="text-[10px] font-extrabold text-[#00A859]">
                   ${job.salaryMin.toLocaleString()} – ${job.salaryMax.toLocaleString()}/mo
                 </div>
-
-                {job.requirements && (
-                  <p className="text-[9px] text-gray-500 line-clamp-2 leading-snug">{job.requirements}</p>
-                )}
               </button>
             ))}
           </div>
-        )}
-      </div>
-
-      {/* All listings directory strip */}
-      <div className="space-y-3 animate-fade-in-up" style={{animationDelay:'0.20s'}} id="home-listings-block">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <h3 className="text-sm font-extrabold text-[#F4E3D7] uppercase tracking-medium">
-              {apiResults !== null ? (language === 'en' ? 'Search Results' : 'نتائج البحث') : t.allBusinesses}
-            </h3>
-            {apiResults !== null && (
-              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#FFA048]/15 text-[#FFA048] border border-[#FFA048]/30 flex-shrink-0">
-                {activeBusinesses.length} {language === 'en' ? 'found' : 'نتيجة'}
-              </span>
-            )}
-          </div>
-          {apiResults === null && (
-            <button
-              onClick={() => { setSearchQueryText(''); onSwitchTab('search'); }}
-              className="text-[10px] text-[#FFA048] font-bold hover:underline flex-shrink-0"
-              id="btn-allbusinesses-seeall"
-            >
-              {t.seeAll}
-            </button>
-          )}
         </div>
+      )}
 
-        {/* Regular businesses list stack */}
-        <div className="space-y-3.5 stagger-children" id="home-all-listings-list">
-          {activeBusinesses.map((biz) => {
+      {currentUser &&
+        !businesses.some((b) => b.ownerId === currentUser?.id || b.ownerId === currentUser?.email) && (
+        <button
+          onClick={() => onSwitchTab('business')}
+          className="w-full p-4 rounded-[24px] bg-gradient-to-r from-[#00A859] to-[#008C4A] text-white shadow-lg hover:shadow-xl transition-all active:scale-[0.99] flex items-center justify-between animate-fade-in-up"
+          id="btn-register-banner"
+        >
+          <div className="text-left">
+            <h2 className="text-base font-black">Register as a Business</h2>
+            <p className="text-xs font-semibold opacity-90">Join the community directory today</p>
+          </div>
+          <ArrowRight className="w-5 h-5" />
+        </button>
+      )}
+
+      {/* ── Featured Businesses ──────────────────────────────── */}
+      <section className="space-y-3 animate-fade-in-up" style={{ animationDelay: '0.16s' }} id="home-featured-block">
+        <div className="flex items-center justify-between">
+          <h3 className="text-[15px] font-extrabold text-[#0B2545]">Featured Businesses</h3>
+          <button
+            onClick={() => { setSearchQueryText(''); onSwitchTab('search'); }}
+            className="text-[12px] text-[#00A859] font-bold flex items-center gap-0.5"
+          >
+            See all <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+        <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none snap-x">
+          {(apiResults !== null ? activeBusinesses : featuredBusinesses).slice(0, 8).map((biz) => {
             const isOpen = isBusinessOpenNow(biz.workingHours.en);
+            const saved = favorites.includes(biz.id);
             return (
               <div
                 key={biz.id}
-                onClick={() => onSelectBusiness(biz)}
-                className="flex items-center gap-3.5 p-3 rounded-2xl bg-[#13110E] border border-[#2D2319] hover:border-[#FFA048]/30 transition-all cursor-pointer animate-fade-in-up card-hover"
-                id={`list-item-${biz.id}`}
+                className="flex-shrink-0 w-[168px] rounded-[20px] bg-white border border-[#D7E0EA] shadow-sm overflow-hidden snap-start"
+                id={`featured-card-${biz.id}`}
               >
-                {/* Image avatar left side */}
-                <div className="w-14 h-14 rounded-xl overflow-hidden bg-stone-900 border border-[#2D2319] flex-shrink-0">
-                  <BusinessThumbnail business={biz} eager />
+                <div className="relative h-[110px] bg-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => onSelectBusiness(biz)}
+                    className="w-full h-full block"
+                  >
+                    <BusinessThumbnail business={biz} className="w-full h-full object-cover" eager />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      void toggleFavorite(biz.id);
+                    }}
+                    className="absolute top-2 right-2 p-1.5 rounded-full bg-white/90 shadow-sm"
+                    aria-label={saved ? 'Remove favorite' : 'Save'}
+                  >
+                    <Heart className={`w-3.5 h-3.5 ${saved ? 'fill-red-500 text-red-500' : 'text-slate-400'}`} />
+                  </button>
                 </div>
-
-                {/* Center description */}
-                <div className="flex-1 min-w-0">
-                  <h4 className="text-xs font-black text-white hover:text-[#FFA048] truncate transition-colors leading-snug">
-                    {biz.name}
-                  </h4>
-                  <p className="text-[10px] text-gray-400 capitalize mt-0.5">
-                    {textEn(biz.subcategory)}
+                <button
+                  type="button"
+                  onClick={() => onSelectBusiness(biz)}
+                  className="w-full text-left p-3 space-y-1"
+                >
+                  <h4 className="text-[12px] font-extrabold text-[#0B2545] truncate">{biz.name}</h4>
+                  <p className="text-[10px] text-slate-500 truncate capitalize">{textEn(biz.subcategory)}</p>
+                  <p className="text-[10px] text-slate-500 flex items-center gap-0.5 truncate">
+                    <MapPin className="w-3 h-3 text-[#00A859] flex-shrink-0" />
+                    {biz.city}
                   </p>
-                  <span className="text-[9px] text-gray-500 flex items-center gap-0.5 mt-1">
-                    <MapPin className="w-3 h-3 text-[#FFA048]" />
-                    {t[biz.city.replace(/\\s+/g, '').toLowerCase() as 'newyork' | 'losangeles' | 'chicago']} ({biz.area})
-                  </span>
-                </div>
-
-                {/* Right side: Verification + Rating + Open/Closed */}
-                <div className="text-right flex flex-col items-end gap-1 flex-shrink-0">
-                  {biz.isVerified && (
-                    <CheckCircle className="w-3.5 h-3.5 text-green-400 fill-green-400/20" />
-                  )}
-                  <span className="text-[10px] font-black text-[#FFA048]">
-                    ★ {biz.rating}
-                  </span>
-                  {isOpen !== null && (
-                    <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded ${isOpen ? 'badge-open' : 'badge-closed'}`}>
-                      {isOpen ? 'Open' : 'Closed'}
+                  <div className="flex items-center gap-1.5 pt-0.5">
+                    <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-amber-500">
+                      <Star className="w-3 h-3 fill-amber-400" /> {biz.rating || '—'}
                     </span>
-                  )}
-                </div>
+                    {biz.reviewsCount > 0 && (
+                      <span className="text-[9px] text-slate-400">({biz.reviewsCount})</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                    {biz.isVerified && (
+                      <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-[#123B5D]">
+                        <CheckCircle className="w-3 h-3 text-sky-500" /> Verified
+                      </span>
+                    )}
+                    {isOpen !== null && (
+                      <span className={`text-[9px] font-bold ${isOpen ? 'text-[#00A859]' : 'text-red-500'}`}>
+                        {isOpen ? 'Open Now' : 'Closed'}
+                      </span>
+                    )}
+                  </div>
+                </button>
               </div>
             );
           })}
         </div>
-      </div>
+      </section>
 
+      {(apiResults !== null || inputSearch.trim() || selectedCity !== 'all') && (
+        <section className="space-y-3 animate-fade-in-up" id="home-listings-block">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-[15px] font-extrabold text-[#0B2545]">
+              {apiResults !== null ? 'Search Results' : t.allBusinesses}
+            </h3>
+            {apiResults !== null && (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-[#00A859] border border-emerald-200">
+                {activeBusinesses.length} found
+              </span>
+            )}
+          </div>
+          <div className="space-y-3" id="home-all-listings-list">
+            {activeBusinesses.map((biz) => {
+              const isOpen = isBusinessOpenNow(biz.workingHours.en);
+              return (
+                <div
+                  key={biz.id}
+                  onClick={() => onSelectBusiness(biz)}
+                  className="flex items-center gap-3.5 p-3 rounded-[20px] bg-white border border-[#D7E0EA] shadow-sm hover:border-[#00A859]/35 transition-all cursor-pointer"
+                  id={`list-item-${biz.id}`}
+                >
+                  <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 border border-[#D7E0EA] flex-shrink-0">
+                    <BusinessThumbnail business={biz} eager />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-xs font-black text-[#0B2545] truncate">{biz.name}</h4>
+                    <p className="text-[10px] text-slate-500 capitalize mt-0.5">{textEn(biz.subcategory)}</p>
+                    <span className="text-[9px] text-slate-500 flex items-center gap-0.5 mt-1">
+                      <MapPin className="w-3 h-3 text-[#00A859]" />
+                      {biz.city}{biz.area ? ` (${biz.area})` : ''}
+                    </span>
+                  </div>
+                  <div className="text-right flex flex-col items-end gap-1 flex-shrink-0">
+                    {biz.isVerified && <CheckCircle className="w-3.5 h-3.5 text-sky-500" />}
+                    <span className="text-[10px] font-black text-amber-500">★ {biz.rating}</span>
+                    {isOpen !== null && (
+                      <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded ${isOpen ? 'badge-open' : 'badge-closed'}`}>
+                        {isOpen ? 'Open' : 'Closed'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* ── Stronger Together ────────────────────────────────── */}
+      <section
+        className="rounded-[24px] bg-white border border-[#D7E0EA] shadow-sm p-5 animate-fade-in-up"
+        style={{ animationDelay: '0.18s' }}
+        id="home-community-block"
+      >
+        <div className="flex items-center gap-2 mb-4">
+          <Handshake className="w-5 h-5 text-[#00A859]" />
+          <h3 className="text-[15px] font-extrabold text-[#0B2545]">Stronger Together</h3>
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { icon: Store, title: 'Shop Local', body: 'Support community businesses near you.' },
+            { icon: Briefcase, title: 'Create Jobs', body: 'Hire talent from within the network.' },
+            { icon: Users, title: 'Build Community', body: 'Grow connections that last.' },
+          ].map((item) => (
+            <div key={item.title} className="text-center space-y-1.5">
+              <div className="mx-auto w-10 h-10 rounded-full bg-[#F0F7F3] flex items-center justify-center">
+                <item.icon className="w-4 h-4 text-[#00A859]" />
+              </div>
+              <p className="text-[11px] font-extrabold text-[#0B2545]">{item.title}</p>
+              <p className="text-[9px] text-slate-500 leading-snug">{item.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 };
