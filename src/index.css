@@ -479,11 +479,33 @@ html.light nav .text-gray-500 {
 
 /* ── Mobile root ─────────────────────────────────────────── */
 html.light #app-root-mobile {
-  background: #EEF2F6 !important;
+  background: #F4F7FB !important;
 }
-html.light #app-root-mobile > .flex-shrink-0 {
-  background-color: rgba(255,255,255,0.92) !important;
-  border-color: var(--color-border) !important;
+html.light #app-root-mobile > .flex-shrink-0,
+html.light #bottom-nav-shell,
+html.light #bottom-nav {
+  background-color: #FFFFFF !important;
+  border-color: #D7E0EA !important;
+  box-shadow: none !important;
+}
+html.light #bottom-nav button {
+  background: transparent !important;
+}
+html.light #home-hero,
+html.light #home-hero p,
+html.light #home-hero h1,
+html.light #home-hero span,
+html.light #home-hero .text-white {
+  color: #FFFFFF !important;
+}
+html.light #home-hero .text-\[\#8EB6FF\] {
+  color: #8EB6FF !important;
+}
+html.light #home-jobs-banner h3,
+html.light #home-jobs-banner p,
+html.light #home-jobs-banner button,
+html.light #home-jobs-banner svg {
+  color: #FFFFFF !important;
 }
 
 /* ── Web app root (browser layout — abn-1.onrender.com) ─── */

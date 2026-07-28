@@ -45,62 +45,49 @@ import {
   Grid3X3,
   Globe,
   Bell,
+  MessageSquare,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 import { Business, BusinessStatus } from '../types';
 
 const NAVY = '#0A1B4A';
 
-/** Decorative network globe behind the home hero (matches mockup). */
-const HeroGlobe: React.FC = () => (
+/** Network map graphic for navy hero (final mockup). */
+const HeroNetworkMap: React.FC = () => (
   <svg
-    className="pointer-events-none absolute -right-4 -top-1 w-[82%] max-w-[360px] h-auto opacity-[0.72]"
-    viewBox="0 0 360 320"
+    className="pointer-events-none absolute inset-0 w-full h-full opacity-40"
+    viewBox="0 0 390 280"
     fill="none"
     aria-hidden="true"
-    id="home-hero-globe"
+    id="home-hero-network"
+    preserveAspectRatio="xMidYMid slice"
   >
     <defs>
-      <radialGradient id="globeFill" cx="48%" cy="42%" r="58%">
-        <stop offset="0%" stopColor="#C5D9EC" stopOpacity="0.7" />
-        <stop offset="55%" stopColor="#8FB0D0" stopOpacity="0.35" />
-        <stop offset="100%" stopColor="#0A1B4A" stopOpacity="0.06" />
+      <radialGradient id="netGlow" cx="70%" cy="35%" r="50%">
+        <stop offset="0%" stopColor="#1B5BFF" stopOpacity="0.45" />
+        <stop offset="100%" stopColor="#0A1B4A" stopOpacity="0" />
       </radialGradient>
-      <linearGradient id="globeStroke" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stopColor="#0A1B4A" stopOpacity="0.35" />
-        <stop offset="100%" stopColor="#3D6A92" stopOpacity="0.55" />
-      </linearGradient>
     </defs>
-    {/* Globe disc — navy-tinted */}
-    <circle cx="210" cy="150" r="120" fill="url(#globeFill)" stroke="url(#globeStroke)" strokeWidth="1.6" />
-    {/* Latitude */}
-    <ellipse cx="210" cy="150" rx="120" ry="40" stroke="#0A1B4A" strokeWidth="1.1" opacity="0.28" />
-    <ellipse cx="210" cy="150" rx="120" ry="74" stroke="#0A1B4A" strokeWidth="1" opacity="0.22" />
-    <ellipse cx="210" cy="150" rx="120" ry="102" stroke="#0A1B4A" strokeWidth="1" opacity="0.16" />
-    {/* Longitude */}
-    <ellipse cx="210" cy="150" rx="44" ry="120" stroke="#0A1B4A" strokeWidth="1.1" opacity="0.28" />
-    <ellipse cx="210" cy="150" rx="80" ry="120" stroke="#0A1B4A" strokeWidth="1" opacity="0.2" />
-    <path d="M210 30 V270" stroke="#0A1B4A" strokeWidth="1.1" opacity="0.22" />
-    {/* Network arcs */}
-    <path d="M90 115 C140 65, 250 50, 315 105" stroke="#0A1B4A" strokeWidth="1.3" opacity="0.35" strokeDasharray="4 5" />
-    <path d="M105 205 C165 245, 255 240, 325 170" stroke="#1B5BFF" strokeWidth="1.3" opacity="0.45" strokeDasharray="3 5" />
-    <path d="M125 88 C180 128, 245 122, 295 80" stroke="#0A1B4A" strokeWidth="1.1" opacity="0.3" />
-    {/* Pins */}
-    <circle cx="128" cy="92" r="5" fill="#1B5BFF" />
-    <circle cx="128" cy="92" r="9" stroke="#1B5BFF" strokeWidth="1.4" opacity="0.4" />
-    <circle cx="252" cy="68" r="4.5" fill="#1B5BFF" />
-    <circle cx="252" cy="68" r="8.5" stroke="#1B5BFF" strokeWidth="1.3" opacity="0.35" />
-    <circle cx="292" cy="138" r="5" fill="#0A1B4A" />
-    <circle cx="292" cy="138" r="9" stroke="#0A1B4A" strokeWidth="1.3" opacity="0.3" />
-    <circle cx="178" cy="198" r="4" fill="#1B5BFF" opacity="0.9" />
-    <circle cx="318" cy="182" r="4" fill="#0A1B4A" opacity="0.7" />
-    {/* City skyline — navy */}
-    <path
-      d="M150 272 h20 v-26 h11 v16 h13 v-34 h15 v34 h9 v-20 h17 v20 h11 v-14 h15 v30 h24"
-      stroke="#0A1B4A"
-      strokeWidth="1.8"
-      fill="none"
-      opacity="0.28"
-    />
+    <rect width="390" height="280" fill="url(#netGlow)" />
+    {/* Connection lines */}
+    <path d="M40 80 L120 60 L200 95 L280 50 L350 90" stroke="#8EB6FF" strokeWidth="1" opacity="0.5" />
+    <path d="M60 160 L140 130 L220 170 L300 120 L360 155" stroke="#8EB6FF" strokeWidth="1" opacity="0.35" strokeDasharray="4 6" />
+    <path d="M90 220 L170 190 L250 230 L330 200" stroke="#5B8CFF" strokeWidth="1" opacity="0.4" />
+    <path d="M120 60 L140 130 L170 190" stroke="#8EB6FF" strokeWidth="0.8" opacity="0.35" />
+    <path d="M200 95 L220 170 L250 230" stroke="#8EB6FF" strokeWidth="0.8" opacity="0.3" />
+    <path d="M280 50 L300 120 L330 200" stroke="#8EB6FF" strokeWidth="0.8" opacity="0.35" />
+    {/* Nodes */}
+    {[
+      [40, 80], [120, 60], [200, 95], [280, 50], [350, 90],
+      [60, 160], [140, 130], [220, 170], [300, 120], [360, 155],
+      [90, 220], [170, 190], [250, 230], [330, 200], [180, 110],
+    ].map(([x, y], i) => (
+      <g key={i}>
+        <circle cx={x} cy={y} r="3.5" fill={i % 3 === 0 ? '#FFFFFF' : '#1B5BFF'} />
+        <circle cx={x} cy={y} r="7" stroke="#8EB6FF" strokeWidth="1" opacity="0.35" />
+      </g>
+    ))}
   </svg>
 );
 
@@ -418,417 +405,394 @@ export const HomeTab: React.FC<HomeTabProps> = ({
   }
 
   return (
-    <div className="pb-4" id="home-tab-container">
+    <div className="pb-6 bg-[#F4F7FB]" id="home-tab-container">
 
-      {/* ── Hero — final navy brand header ───────────────────── */}
+      {/* ── Hero (final mockup) ──────────────────────────────── */}
       <section
-        className="relative overflow-hidden px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-14 animate-fade-in-up"
+        className="relative overflow-hidden px-4 pt-[max(0.85rem,env(safe-area-inset-top))] pb-16"
         id="home-hero"
-        style={{
-          background: 'linear-gradient(160deg, #0A1B4A 0%, #123A7A 48%, #1B5BFF 120%)',
-        }}
+        style={{ background: 'linear-gradient(165deg, #061433 0%, #0A1B4A 42%, #123A7A 100%)' }}
       >
-        <div className="relative flex items-start justify-between gap-3 mb-4">
+        <HeroNetworkMap />
+
+        <div className="relative flex items-start justify-between gap-3 mb-5">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-lg flex-shrink-0 overflow-hidden p-1">
-              <AbnLogo size="sm" className="h-12 max-w-[48px]" />
+            <div className="w-[52px] h-[52px] rounded-full bg-white flex items-center justify-center shadow-[0_8px_24px_rgba(0,0,0,0.25)] flex-shrink-0 overflow-hidden p-1">
+              <AbnLogo size="sm" className="h-11 max-w-[44px]" />
             </div>
             <div className="min-w-0">
-              <h1 className="leading-none">
-                <span className="text-[28px] font-black tracking-tight text-white">AB</span>
-                <span className="text-[28px] font-black tracking-tight text-[#8EB6FF]">N</span>
+              <h1 className="leading-none flex items-baseline gap-0">
+                <span className="text-[30px] font-black tracking-tight text-white">ABN</span>
               </h1>
-              <p className="text-[9px] font-bold tracking-[0.16em] uppercase text-white/90 mt-0.5">
+              <p className="text-[9px] font-bold tracking-[0.18em] uppercase text-white mt-0.5">
                 Ahlebait Network
               </p>
-              <p className="text-[8px] font-semibold tracking-[0.14em] uppercase text-[#8EB6FF] mt-0.5">
+              <p className="text-[8px] font-semibold tracking-[0.16em] uppercase text-[#8EB6FF] mt-0.5">
                 Connect · Collaborate · Grow
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 flex-shrink-0">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <button
               type="button"
               onClick={() => onSwitchTab('notifications')}
-              className="p-2.5 rounded-full bg-white/10 border border-white/20 text-white"
+              className="relative p-2 rounded-full border border-white/35 text-white hover:bg-white/10"
               aria-label="Notifications"
             >
-              <Bell className="w-4 h-4" />
+              <Bell className="w-4 h-4" strokeWidth={2} />
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#1B5BFF]" />
             </button>
             <button
               type="button"
-              onClick={() => void handleRefreshApp()}
-              disabled={isRefreshing}
-              className="p-2.5 rounded-full bg-white/10 border border-white/20 text-white disabled:opacity-60"
-              aria-label="Refresh"
-              id="btn-home-refresh"
+              onClick={() => onSwitchTab('notifications')}
+              className="p-2 rounded-full border border-white/35 text-white hover:bg-white/10"
+              aria-label="Messages"
             >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <MessageSquare className="w-4 h-4" strokeWidth={2} />
             </button>
           </div>
         </div>
 
-        <p className="relative text-[13px] text-white/85 font-medium mb-4 max-w-[300px] leading-snug">
+        <p className="relative text-[14px] text-white font-medium mb-5 max-w-[320px] leading-snug">
           Connecting Businesses. Building Community. Creating Opportunities.
         </p>
 
-        <div className="relative grid grid-cols-3 gap-2 text-center">
-          <div className="rounded-2xl bg-white/10 border border-white/15 px-2 py-2.5">
-            <Store className="w-4 h-4 text-[#8EB6FF] mx-auto mb-1" />
-            <p className="text-[12px] font-black text-white">{liveListings.length.toLocaleString()}+</p>
-            <p className="text-[9px] text-white/70 font-semibold">Businesses</p>
-          </div>
-          <div className="rounded-2xl bg-white/10 border border-white/15 px-2 py-2.5">
-            <MapPin className="w-4 h-4 text-[#8EB6FF] mx-auto mb-1" />
-            <p className="text-[12px] font-black text-white">{Math.max(cityCount, 1)}+</p>
-            <p className="text-[9px] text-white/70 font-semibold">Cities</p>
-          </div>
-          <div className="rounded-2xl bg-white/10 border border-white/15 px-2 py-2.5">
-            <Users className="w-4 h-4 text-[#8EB6FF] mx-auto mb-1" />
-            <p className="text-[12px] font-black text-white">12k+</p>
-            <p className="text-[9px] text-white/70 font-semibold">Members</p>
-          </div>
+        <div className="relative flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] font-semibold text-white/95">
+          <span className="inline-flex items-center gap-1.5">
+            <Building2 className="w-3.5 h-3.5 text-[#8EB6FF]" />
+            {Math.max(liveListings.length, 1).toLocaleString()}+ Businesses
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <MapPin className="w-3.5 h-3.5 text-[#8EB6FF]" />
+            {Math.max(cityCount, 1)}+ Cities
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <Users className="w-3.5 h-3.5 text-[#8EB6FF]" />
+            12,000+ Members
+          </span>
         </div>
       </section>
 
-      <div className="space-y-5 px-4 -mt-8 relative z-10">
+      <div className="space-y-5 px-4 -mt-9 relative z-10">
 
-      {/* ── Search (overlaps hero) ───────────────────────────── */}
-      <form
-        onSubmit={handleSearchSubmit}
-        className="relative animate-fade-in-up"
-        style={{ animationDelay: '0.05s' }}
-        id="home-search-form"
-      >
-        <div
-          className="relative flex items-center bg-white rounded-[22px] border border-[#D7E0EA] shadow-[0_12px_32px_rgba(10,27,74,0.14)] px-1.5 py-1.5"
-          id="home-search-box"
-        >
-          {isSearching
-            ? <span className="absolute left-4 w-4 h-4 border-2 border-[#1B5BFF] border-t-transparent rounded-full animate-spin" />
-            : <Search className="absolute left-4 w-4 h-4 text-[#1B5BFF]" />
-          }
-          <input
-            type="text"
-            value={inputSearch}
-            onChange={(e) => { setInputSearch(e.target.value); if (!e.target.value.trim()) setApiResults(null); }}
-            placeholder="Search businesses, professionals or services..."
-            className="w-full pl-10 pr-[7.5rem] py-2.5 bg-transparent text-[13px] text-[#0A1B4A] placeholder:text-slate-400 outline-none rounded-[18px]"
-            id="home-search-input"
-          />
-          <button
-            type="button"
-            onClick={() => {
-              const query = selectedCity !== 'all' ? selectedCity : '';
-              setInputSearch(query);
-              setSearchQueryText(query);
-              onSwitchTab('search');
-            }}
-            className="absolute right-1.5 px-3 py-2 rounded-[14px] bg-[#1B5BFF] text-white font-bold text-[11px] flex items-center gap-1 shadow-sm hover:bg-[#0B3FCC] transition-colors"
-            id="home-location-badge-btn"
+        {/* Search */}
+        <form onSubmit={handleSearchSubmit} id="home-search-form">
+          <div
+            className="relative flex items-center bg-white rounded-2xl border border-[#D7E0EA] shadow-[0_14px_36px_rgba(10,27,74,0.14)] px-1.5 py-1.5"
+            id="home-search-box"
           >
-            <MapPin className="w-3.5 h-3.5" />
-            {CITY_KEYS.find((c) => c.key === selectedCity)?.label || t.allCities}
-          </button>
-        </div>
-      </form>
-
-      {/* Register CTA */}
-      {currentUser &&
-        !businesses.some((b) => b.ownerId === currentUser?.id || b.ownerId === currentUser?.email) && (
-        <button
-          onClick={() => onSwitchTab('business')}
-          className="w-full p-4 rounded-[24px] bg-gradient-to-r from-[#1B5BFF] to-[#0B3FCC] text-white shadow-lg hover:shadow-xl transition-all active:scale-[0.99] flex items-center justify-between animate-fade-in-up"
-          id="btn-register-banner"
-        >
-          <div className="text-left">
-            <h2 className="text-base font-black text-white">Register as a Business / Service Provider</h2>
-            <p className="text-xs font-semibold text-white/95">Join the community directory today</p>
+            {isSearching
+              ? <span className="absolute left-3.5 w-4 h-4 border-2 border-[#1B5BFF] border-t-transparent rounded-full animate-spin" />
+              : <Search className="absolute left-3.5 w-4 h-4 text-[#1B5BFF]" />
+            }
+            <input
+              type="text"
+              value={inputSearch}
+              onChange={(e) => { setInputSearch(e.target.value); if (!e.target.value.trim()) setApiResults(null); }}
+              placeholder="Search businesses, professionals or services..."
+              className="w-full pl-10 pr-[7.8rem] py-3 bg-transparent text-[13px] text-[#0A1B4A] placeholder:text-slate-400 outline-none"
+              id="home-search-input"
+            />
+            <button
+              type="button"
+              onClick={() => {
+                const query = selectedCity !== 'all' ? selectedCity : '';
+                setSearchQueryText(query);
+                onSwitchTab('search');
+              }}
+              className="absolute right-1.5 px-2.5 py-2 rounded-xl bg-[#1B5BFF] text-white font-bold text-[11px] flex items-center gap-1"
+              id="home-location-badge-btn"
+            >
+              <MapPin className="w-3 h-3" />
+              <span className="max-w-[4.5rem] truncate">
+                {CITY_KEYS.find((c) => c.key === selectedCity)?.label || t.allCities}
+              </span>
+              <ChevronDown className="w-3 h-3 opacity-90" />
+            </button>
           </div>
-          <ArrowRight className="w-5 h-5 text-white" />
-        </button>
-      )}
+        </form>
 
-      {/* ── City chips ───────────────────────────────────────── */}
-      <div className="animate-fade-in-up" style={{ animationDelay: '0.08s' }} id="home-city-filter">
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none snap-x">
-          {CITY_KEYS.map(({ key, label }) => {
-            const count = key === 'all'
-              ? liveListings.length
-              : liveListings.filter((b) => b.city === key).length;
-            const active = selectedCity === key;
-            return (
-              <button
-                key={key}
-                onClick={() => setSelectedCity(key)}
-                data-active={active ? 'true' : 'false'}
-                className={`city-pill flex-shrink-0 flex items-center gap-1.5 pl-3 pr-2 py-2 rounded-full text-[11px] font-bold border transition-all snap-start ${
-                  active
-                    ? 'city-pill-active bg-[#1B5BFF] text-white border-[#1B5BFF] shadow-md'
-                    : 'bg-white text-[#0A1B4A] border-[#D7E0EA] hover:border-[#1B5BFF]/50'
-                }`}
-                id={`city-pill-${key}`}
-              >
-                {key === 'all'
-                  ? <Globe className={`w-3.5 h-3.5 ${active ? 'text-white' : 'text-[#1B5BFF]'}`} />
-                  : <MapPin className="w-3 h-3 text-[#1B5BFF]" />}
-                <span className={active ? 'text-white' : 'text-[#0A1B4A]'}>{label}</span>
-                <span className={`city-pill-count min-w-[18px] h-[18px] px-1 rounded-full text-[9px] font-black flex items-center justify-center ${
-                  active ? 'bg-white text-[#1B5BFF]' : 'bg-[#EEF3FF] text-[#1B5BFF]'
-                }`}>{count}</span>
-              </button>
-            );
-          })}
+        {/* City chips — mockup style (no zero cities) */}
+        <div id="home-city-filter">
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none snap-x">
+            {CITY_KEYS.map(({ key, label }) => {
+              const active = selectedCity === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => setSelectedCity(key)}
+                  data-active={active ? 'true' : 'false'}
+                  className={`city-pill flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[11px] font-bold border transition-all snap-start ${
+                    active
+                      ? 'city-pill-active bg-[#1B5BFF] text-white border-[#1B5BFF] shadow-md'
+                      : 'bg-white text-[#1B5BFF] border-[#1B5BFF]/45'
+                  }`}
+                  id={`city-pill-${key}`}
+                >
+                  {key === 'all'
+                    ? <Globe className={`w-3.5 h-3.5 ${active ? 'text-white' : 'text-[#1B5BFF]'}`} />
+                    : <MapPin className={`w-3 h-3 ${active ? 'text-white' : 'text-[#1B5BFF]'}`} />}
+                  <span className={active ? 'text-white' : 'text-[#1B5BFF]'}>{label}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-      {/* ── Featured Businesses / Service Providers — below cities */}
-      <section className="space-y-3 animate-fade-in-up" style={{ animationDelay: '0.1s' }} id="home-featured-block">
-        <div className="flex items-center justify-between">
-          <h3 className="text-[15px] font-extrabold text-[#0A1B4A]">Featured Businesses / Service Providers</h3>
-          <button
-            onClick={() => { setSearchQueryText(''); onSwitchTab('search'); }}
-            className="text-[12px] text-[#1B5BFF] font-bold flex items-center gap-0.5 flex-shrink-0"
-          >
-            See all <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-        <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none snap-x">
-          {(apiResults !== null ? activeBusinesses : featuredBusinesses).slice(0, 8).map((biz) => {
-            const isOpen = isBusinessOpenNow(biz.workingHours.en);
-            const saved = favorites.includes(biz.id);
-            return (
-              <div
-                key={biz.id}
-                className="flex-shrink-0 w-[168px] rounded-[20px] bg-white border border-[#D7E0EA] shadow-sm overflow-hidden snap-start"
-                id={`featured-card-${biz.id}`}
-              >
-                <div className="relative h-[110px] bg-[#0A1B4A]">
+        {/* Featured Businesses — mockup cards */}
+        <section className="space-y-3" id="home-featured-block">
+          <div className="flex items-center justify-between">
+            <h3 className="text-[16px] font-extrabold text-[#0A1B4A]">Featured Businesses</h3>
+            <button
+              onClick={() => { setSearchQueryText(''); onSwitchTab('search'); }}
+              className="text-[12px] text-[#1B5BFF] font-bold flex items-center gap-0.5"
+            >
+              See all <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none snap-x">
+            {(apiResults !== null ? activeBusinesses : featuredBusinesses).slice(0, 8).map((biz) => {
+              const isOpen = isBusinessOpenNow(biz.workingHours.en);
+              const saved = favorites.includes(biz.id);
+              return (
+                <div
+                  key={biz.id}
+                  className="flex-shrink-0 w-[210px] rounded-2xl bg-white border border-[#D7E0EA] shadow-sm p-3 snap-start relative"
+                  id={`featured-card-${biz.id}`}
+                >
                   <button
                     type="button"
-                    onClick={() => onSelectBusiness(biz)}
-                    className="w-full h-full block relative"
-                  >
-                    <BusinessThumbnail business={biz} className="w-full h-full object-cover opacity-90" eager />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0A1B4A]/55 to-transparent pointer-events-none" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      void toggleFavorite(biz.id);
-                    }}
-                    className="absolute top-2 right-2 p-1.5 rounded-full bg-white/95 shadow-sm"
+                    onClick={(e) => { e.stopPropagation(); void toggleFavorite(biz.id); }}
+                    className="absolute top-2.5 right-2.5 p-1.5 z-10"
                     aria-label={saved ? 'Remove favorite' : 'Save'}
                   >
-                    <Heart className={`w-3.5 h-3.5 ${saved ? 'fill-red-500 text-red-500' : 'text-[#0A1B4A]'}`} />
+                    <Heart className={`w-4 h-4 ${saved ? 'fill-red-500 text-red-500' : 'text-slate-300'}`} />
+                  </button>
+                  <button type="button" onClick={() => onSelectBusiness(biz)} className="w-full text-left space-y-2">
+                    <div className="w-12 h-12 rounded-xl bg-[#EEF3FF] border border-blue-100 overflow-hidden flex items-center justify-center">
+                      <BusinessThumbnail business={biz} className="w-full h-full object-cover" eager />
+                    </div>
+                    <div className="flex items-center gap-1 min-w-0 pr-5">
+                      <h4 className="text-[13px] font-extrabold text-[#0A1B4A] truncate">{biz.name}</h4>
+                      {biz.isVerified && <CheckCircle className="w-3.5 h-3.5 text-[#1B5BFF] flex-shrink-0" />}
+                    </div>
+                    <p className="text-[11px] text-slate-500 capitalize truncate">{textEn(biz.subcategory)}</p>
+                    <p className="text-[11px] text-slate-500 flex items-center gap-1 truncate">
+                      <MapPin className="w-3 h-3 text-[#1B5BFF] flex-shrink-0" />
+                      {biz.city}
+                    </p>
+                    <div className="flex items-center justify-between gap-2 pt-0.5">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-[#0A1B4A]">
+                          <Star className="w-3 h-3 fill-amber-400 text-amber-400" /> {biz.rating || '—'}
+                        </span>
+                        {biz.reviewsCount > 0 && (
+                          <span className="text-[10px] text-slate-400">({biz.reviewsCount})</span>
+                        )}
+                        {isOpen !== null && (
+                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${
+                            isOpen ? 'text-emerald-600 border-emerald-300 bg-emerald-50' : 'text-red-500 border-red-200 bg-red-50'
+                          }`}>
+                            {isOpen ? 'Open Now' : 'Closed'}
+                          </span>
+                        )}
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-[#1B5BFF] flex-shrink-0" />
+                    </div>
                   </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => onSelectBusiness(biz)}
-                  className="w-full text-left p-3 space-y-1"
-                >
-                  <h4 className="text-[12px] font-extrabold text-[#0A1B4A] truncate">{biz.name}</h4>
-                  <p className="text-[10px] text-slate-500 truncate capitalize">{textEn(biz.subcategory)}</p>
-                  <p className="text-[10px] text-slate-500 flex items-center gap-0.5 truncate">
-                    <MapPin className="w-3 h-3 text-[#1B5BFF] flex-shrink-0" />
-                    {biz.city}
-                  </p>
-                  <div className="flex items-center gap-1.5 pt-0.5">
-                    <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-amber-500">
-                      <Star className="w-3 h-3 fill-amber-400" /> {biz.rating || '—'}
-                    </span>
-                    {biz.reviewsCount > 0 && (
-                      <span className="text-[9px] text-slate-400">({biz.reviewsCount})</span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
-                    {biz.isVerified && (
-                      <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-[#123A7A]">
-                        <CheckCircle className="w-3 h-3 text-sky-500" /> Verified
-                      </span>
-                    )}
-                    {isOpen !== null && (
-                      <span className={`text-[9px] font-bold ${isOpen ? 'text-[#1B5BFF]' : 'text-red-500'}`}>
-                        {isOpen ? 'Open Now' : 'Closed'}
-                      </span>
-                    )}
-                  </div>
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      </section>
+              );
+            })}
+          </div>
+        </section>
 
-      {/* ── Browse by Category ───────────────────────────────── */}
-      <section
-        className="rounded-[24px] bg-white border border-[#D7E0EA] shadow-sm p-4 animate-fade-in-up"
-        style={{ animationDelay: '0.12s' }}
-        id="home-categories-block"
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-[15px] font-extrabold text-[#0A1B4A]">Browse By Category</h3>
-          <button
-            onClick={() => onSwitchTab('search')}
-            className="text-[12px] text-[#1B5BFF] font-bold flex items-center gap-0.5 hover:underline"
-            id="btn-categories-seeall"
-          >
-            See all <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-        <div className="grid grid-cols-4 gap-3" id="home-categories-scroll">
-          {categoryGrid.map((cat) => (
+        {/* Browse Businesses */}
+        <section id="home-categories-block">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-[16px] font-extrabold text-[#0A1B4A]">Browse Businesses</h3>
             <button
-              key={cat.id}
-              onClick={() => handleCategoryClick(cat.id)}
-              className="flex flex-col items-center gap-2 text-center"
-              id={`cat-card-${cat.id}`}
+              onClick={() => onSwitchTab('search')}
+              className="text-[12px] text-[#1B5BFF] font-bold flex items-center gap-0.5"
+              id="btn-categories-seeall"
             >
-              <div className="w-14 h-14 rounded-full bg-[#EEF3FF] border border-blue-100 flex items-center justify-center shadow-sm">
-                {renderCategoryIcon(cat.iconName, 'w-6 h-6 text-[#1B5BFF]')}
-              </div>
-              <span className="text-[10px] font-bold text-[#0A1B4A] leading-tight line-clamp-2 w-full">
-                {cat.name.en}
-              </span>
+              See all <ArrowRight className="w-3.5 h-3.5" />
             </button>
-          ))}
-          <button
-            onClick={() => onSwitchTab('search')}
-            className="flex flex-col items-center gap-2 text-center"
-            id="cat-card-more"
-          >
-            <div className="w-14 h-14 rounded-full bg-[#EEF3FF] border border-blue-100 flex items-center justify-center shadow-sm">
-              <Grid3X3 className="w-6 h-6 text-[#1B5BFF]" strokeWidth={2.25} />
-            </div>
-            <span className="text-[10px] font-bold text-[#0A1B4A]">More</span>
-          </button>
-        </div>
-      </section>
-
-      {/* ── Looking to Hire? ─────────────────────────────────── */}
-      <section
-        className="rounded-[24px] bg-[#E8F0FF] border border-blue-100 p-4 flex gap-3 items-center animate-fade-in-up"
-        style={{ animationDelay: '0.12s' }}
-        id="home-hire-card"
-      >
-        <div className="flex-1 min-w-0">
-          <h3 className="text-[16px] font-extrabold text-[#0A1B4A] mb-1">Looking to Hire?</h3>
-          <p className="text-[12px] text-slate-600 leading-snug mb-3">
-            Post a job and reach professionals across the Ahlebait community.
-          </p>
-          <button
-            type="button"
-            onClick={() => onSwitchTab(currentUser ? 'job-board' : 'account')}
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[#1B5BFF] text-white text-[12px] font-extrabold shadow-sm hover:bg-[#0B3FCC] transition-colors border border-[#0B3FCC]"
-            id="btn-post-job-cta"
-          >
-            Post a Job <ArrowRight className="w-3.5 h-3.5 text-white" />
-          </button>
-        </div>
-        <div className="w-20 h-20 rounded-2xl bg-white/70 border border-blue-100 flex items-center justify-center flex-shrink-0">
-          <Briefcase className="w-9 h-9 text-[#1B5BFF]" />
-        </div>
-      </section>
-
-      {/* ── Jobs banner ──────────────────────────────────────── */}
-      <section
-        className="rounded-[24px] p-4 flex items-center gap-3 animate-fade-in-up"
-        style={{
-          animationDelay: '0.14s',
-          background: `linear-gradient(125deg, ${NAVY} 0%, #123A7A 48%, #0A1B4A 100%)`,
-        }}
-        id="home-jobs-banner"
-      >
-        <div className="flex-1 min-w-0">
-          <h3 className="text-[15px] font-extrabold text-white leading-snug mb-1">
-            Find the right talent. <span className="text-[#8EB6FF]">Grow your business.</span>
-          </h3>
-          <p className="text-[11px] text-white/85 mb-3">
-            {activeJobs.length > 0
-              ? `${activeJobs.length} active opening${activeJobs.length === 1 ? '' : 's'} right now.`
-              : 'Browse community job openings and apply by email.'}
-          </p>
-          <button
-            type="button"
-            onClick={() => onSwitchTab('job-board')}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white text-[#0A1B4A] text-[11px] font-extrabold hover:bg-blue-50 transition-colors border border-white"
-            id="btn-see-all-jobs"
-          >
-            See All Jobs <ArrowRight className="w-3.5 h-3.5 text-[#1B5BFF]" />
-          </button>
-        </div>
-        <div className="w-16 h-16 rounded-2xl bg-white/15 border border-white/25 flex items-center justify-center flex-shrink-0">
-          <Briefcase className="w-7 h-7 text-white" />
-        </div>
-      </section>
-
-      {activeJobs.length > 0 && (
-        <div className="space-y-3 animate-fade-in-up" style={{ animationDelay: '0.15s' }} id="home-jobs-row">
-          <h3 className="text-[15px] font-extrabold text-[#0A1B4A]">Active Job Openings</h3>
-          <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none snap-x" id="home-jobs-scroll">
-            {activeJobs.map((job) => (
+          </div>
+          <div className="grid grid-cols-4 gap-3" id="home-categories-scroll">
+            {categoryGrid.map((cat) => (
               <button
-                key={job.id}
-                onClick={() => setSelectedJob(job)}
-                className="flex-shrink-0 w-52 p-3.5 rounded-2xl bg-white border border-[#D7E0EA] shadow-sm hover:border-[#1B5BFF]/40 transition-all text-left space-y-2 snap-start"
-                id={`home-job-card-${job.id}`}
+                key={cat.id}
+                onClick={() => handleCategoryClick(cat.id)}
+                className="flex flex-col items-center gap-1.5 text-center"
+                id={`cat-card-${cat.id}`}
               >
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl overflow-hidden bg-slate-100 border border-[#D7E0EA] flex-shrink-0">
-                    <BusinessThumbnail
-                      business={{ id: job.businessId, name: job.businessName, logoUrl: job.imageUrl || job.businessLogoUrl }}
-                      className="w-full h-full object-cover"
-                      eager
-                    />
-                  </div>
-                  <p className="text-[9px] font-semibold text-slate-700 truncate">{job.businessName}</p>
+                <div className="w-14 h-14 rounded-2xl bg-[#EEF3FF] border border-blue-100 flex items-center justify-center">
+                  {renderCategoryIcon(cat.iconName, 'w-6 h-6 text-[#1B5BFF]')}
                 </div>
-                <h4 className="text-[12px] font-extrabold text-[#0A1B4A] leading-tight line-clamp-2">{job.title}</h4>
-                <span className={`inline-block text-[8px] font-bold px-2 py-0.5 rounded-full border ${JOB_CATEGORY_COLORS[job.category]}`}>
-                  {job.category}
+                <span className="text-[10px] font-semibold text-[#0A1B4A] leading-tight line-clamp-2 w-full">
+                  {cat.name.en}
                 </span>
-                <div className="text-[10px] font-extrabold text-[#1B5BFF]">
-                  ${job.salaryMin.toLocaleString()} – ${job.salaryMax.toLocaleString()}/mo
-                </div>
               </button>
             ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── Stronger Together ────────────────────────────────── */}
-      <section
-        className="rounded-[24px] bg-white border border-[#D7E0EA] shadow-sm p-5 animate-fade-in-up"
-        style={{ animationDelay: '0.18s' }}
-        id="home-community-block"
-      >
-        <div className="flex items-center gap-2 mb-4">
-          <div
-            className="w-8 h-8 rounded-full bg-[#0A1B4A] flex items-center justify-center"
-            id="home-community-handshake"
-          >
-            <Handshake className="w-4 h-4 text-white" strokeWidth={2.25} />
-          </div>
-          <h3 className="text-[15px] font-extrabold text-[#0A1B4A]">Stronger Together</h3>
-        </div>
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { icon: Store, title: 'Shop Local', body: 'Support community businesses near you.' },
-            { icon: Briefcase, title: 'Create Jobs', body: 'Hire talent from within the network.' },
-            { icon: Users, title: 'Build Community', body: 'Grow connections that last.' },
-          ].map((item) => (
-            <div key={item.title} className="text-center space-y-1.5">
-              <div className="mx-auto w-10 h-10 rounded-full bg-[#EEF3FF] flex items-center justify-center">
-                <item.icon className="w-4 h-4 text-[#1B5BFF]" />
+            <button
+              onClick={() => onSwitchTab('search')}
+              className="flex flex-col items-center gap-1.5 text-center"
+              id="cat-card-more"
+            >
+              <div className="w-14 h-14 rounded-2xl bg-[#EEF3FF] border border-blue-100 flex items-center justify-center">
+                <Grid3X3 className="w-6 h-6 text-[#1B5BFF]" strokeWidth={2} />
               </div>
-              <p className="text-[11px] font-extrabold text-[#0A1B4A]">{item.title}</p>
-              <p className="text-[9px] text-slate-500 leading-snug">{item.body}</p>
+              <span className="text-[10px] font-semibold text-[#0A1B4A]">More</span>
+            </button>
+          </div>
+        </section>
+
+        {/* Looking to Hire */}
+        <section
+          className="rounded-2xl bg-white border border-[#D7E0EA] shadow-sm p-4 flex gap-3 items-center"
+          id="home-hire-card"
+        >
+          <div className="flex-1 min-w-0">
+            <h3 className="text-[16px] font-extrabold text-[#0A1B4A] mb-1">Looking to Hire?</h3>
+            <p className="text-[12px] text-slate-500 leading-snug mb-3">
+              Post a job and reach professionals across the Ahlebait community.
+            </p>
+            <button
+              type="button"
+              onClick={() => onSwitchTab(currentUser ? 'job-board' : 'account')}
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#1B5BFF] text-white text-[12px] font-extrabold"
+              id="btn-post-job-cta"
+            >
+              Post a Job <ArrowRight className="w-3.5 h-3.5 text-white" />
+            </button>
+          </div>
+          <div className="w-[72px] h-[72px] rounded-2xl bg-[#EEF3FF] border border-blue-100 flex items-center justify-center flex-shrink-0">
+            <Briefcase className="w-8 h-8 text-[#1B5BFF]" />
+          </div>
+        </section>
+
+        {/* Find the Right Talent */}
+        <section
+          className="rounded-2xl p-4 flex items-center gap-3"
+          style={{ background: `linear-gradient(125deg, ${NAVY} 0%, #123A7A 55%, #0A1B4A 100%)` }}
+          id="home-jobs-banner"
+        >
+          <div className="flex-1 min-w-0">
+            <h3 className="text-[16px] font-extrabold text-white leading-snug mb-1">Find the Right Talent</h3>
+            <p className="text-[11px] text-white/80 mb-3">
+              Post jobs or discover new career opportunities.
+            </p>
+            <button
+              type="button"
+              onClick={() => onSwitchTab('job-board')}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-white text-white text-[11px] font-extrabold hover:bg-white/10"
+              id="btn-see-all-jobs"
+            >
+              Explore Jobs <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <div className="w-16 h-16 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0">
+            <Search className="w-7 h-7 text-[#8EB6FF]" />
+          </div>
+        </section>
+
+        {activeJobs.length > 0 && (
+          <div className="space-y-3" id="home-jobs-row">
+            <h3 className="text-[16px] font-extrabold text-[#0A1B4A]">Active Job Openings</h3>
+            <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none snap-x" id="home-jobs-scroll">
+              {activeJobs.map((job) => (
+                <button
+                  key={job.id}
+                  onClick={() => setSelectedJob(job)}
+                  className="flex-shrink-0 w-52 p-3.5 rounded-2xl bg-white border border-[#D7E0EA] shadow-sm text-left space-y-2 snap-start"
+                  id={`home-job-card-${job.id}`}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl overflow-hidden bg-[#EEF3FF] border border-blue-100 flex-shrink-0">
+                      <BusinessThumbnail
+                        business={{ id: job.businessId, name: job.businessName, logoUrl: job.imageUrl || job.businessLogoUrl }}
+                        className="w-full h-full object-cover"
+                        eager
+                      />
+                    </div>
+                    <p className="text-[9px] font-semibold text-slate-600 truncate">{job.businessName}</p>
+                  </div>
+                  <h4 className="text-[12px] font-extrabold text-[#0A1B4A] leading-tight line-clamp-2">{job.title}</h4>
+                  <div className="text-[10px] font-extrabold text-[#1B5BFF]">
+                    ${job.salaryMin.toLocaleString()} – ${job.salaryMax.toLocaleString()}/mo
+                  </div>
+                </button>
+              ))}
             </div>
-          ))}
-        </div>
-      </section>
+          </div>
+        )}
+
+        {/* Stronger Together — network diagram */}
+        <section
+          className="rounded-2xl bg-white border border-[#D7E0EA] shadow-sm p-5"
+          id="home-community-block"
+        >
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div className="min-w-0 flex-1">
+              <h3 className="text-[16px] font-extrabold text-[#0A1B4A] mb-1">Stronger Together</h3>
+              <p className="text-[11px] text-slate-500 leading-snug mb-3">
+                One network connecting local businesses, professionals, and community organizations.
+              </p>
+              <button
+                type="button"
+                onClick={() => onSwitchTab('search')}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-[#1B5BFF] text-[#1B5BFF] text-[11px] font-extrabold"
+              >
+                Learn More
+              </button>
+            </div>
+            <div className="relative w-[132px] h-[132px] flex-shrink-0" id="home-community-handshake">
+              <svg viewBox="0 0 132 132" className="absolute inset-0 w-full h-full" aria-hidden>
+                <circle cx="66" cy="66" r="54" fill="none" stroke="#D7E0EA" strokeWidth="1" strokeDasharray="3 4" />
+                <line x1="66" y1="66" x2="66" y2="18" stroke="#B8C9E8" strokeWidth="1" />
+                <line x1="66" y1="66" x2="110" y2="40" stroke="#B8C9E8" strokeWidth="1" />
+                <line x1="66" y1="66" x2="110" y2="92" stroke="#B8C9E8" strokeWidth="1" />
+                <line x1="66" y1="66" x2="66" y2="114" stroke="#B8C9E8" strokeWidth="1" />
+                <line x1="66" y1="66" x2="22" y2="92" stroke="#B8C9E8" strokeWidth="1" />
+                <line x1="66" y1="66" x2="22" y2="40" stroke="#B8C9E8" strokeWidth="1" />
+              </svg>
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-[#0A1B4A] flex items-center justify-center shadow-md">
+                <Handshake className="w-5 h-5 text-white" />
+              </div>
+              {[
+                { label: 'Networking', style: 'left-1/2 -translate-x-1/2 top-0' },
+                { label: 'Professionals', style: 'right-0 top-[18%]' },
+                { label: 'Hiring', style: 'right-0 bottom-[18%]' },
+                { label: 'Local Biz', style: 'left-1/2 -translate-x-1/2 bottom-0' },
+                { label: 'Community', style: 'left-0 bottom-[18%]' },
+                { label: 'Orgs', style: 'left-0 top-[18%]' },
+              ].map((n) => (
+                <span
+                  key={n.label}
+                  className={`absolute ${n.style} text-[7px] font-bold text-[#1B5BFF] bg-[#EEF3FF] border border-blue-100 px-1 py-0.5 rounded whitespace-nowrap`}
+                >
+                  {n.label}
+                </span>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Register CTA — after mockup sections */}
+        {currentUser &&
+          !businesses.some((b) => b.ownerId === currentUser?.id || b.ownerId === currentUser?.email) && (
+          <button
+            onClick={() => onSwitchTab('business')}
+            className="w-full p-4 rounded-2xl bg-gradient-to-r from-[#1B5BFF] to-[#0B3FCC] text-white shadow-lg flex items-center justify-between"
+            id="btn-register-banner"
+          >
+            <div className="text-left">
+              <h2 className="text-sm font-black text-white">Register as a Business / Service Provider</h2>
+              <p className="text-[11px] font-semibold text-white/90">Join the community directory today</p>
+            </div>
+            <ArrowRight className="w-5 h-5 text-white" />
+          </button>
+        )}
       </div>
     </div>
   );

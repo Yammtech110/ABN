@@ -209,7 +209,7 @@ function BottomNav({
     }`;
 
   return (
-    <nav className="flex justify-between items-center h-full px-1">
+    <nav className="flex justify-between items-center h-full px-1 bg-white" id="bottom-nav">
 
       {!isAdmin && (
         <>
@@ -218,7 +218,7 @@ function BottomNav({
             className={tabClass(activeTab === 'home')}
             id="tab-btn-home"
           >
-            <Home className="w-5 h-5 mb-0.5" />
+            <Home className={`w-5 h-5 mb-0.5 ${activeTab === 'home' ? 'fill-[#1B5BFF]' : ''}`} />
             <span className="text-[9px] tracking-tight">{t.home}</span>
           </button>
           <button
@@ -490,7 +490,8 @@ function DirectoryAppContent() {
           activeTab === 'portal-management'
         ) && (
         <div
-          className="flex-shrink-0 bg-white/95 backdrop-blur-md border-t border-[#D7E0EA] z-30 shadow-[0_-4px_20px_rgba(11,37,69,0.06)]"
+          className="flex-shrink-0 bg-white border-t border-[#D7E0EA] z-30"
+          id="bottom-nav-shell"
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
           <div className="h-14">
