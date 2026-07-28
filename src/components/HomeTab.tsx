@@ -698,10 +698,10 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           <button
             type="button"
             onClick={() => onSwitchTab(currentUser ? 'job-board' : 'account')}
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[#00A859] text-white text-[12px] font-extrabold shadow-sm hover:bg-[#008C4A] transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[#00A859] text-white text-[12px] font-extrabold shadow-sm hover:bg-[#008C4A] transition-colors border border-[#008C4A]"
             id="btn-post-job-cta"
           >
-            Post a Job <ArrowRight className="w-3.5 h-3.5" />
+            Post a Job <ArrowRight className="w-3.5 h-3.5 text-white" />
           </button>
         </div>
         <div className="w-20 h-20 rounded-2xl bg-white/70 border border-emerald-100 flex items-center justify-center flex-shrink-0">
@@ -730,7 +730,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           <button
             type="button"
             onClick={() => onSwitchTab('job-board')}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white text-[#0B2545] text-[11px] font-extrabold hover:bg-emerald-50 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white text-[#0B2545] text-[11px] font-extrabold hover:bg-emerald-50 transition-colors border border-white"
             id="btn-see-all-jobs"
           >
             See All Jobs <ArrowRight className="w-3.5 h-3.5 text-[#00A859]" />
@@ -831,8 +831,11 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         id="home-community-block"
       >
         <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 rounded-full bg-[#0B2545] flex items-center justify-center">
-            <Handshake className="w-4 h-4 text-white" />
+          <div
+            className="w-8 h-8 rounded-full bg-[#0B2545] flex items-center justify-center"
+            id="home-community-handshake"
+          >
+            <Handshake className="w-4 h-4 text-white" strokeWidth={2.25} />
           </div>
           <h3 className="text-[15px] font-extrabold text-[#0B2545]">Stronger Together</h3>
         </div>

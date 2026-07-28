@@ -192,9 +192,32 @@ html.light #home-jobs-banner .text-white\/70 {
 html.light #btn-register-banner,
 html.light #btn-register-banner h2,
 html.light #btn-register-banner p,
-html.light #btn-register-banner svg,
+html.light #btn-register-banner svg {
+  color: #FFFFFF !important;
+}
+
+/* Post a Job — green pill, white label (escape light-mode pill wipe) */
 html.light #btn-post-job-cta,
 html.light #btn-post-job-cta svg {
+  background-color: #00A859 !important;
+  border-color: #008C4A !important;
+  color: #FFFFFF !important;
+}
+
+/* See All Jobs — white pill, navy label */
+html.light #btn-see-all-jobs,
+html.light #btn-see-all-jobs svg {
+  background-color: #FFFFFF !important;
+  color: #0B2545 !important;
+}
+html.light #btn-see-all-jobs .text-\[\#00A859\],
+html.light #btn-see-all-jobs svg.text-\[\#00A859\] {
+  color: #00A859 !important;
+}
+
+/* Stronger Together handshake — white on navy */
+html.light #home-community-handshake,
+html.light #home-community-handshake svg {
   color: #FFFFFF !important;
 }
 
@@ -255,15 +278,11 @@ html.light .bg-\[\#201B15\] {
   border-color: #FED7AA !important;
 }
 
-/* ── City filter pills ───────────────────────────────────── */
-html.light .bg-\[\#13110E\].rounded-full,
-html.light button.rounded-full:not(.app-toggle) {
+/* ── Legacy dark city pills only (do NOT wipe all rounded buttons) ─ */
+html.light .bg-\[\#13110E\].rounded-full {
   background-color: #F8FAFC !important;
   border-color: var(--color-border) !important;
   color: #475569 !important;
-}
-html.light button.rounded-full:not(.app-toggle):hover {
-  border-color: var(--color-primary) !important;
 }
 
 /* Theme-safe on/off switch (Hiring Active, etc.) */
