@@ -108,7 +108,7 @@ const JOB_CATEGORY_COLORS: Record<JobCategory, string> = {
   'Developer':        'bg-emerald-100 text-emerald-700 border-emerald-200',
   'Chef':             'bg-amber-100 text-amber-700 border-amber-200',
   'Maid':             'bg-pink-100 text-pink-700 border-pink-200',
-  'Others':           'bg-slate-100 text-slate-600 border-slate-200',
+  'Others':           'bg-slate-100 text-slate-700 border-slate-300',
 };
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -760,7 +760,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                       eager
                     />
                   </div>
-                  <p className="text-[9px] text-slate-500 truncate">{job.businessName}</p>
+                  <p className="text-[9px] font-semibold text-slate-700 truncate">{job.businessName}</p>
                 </div>
                 <h4 className="text-[12px] font-extrabold text-[#0B2545] leading-tight line-clamp-2">{job.title}</h4>
                 <span className={`inline-block text-[8px] font-bold px-2 py-0.5 rounded-full border ${JOB_CATEGORY_COLORS[job.category]}`}>
