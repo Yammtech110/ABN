@@ -9,11 +9,9 @@ import { isLiveDirectoryListing } from '../utils/listingAccess';
 import { resolveCategoryId } from '../utils/categoryMatch';
 import { resolveListingCoverUrl, resolveListingLogoUrl } from '../utils/listingImages';
 import { BusinessThumbnail } from './BusinessThumbnail';
-import { countUnreadNotifications } from '../utils/notifications';
 import {
   Search,
   MapPin,
-  Bell,
   RefreshCw,
   CheckCircle,
   ArrowRight,
@@ -37,7 +35,6 @@ import {
   Calculator,
   Building2,
   Sparkles as SparklesIcon,
-  Menu,
   Star,
   Heart,
   Briefcase,
@@ -184,11 +181,9 @@ export const HomeTab: React.FC<HomeTabProps> = ({
     businesses,
     categories,
     currentUser,
-    notifications,
     refreshDirectory,
     refreshJobs,
     refreshNotifications,
-    markNotificationsAsRead,
     jobs,
     hiringActive,
     favorites,
@@ -200,7 +195,6 @@ export const HomeTab: React.FC<HomeTabProps> = ({
     if (currentUser) refreshNotifications();
   }, [currentUser?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const unreadCount = countUnreadNotifications(notifications, currentUser);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefreshApp = useCallback(async () => {
@@ -436,47 +430,16 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           }}
         />
         <div className="relative flex items-center justify-end mb-4">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => void handleRefreshApp()}
-              disabled={isRefreshing}
-              className="p-2.5 rounded-full bg-white/80 border border-white shadow-sm text-[#0B2545] disabled:opacity-60"
-              aria-label="Refresh"
-              id="btn-home-refresh"
-            >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            </button>
-            {currentUser && (
-              <button
-                type="button"
-                onClick={() => {
-                  void refreshNotifications();
-                  void markNotificationsAsRead();
-                  onSwitchTab('notifications');
-                }}
-                className="relative p-2.5 rounded-full bg-white/80 border border-white shadow-sm text-[#0B2545]"
-                aria-label="Notifications"
-                id="btn-home-notifications"
-              >
-                <Bell className="w-4 h-4" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-[#00A859] text-white text-[8px] font-black flex items-center justify-center">
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </span>
-                )}
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={() => onSwitchTab('account')}
-              className="p-2.5 rounded-full bg-[#0B2545] text-white shadow-md"
-              aria-label="Menu"
-              id="btn-home-menu"
-            >
-              <Menu className="w-4 h-4" />
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => void handleRefreshApp()}
+            disabled={isRefreshing}
+            className="p-2.5 rounded-full bg-white/80 border border-white shadow-sm text-[#0B2545] disabled:opacity-60"
+            aria-label="Refresh"
+            id="btn-home-refresh"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          </button>
         </div>
 
         <p className="relative text-[11px] font-bold tracking-[0.18em] uppercase text-[#00A859] mb-1">

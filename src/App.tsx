@@ -31,7 +31,7 @@ import {
   Shield,
   ArrowLeft,
   Loader2,
-  MessageCircle,
+  Bell,
 } from 'lucide-react';
 
 // Native APK only — browser (abn-1.onrender.com) uses the web layout.
@@ -197,7 +197,7 @@ function BottomNav({
   unreadCount?: number;
 }) {
   const isAccountActive = activeTab === 'account' || activeTab === 'portal-management' || activeTab === 'job-management' || activeTab === 'legal';
-  const isMessagesActive = activeTab === 'notifications';
+  const isNotificationsActive = activeTab === 'notifications';
 
   const tabClass = (active: boolean) =>
     `flex flex-col items-center justify-center flex-1 py-2 transition-all ${
@@ -235,16 +235,16 @@ function BottomNav({
           </button>
           <button
             onClick={() => setActiveTab('notifications')}
-            className={`relative ${tabClass(isMessagesActive)}`}
-            id="tab-btn-messages"
+            className={`relative ${tabClass(isNotificationsActive)}`}
+            id="tab-btn-notifications"
           >
-            <MessageCircle className="w-5 h-5 mb-0.5" />
+            <Bell className="w-5 h-5 mb-0.5" />
             {unreadCount > 0 && (
-              <span className="absolute top-1 right-[22%] min-w-[14px] h-[14px] px-0.5 rounded-full bg-[#00A859] text-white text-[8px] font-black flex items-center justify-center">
+              <span className="absolute top-1 right-[18%] min-w-[14px] h-[14px] px-0.5 rounded-full bg-[#00A859] text-white text-[8px] font-black flex items-center justify-center">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
-            <span className="text-[9px] tracking-tight">Messages</span>
+            <span className="text-[9px] tracking-tight">Notification</span>
           </button>
         </>
       )}
@@ -318,7 +318,7 @@ function WebTopNav({
           })}
           {navBtn('search', t.search, <Search className="w-4 h-4" />)}
           {navBtn('saved', t.saved, <Heart className="w-4 h-4" />)}
-          {navBtn('notifications', 'Messages', <MessageCircle className="w-4 h-4" />)}
+          {navBtn('notifications', 'Notification', <Bell className="w-4 h-4" />)}
         </>
       )}
       {isAdmin && navBtn('admin', t.adminPanel || 'Admin', <Shield className="w-4 h-4" />)}
