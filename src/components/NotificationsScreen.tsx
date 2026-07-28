@@ -15,7 +15,7 @@ interface NotificationsScreenProps {
   onBack: () => void;
 }
 
-/** Full-page notifications inbox (not a bottom sheet). */
+/** Full-bleed notifications inbox — continuous list, not stacked cards. */
 export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ onBack }) => {
   const {
     currentUser,
@@ -57,8 +57,8 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ onBack
   };
 
   return (
-    <div className="page-shell min-h-full flex flex-col" id="notifications-page">
-      <div className="page-header sticky top-0 z-10 flex items-center gap-2 px-4 py-3.5">
+    <div className="page-shell min-h-full flex flex-col bg-white" id="notifications-page">
+      <div className="page-header sticky top-0 z-10 flex items-center gap-2 px-4 py-3.5 bg-white border-b border-[#D7E0EA]">
         <button
           type="button"
           onClick={onBack}
@@ -69,8 +69,8 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ onBack
           <ArrowLeft className="w-4 h-4 text-[#00A859]" />
         </button>
         <div className="min-w-0 flex-1">
-          <h1 className="page-title text-sm font-black uppercase tracking-wider flex items-center gap-2">
-            <Bell className="page-title-icon w-4 h-4" />
+          <h1 className="page-title text-sm font-black uppercase tracking-wider flex items-center gap-2 text-[#0B2545]">
+            <Bell className="page-title-icon w-4 h-4 text-[#00A859]" />
             Notifications
             {unread > 0 && (
               <span className="page-badge text-[9px] px-1.5 py-0.5 rounded-full font-bold">
@@ -100,55 +100,55 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ onBack
         )}
       </div>
 
-      <div className="page-body flex-1 px-4 py-4 space-y-3 pb-8">
+      <div className="page-body flex-1 bg-white pb-8">
         {notificationsError && (
-          <p className="page-error text-[11px] rounded-xl px-3 py-2">{notificationsError}</p>
+          <p className="page-error text-[11px] mx-4 mt-4 rounded-xl px-3 py-2">{notificationsError}</p>
         )}
 
         {notificationsLoading && visible.length === 0 && (
-          <p className="page-meta text-xs py-16 text-center">Loading notifications…</p>
+          <p className="text-xs py-16 text-center font-semibold text-slate-600">Loading notifications…</p>
         )}
 
         {!notificationsLoading && visible.length === 0 && !notificationsError && (
-          <div className="text-center py-16 px-4">
+          <div className="text-center py-16 px-6">
             <div className="page-empty-icon mx-auto mb-3 w-12 h-12 rounded-2xl flex items-center justify-center">
-              <Bell className="w-6 h-6 text-[#00A859]/70" />
+              <Bell className="w-6 h-6 text-[#00A859]" />
             </div>
-            <p className="page-card-title text-xs font-semibold">No notifications yet</p>
-            <p className="page-meta text-[10px] mt-2 leading-relaxed">
+            <p className="text-xs font-extrabold text-[#0B2545]">No notifications yet</p>
+            <p className="text-[11px] mt-2 leading-relaxed text-slate-600">
               Listing approvals, payments, membership alerts, and admin updates will appear here.
             </p>
           </div>
         )}
 
-        {visible.map((n) => {
-          const kind = classifyNotification(n);
-          const dotColor = notificationKindColor(kind);
-          return (
-            <div
-              key={n.id}
-              className={`page-card rounded-2xl px-4 py-3.5 ${
-                n.isRead ? 'page-card-read' : 'page-card-unread'
-              }`}
-            >
-              <div className="flex items-center justify-between gap-2 text-[9px] mb-1.5">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotColor}`} />
-                  <span className="page-meta">{n.date || 'Today'}</span>
-                  <span className="page-meta">•</span>
-                  <span className="page-title-icon font-bold uppercase tracking-wider truncate">
-                    {notificationKindLabel(kind)}
+        <ul className="divide-y divide-[#E2E8F0]">
+          {visible.map((n) => {
+            const kind = classifyNotification(n);
+            const dotColor = notificationKindColor(kind);
+            return (
+              <li
+                key={n.id}
+                className={`px-4 py-3.5 ${n.isRead ? 'bg-white' : 'bg-emerald-50/50'}`}
+              >
+                <div className="flex items-center justify-between gap-2 text-[9px] mb-1.5">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotColor}`} />
+                    <span className="font-semibold text-slate-600">{n.date || 'Today'}</span>
+                    <span className="text-slate-400">•</span>
+                    <span className="font-bold uppercase tracking-wider truncate text-[#00A859]">
+                      {notificationKindLabel(kind)}
+                    </span>
+                  </div>
+                  <span className="uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0 bg-slate-100 text-slate-600 font-bold">
+                    {formatNotificationRole(n.receiverRole)}
                   </span>
                 </div>
-                <span className="page-chip uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0">
-                  {formatNotificationRole(n.receiverRole)}
-                </span>
-              </div>
-              <h2 className="page-card-title text-[12px] font-bold leading-snug">{n.title}</h2>
-              <p className="page-card-body text-[11px] mt-1 leading-relaxed">{n.message}</p>
-            </div>
-          );
-        })}
+                <h2 className="text-[12px] font-extrabold leading-snug text-[#0B2545]">{n.title}</h2>
+                <p className="text-[11px] mt-1 leading-relaxed text-slate-700">{n.message}</p>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </div>
   );

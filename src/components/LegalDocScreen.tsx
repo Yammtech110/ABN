@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { ArrowLeft, FileText, Lock } from 'lucide-react';
+import { ArrowLeft, Lock } from 'lucide-react';
 import { LEGAL_DOCS, LegalDocId } from '../data/legalContent';
 import { useBackHandler } from '../context/BackNavigationContext';
 
@@ -8,7 +8,7 @@ interface LegalDocScreenProps {
   onBack: () => void;
 }
 
-/** Full-page legal / FAQ content (not a bottom sheet). */
+/** Full-bleed legal / FAQ page — continuous document, not stacked cards. */
 export const LegalDocScreen: React.FC<LegalDocScreenProps> = ({ docId, onBack }) => {
   const doc = LEGAL_DOCS[docId];
 
@@ -20,8 +20,11 @@ export const LegalDocScreen: React.FC<LegalDocScreenProps> = ({ docId, onBack })
   useBackHandler(`legal-doc-${docId}`, handleBack, true);
 
   return (
-    <div className="page-shell min-h-full flex flex-col" id={`legal-page-${docId}`}>
-      <div className="page-header sticky top-0 z-10 flex items-center gap-3 px-4 py-3.5">
+    <div
+      className="page-shell min-h-full flex flex-col bg-white"
+      id={`legal-page-${docId}`}
+    >
+      <div className="page-header sticky top-0 z-10 flex items-center gap-3 px-4 py-3.5 bg-white border-b border-[#D7E0EA]">
         <button
           type="button"
           onClick={onBack}
@@ -29,28 +32,30 @@ export const LegalDocScreen: React.FC<LegalDocScreenProps> = ({ docId, onBack })
           aria-label="Back"
           id="legal-page-back"
         >
-          <ArrowLeft className="w-4 h-4 text-[#FFA048]" />
+          <ArrowLeft className="w-4 h-4 text-[#00A859]" />
         </button>
         <div className="min-w-0 flex-1">
-          <h1 className="page-title text-sm font-black uppercase tracking-wider flex items-center gap-2 truncate">
-            <Lock className="page-title-icon w-4 h-4 shrink-0" />
+          <h1 className="page-title text-sm font-black uppercase tracking-wider flex items-center gap-2 truncate text-[#0B2545]">
+            <Lock className="page-title-icon w-4 h-4 shrink-0 text-[#00A859]" />
             <span className="truncate">{doc.title}</span>
           </h1>
-          <p className="page-meta text-[10px] mt-0.5">Updated {doc.updated}</p>
+          <p className="page-meta text-[11px] mt-0.5 font-semibold text-slate-600">
+            Updated {doc.updated}
+          </p>
         </div>
       </div>
 
-      <div className="page-body flex-1 px-4 py-4 space-y-3 pb-8">
-        {doc.sections.map((s) => (
-          <section key={s.heading} className="page-card rounded-2xl px-4 py-3.5">
-            <h2 className="page-card-title text-[12px] font-bold mb-1.5 flex items-center gap-1.5">
-              <FileText className="page-title-icon w-3.5 h-3.5 shrink-0" />
-              {s.heading}
-            </h2>
-            <p className="page-card-body text-[11px] leading-relaxed">{s.body}</p>
+      <article className="page-body flex-1 px-5 py-5 pb-10 bg-white" id={`legal-article-${docId}`}>
+        {doc.sections.map((s, i) => (
+          <section
+            key={s.heading}
+            className={`py-4 ${i < doc.sections.length - 1 ? 'border-b border-[#E2E8F0]' : ''}`}
+          >
+            <h2 className="text-[13px] font-extrabold text-[#0B2545] mb-2">{s.heading}</h2>
+            <p className="text-[12px] leading-relaxed text-slate-700">{s.body}</p>
           </section>
         ))}
-      </div>
+      </article>
     </div>
   );
 };

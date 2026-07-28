@@ -66,8 +66,8 @@ export const JobBoardScreen: React.FC<JobBoardScreenProps> = ({ onBack, initialJ
   // ── JOB DETAIL VIEW ──────────────────────────────────────────
   if (selectedJob) {
     return (
-      <div className="space-y-5" id="job-detail-view">
-        <div className="subpage-header flex items-center gap-3 pb-3 border-b border-[#D7E0EA]">
+      <div className="space-y-5 min-h-full bg-[#EEF2F6] px-4 pt-4 pb-8" id="job-detail-view">
+        <div className="subpage-header sticky top-0 z-10 -mx-4 px-4 pt-1 flex items-center gap-3 pb-3 border-b border-[#D7E0EA] bg-[#EEF2F6]/95 backdrop-blur-md">
           <button
             onClick={() => setSelectedJob(null)}
             className="p-2 rounded-full bg-[#EEF2F6] hover:bg-slate-100 border border-[#D7E0EA] transition-colors"
@@ -154,8 +154,8 @@ export const JobBoardScreen: React.FC<JobBoardScreenProps> = ({ onBack, initialJ
 
   // ── JOB BOARD LIST VIEW ───────────────────────────────────────
   return (
-    <div className="space-y-5" id="job-board-screen">
-      <div className="subpage-header flex items-center gap-3 pb-3 border-b border-[#D7E0EA]">
+      <div className="space-y-5 min-h-full bg-[#EEF2F6] px-4 pt-4 pb-8" id="job-board-screen">
+      <div className="subpage-header sticky top-0 z-10 -mx-4 px-4 pt-1 flex items-center gap-3 pb-3 border-b border-[#D7E0EA] bg-[#EEF2F6]/95 backdrop-blur-md">
         <button
           onClick={onBack}
           className="p-2 rounded-full bg-[#EEF2F6] hover:bg-slate-100 border border-[#D7E0EA] transition-colors"

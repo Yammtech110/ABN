@@ -404,9 +404,9 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
 
   // ── LIST VIEW ─────────────────────────────────────────────────
   return (
-    <div className={`space-y-4 ${embedded ? '' : 'space-y-5'}`} id="job-management-list">
+    <div className={`space-y-4 ${embedded ? '' : 'space-y-5 min-h-full bg-[#EEF2F6] px-4 pt-4 pb-8'}`} id="job-management-list">
       {!embedded && (
-        <div className="flex items-center gap-3 pb-3 border-b border-[#D7E0EA]">
+        <div className="subpage-header sticky top-0 z-10 -mx-4 px-4 pt-1 flex items-center gap-3 pb-3 border-b border-[#D7E0EA] bg-[#EEF2F6]/95 backdrop-blur-md">
           <button
             onClick={onBack}
             className="p-2 rounded-full bg-[#EEF2F6] hover:bg-slate-100 border border-[#D7E0EA] transition-colors"

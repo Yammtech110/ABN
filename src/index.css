@@ -897,8 +897,8 @@ html.light .sheet-error {
 .page-title-icon {
   color: var(--color-primary) !important;
 }
-.page-meta {
-  color: var(--color-text-muted) !important;
+html.light .page-meta {
+  color: #475569 !important;
 }
 .page-back-btn {
   background-color: var(--color-card-hover) !important;
@@ -960,10 +960,18 @@ html.dark .page-error {
   border-color: rgba(127, 29, 29, 0.4);
 }
 html.light .page-shell p.page-card-body {
-  color: var(--color-text-secondary) !important;
+  color: #334155 !important;
 }
 html.light .page-shell p.page-meta {
-  color: var(--color-text-muted) !important;
+  color: #475569 !important;
+}
+html.light [id^="legal-page-"] .page-meta,
+html.light #notifications-page .page-meta {
+  color: #475569 !important;
+}
+html.light [id^="legal-page-"],
+html.light #notifications-page {
+  background-color: #FFFFFF !important;
 }
 
 /* ─── Modals (business details, edit profile) ─────────────── */

@@ -120,10 +120,12 @@ function TabContent({
       )}
       {activeTab === 'portal-management' && (
         <TabView tabKey="portal-management">
-          <BusinessPortalTab
-            onBack={() => setActiveTab('account')}
-            manageMode
-          />
+          <div className="min-h-full bg-[#EEF2F6] px-4 pt-4 pb-8">
+            <BusinessPortalTab
+              onBack={() => setActiveTab('account')}
+              manageMode
+            />
+          </div>
         </TabView>
       )}
 
@@ -161,8 +163,8 @@ function TabContent({
 
       {activeTab === 'admin' && (
         <TabView tabKey="admin">
-          <div className="space-y-5">
-            <div className="subpage-header flex items-center gap-3 pb-3 border-b border-[#D7E0EA]">
+          <div className="space-y-5 min-h-full px-4 pt-4 pb-8 bg-[#EEF2F6]">
+            <div className="subpage-header sticky top-0 z-10 -mx-4 px-4 pt-1 flex items-center gap-3 pb-3 border-b border-[#D7E0EA] bg-[#EEF2F6]/95 backdrop-blur-md">
               <button
                 onClick={() => setActiveTab('account')}
                 className="p-2 rounded-full bg-white hover:bg-slate-100 border border-[#D7E0EA] transition-colors"
@@ -456,7 +458,15 @@ function DirectoryAppContent() {
       >
         {/* Scrollable Content Area */}
         <div className={`flex-1 overflow-y-auto scrollbar-none pb-2 ${
-          activeTab === 'home' ? 'px-0 pt-0' : 'px-4 pt-4'
+          activeTab === 'home' ||
+          activeTab === 'legal' ||
+          activeTab === 'notifications' ||
+          activeTab === 'job-board' ||
+          activeTab === 'job-management' ||
+          activeTab === 'admin' ||
+          activeTab === 'portal-management'
+            ? 'px-0 pt-0'
+            : 'px-4 pt-4'
         }`}>
           <TabContent
             activeTab={activeTab}
@@ -469,7 +479,14 @@ function DirectoryAppContent() {
           />
         </div>
 
-        {/* Native Bottom Navigation Bar */}
+        {/* Hide bottom nav on full-page sub-screens */}
+        {!(
+          activeTab === 'legal' ||
+          activeTab === 'job-board' ||
+          activeTab === 'job-management' ||
+          activeTab === 'admin' ||
+          activeTab === 'portal-management'
+        ) && (
         <div
           className="flex-shrink-0 bg-white/95 backdrop-blur-md border-t border-[#D7E0EA] z-30 shadow-[0_-4px_20px_rgba(11,37,69,0.06)]"
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
@@ -485,6 +502,7 @@ function DirectoryAppContent() {
             />
           </div>
         </div>
+        )}
 
         {/* Global Modals */}
         {selectedBusiness && (
@@ -532,7 +550,15 @@ function DirectoryAppContent() {
         </header>
 
         <main className={`flex-1 w-full max-w-7xl mx-auto ${
-          activeTab === 'home' ? 'p-0' : 'p-4 md:p-6'
+          activeTab === 'home' ||
+          activeTab === 'legal' ||
+          activeTab === 'notifications' ||
+          activeTab === 'job-board' ||
+          activeTab === 'job-management' ||
+          activeTab === 'admin' ||
+          activeTab === 'portal-management'
+            ? 'p-0'
+            : 'p-4 md:p-6'
         }`}>
           <TabContent
             activeTab={activeTab}
