@@ -409,7 +409,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
 
       {/* ── Hero (final mockup) ──────────────────────────────── */}
       <section
-        className="relative overflow-hidden px-4 pt-[max(0.85rem,env(safe-area-inset-top))] pb-16"
+        className="relative overflow-hidden px-4 pt-[max(0.85rem,env(safe-area-inset-top))] pb-5"
         id="home-hero"
         style={{ background: 'linear-gradient(165deg, #061433 0%, #0A1B4A 42%, #123A7A 100%)' }}
       >
@@ -473,7 +473,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         </div>
       </section>
 
-      <div className="space-y-5 px-4 -mt-9 relative z-10">
+      <div className="space-y-5 px-4 pt-4 relative z-10 bg-[#F4F7FB]">
 
         {/* Search */}
         <form onSubmit={handleSearchSubmit} id="home-search-form">
@@ -626,8 +626,8 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                 className="flex flex-col items-center gap-1.5 text-center"
                 id={`cat-card-${cat.id}`}
               >
-                <div className="w-14 h-14 rounded-2xl bg-[#EEF3FF] border border-blue-100 flex items-center justify-center">
-                  {renderCategoryIcon(cat.iconName, 'w-6 h-6 text-[#1B5BFF]')}
+                <div className="w-12 h-12 flex items-center justify-center">
+                  {renderCategoryIcon(cat.iconName, 'w-7 h-7 text-[#1B5BFF]')}
                 </div>
                 <span className="text-[10px] font-semibold text-[#0A1B4A] leading-tight line-clamp-2 w-full">
                   {cat.name.en}
@@ -639,8 +639,8 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               className="flex flex-col items-center gap-1.5 text-center"
               id="cat-card-more"
             >
-              <div className="w-14 h-14 rounded-2xl bg-[#EEF3FF] border border-blue-100 flex items-center justify-center">
-                <Grid3X3 className="w-6 h-6 text-[#1B5BFF]" strokeWidth={2} />
+              <div className="w-12 h-12 flex items-center justify-center">
+                <Grid3X3 className="w-7 h-7 text-[#1B5BFF]" strokeWidth={2} />
               </div>
               <span className="text-[10px] font-semibold text-[#0A1B4A]">More</span>
             </button>
