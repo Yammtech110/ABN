@@ -23,6 +23,7 @@ import { LegalDocId } from './data/legalContent';
 import { getUserListing, canPostJobs } from './utils/listingAccess';
 import { countUnreadNotifications } from './utils/notifications';
 import { useOpenNotificationsOnPush, usePushNotifications } from './hooks/usePushNotifications';
+import { OfflineGate } from './components/OfflineGate';
 import {
   Home,
   Search,
@@ -641,9 +642,11 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
 export default function App() {
   return (
     <ErrorBoundary>
-      <DirectoryProvider>
-        <DirectoryAppContent />
-      </DirectoryProvider>
+      <OfflineGate>
+        <DirectoryProvider>
+          <DirectoryAppContent />
+        </DirectoryProvider>
+      </OfflineGate>
     </ErrorBoundary>
   );
 }

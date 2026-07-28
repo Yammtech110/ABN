@@ -320,14 +320,9 @@ export const AuthScreen: React.FC = () => {
               <AbnLogo
                 size="hero"
                 tone="light"
-                className="drop-shadow-[0_8px_24px_rgba(11,37,69,0.12)]"
+                className="bg-transparent"
               />
-              <p className="text-xs font-bold text-[#1B5BFF] tracking-[0.22em] uppercase mt-3">
-                AHLEBAIT NETWORK
-              </p>
-              <p className="text-[9px] font-semibold tracking-[0.16em] uppercase text-[#0A1B4A] mt-1.5">
-                Connect · Collaborate · Grow
-              </p>
+              {/* Logo PNG already includes wordmark — keep only welcome line below */}
             </motion.div>
             <motion.p
               initial={{ opacity: 0 }}

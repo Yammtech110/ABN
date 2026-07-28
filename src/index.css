@@ -750,8 +750,15 @@ html.light #account-tab-container .text-white {
 }
 
 /* ─── Auth screen — light navy / emerald (matches app theme) ─ */
-html.light #auth-screen-root {
-  color: #0A1B4A !important;
+html.light #auth-logo,
+html.light #auth-logo img,
+html.light #auth-screen-content #auth-logo {
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+html.light #auth-logo img {
+  mix-blend-mode: multiply;
 }
 html.light #auth-form-card {
   background-color: rgba(255, 255, 255, 0.96) !important;

@@ -44,8 +44,7 @@ import {
   Handshake,
   Grid3X3,
   Globe,
-  Bell,
-  MessageSquare,
+  RefreshCw,
   ChevronDown,
   ChevronRight,
 } from 'lucide-react';
@@ -417,8 +416,8 @@ export const HomeTab: React.FC<HomeTabProps> = ({
 
         <div className="relative flex items-start justify-between gap-3 mb-5">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-[52px] h-[52px] rounded-full bg-white flex items-center justify-center shadow-[0_8px_24px_rgba(0,0,0,0.25)] flex-shrink-0 overflow-hidden p-1">
-              <AbnLogo size="sm" className="h-11 max-w-[44px]" />
+            <div className="w-[52px] h-[52px] rounded-full bg-transparent flex items-center justify-center flex-shrink-0 overflow-hidden">
+              <AbnLogo size="sm" className="h-11 max-w-[44px] bg-transparent" />
             </div>
             <div className="min-w-0">
               <h1 className="leading-none flex items-baseline gap-0">
@@ -432,25 +431,16 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <button
-              type="button"
-              onClick={() => onSwitchTab('notifications')}
-              className="relative p-2 rounded-full border border-white/35 text-white hover:bg-white/10"
-              aria-label="Notifications"
-            >
-              <Bell className="w-4 h-4" strokeWidth={2} />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#1B5BFF]" />
-            </button>
-            <button
-              type="button"
-              onClick={() => onSwitchTab('notifications')}
-              className="p-2 rounded-full border border-white/35 text-white hover:bg-white/10"
-              aria-label="Messages"
-            >
-              <MessageSquare className="w-4 h-4" strokeWidth={2} />
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => void handleRefreshApp()}
+            disabled={isRefreshing}
+            className="p-2.5 rounded-full border border-white/35 text-white hover:bg-white/10 disabled:opacity-60 flex-shrink-0"
+            aria-label="Refresh"
+            id="btn-home-refresh"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} strokeWidth={2} />
+          </button>
         </div>
 
         <p className="relative text-[14px] text-white font-medium mb-5 max-w-[320px] leading-snug">
