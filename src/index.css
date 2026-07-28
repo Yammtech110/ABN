@@ -5,12 +5,12 @@
 
 /* ─── Design Tokens — Dark ─────────────────────────────────── */
 :root {
-  /* Brand — navy + emerald (ABN redesign) */
-  --color-primary:        #00A859;
-  --color-primary-dark:   #008C4A;
-  --color-primary-hover:  #12C06E;
-  --color-navy:           #0B2545;
-  --color-navy-soft:      #123B5D;
+  /* Brand — navy + royal blue (final ABN logo) */
+  --color-primary:        #1B5BFF;
+  --color-primary-dark:   #0B3FCC;
+  --color-primary-hover:  #3B75FF;
+  --color-navy:           #0A1B4A;
+  --color-navy-soft:      #123A7A;
 
   /* Backgrounds */
   --color-bg:             #07111F;
@@ -42,14 +42,14 @@
 
 /* ─── Design Tokens — Light (default consumer look) ─────────── */
 html.light {
-  --color-primary:        #00A859;
-  --color-primary-dark:   #008C4A;
-  --color-primary-hover:  #12C06E;
-  --color-navy:           #0B2545;
-  --color-navy-soft:      #123B5D;
+  --color-primary:        #1B5BFF;
+  --color-primary-dark:   #0B3FCC;
+  --color-primary-hover:  #3B75FF;
+  --color-navy:           #0A1B4A;
+  --color-navy-soft:      #123A7A;
 
   /* Backgrounds */
-  --color-bg:             #EEF2F6;
+  --color-bg:             #F4F7FB;
   --color-surface:        #FFFFFF;
   --color-card:           #FFFFFF;
   --color-card-hover:     #F8FAFC;
@@ -59,13 +59,13 @@ html.light {
   --color-border-subtle:  #E8EEF4;
 
   /* Text */
-  --color-text:           #0B2545;
+  --color-text:           #0A1B4A;
   --color-text-secondary: #475569;
   --color-text-muted:     #94A3B8;
 
   /* Shadows */
-  --shadow-card:          0 8px 24px rgba(11, 37, 69, 0.08), 0 1px 3px rgba(11, 37, 69, 0.04);
-  --shadow-sm:            0 2px 8px  rgba(11, 37, 69, 0.06);
+  --shadow-card:          0 8px 24px rgba(10, 27, 74, 0.08), 0 1px 3px rgba(10, 27, 74, 0.04);
+  --shadow-sm:            0 2px 8px  rgba(10, 27, 74, 0.06);
 }
 
 /* ─── Light-mode structural overrides ──────────────────────── */
@@ -179,9 +179,9 @@ html.light #home-jobs-banner .text-white,
 html.light #home-jobs-banner svg {
   color: #FFFFFF !important;
 }
-html.light #home-jobs-banner .text-\[\#5DFFB0\],
-html.light #home-jobs-banner span.text-\[\#5DFFB0\] {
-  color: #5DFFB0 !important;
+html.light #home-jobs-banner .text-\[\#8EB6FF\],
+html.light #home-jobs-banner span.text-\[\#8EB6FF\] {
+  color: #8EB6FF !important;
 }
 html.light #home-jobs-banner .text-white\/85,
 html.light #home-jobs-banner .text-white\/70 {
@@ -199,8 +199,8 @@ html.light #btn-register-banner svg {
 /* Post a Job — green pill, white label (escape light-mode pill wipe) */
 html.light #btn-post-job-cta,
 html.light #btn-post-job-cta svg {
-  background-color: #00A859 !important;
-  border-color: #008C4A !important;
+  background-color: #1B5BFF !important;
+  border-color: #0B3FCC !important;
   color: #FFFFFF !important;
 }
 
@@ -208,11 +208,11 @@ html.light #btn-post-job-cta svg {
 html.light #btn-see-all-jobs,
 html.light #btn-see-all-jobs svg {
   background-color: #FFFFFF !important;
-  color: #0B2545 !important;
+  color: #0A1B4A !important;
 }
-html.light #btn-see-all-jobs .text-\[\#00A859\],
-html.light #btn-see-all-jobs svg.text-\[\#00A859\] {
-  color: #00A859 !important;
+html.light #btn-see-all-jobs .text-\[\#1B5BFF\],
+html.light #btn-see-all-jobs svg.text-\[\#1B5BFF\] {
+  color: #1B5BFF !important;
 }
 
 /* Stronger Together handshake — white on navy */
@@ -224,18 +224,18 @@ html.light #home-community-handshake svg {
 /* Curved green search box — keep rounded corners */
 html.light #home-search-box {
   border-radius: 22px !important;
-  border: 2px solid #00A859 !important;
+  border: 2px solid #1B5BFF !important;
   background-color: #FFFFFF !important;
 }
 html.light #home-search-box #home-location-badge-btn {
   border-radius: 14px !important;
-  background-color: #00A859 !important;
+  background-color: #1B5BFF !important;
   color: #FFFFFF !important;
 }
 html.light #home-search-input {
   border-color: transparent !important;
   background-color: transparent !important;
-  color: #0B2545 !important;
+  color: #0A1B4A !important;
 }
 
 /* Brand orange remapped → emerald in light mode */
@@ -249,10 +249,10 @@ html.light .border-\[\#FFA048\] {
   border-color: var(--color-primary) !important;
 }
 html.light .from-\[\#FFA048\] {
-  --tw-gradient-from: #00A859 var(--tw-gradient-from-position);
+  --tw-gradient-from: #1B5BFF var(--tw-gradient-from-position);
 }
 html.light .to-\[\#D87D2E\] {
-  --tw-gradient-to: #008C4A var(--tw-gradient-to-position);
+  --tw-gradient-to: #0B3FCC var(--tw-gradient-to-position);
 }
 
 /* ── Search input ────────────────────────────────────────── */
@@ -289,18 +289,18 @@ html.light #home-city-filter .city-pill[data-active="true"] svg {
 }
 html.light #home-city-filter .city-pill-active .city-pill-count,
 html.light #home-city-filter .city-pill[data-active="true"] .city-pill-count {
-  background-color: #00A859 !important;
-  color: #FFFFFF !important;
+  background-color: #FFFFFF !important;
+  color: #1B5BFF !important;
 }
 html.light #home-city-filter .city-pill:not([data-active="true"]) {
-  color: #0B2545 !important;
+  color: #0A1B4A !important;
 }
 html.light #home-city-filter .city-pill:not([data-active="true"]) svg {
-  color: #00A859 !important;
+  color: #1B5BFF !important;
 }
 html.light #home-city-filter .city-pill:not([data-active="true"]) .city-pill-count {
   background-color: #ECFDF5 !important;
-  color: #00A859 !important;
+  color: #1B5BFF !important;
 }
 
 /* Theme-safe on/off switch (Hiring Active, etc.) */
@@ -313,8 +313,8 @@ html.light #home-city-filter .city-pill:not([data-active="true"]) .city-pill-cou
   border-color: #5A5048 !important;
 }
 .app-toggle-on {
-  background-color: #00A859 !important;
-  border-color: #008C4A !important;
+  background-color: #1B5BFF !important;
+  border-color: #0B3FCC !important;
 }
 .app-toggle-knob {
   background-color: #FFFFFF !important;
@@ -325,8 +325,8 @@ html.light .app-toggle-off {
   border-color: #94A3B8 !important;
 }
 html.light .app-toggle-on {
-  background-color: #00A859 !important;
-  border-color: #008C4A !important;
+  background-color: #1B5BFF !important;
+  border-color: #0B3FCC !important;
 }
 html.light .app-toggle-knob {
   background-color: #FFFFFF !important;
@@ -507,11 +507,11 @@ html.light #admin-main-header p,
 html.light #app-root-web > main p:not(.page-card-body):not(.page-meta):not(.page-error) {
   color: #475569 !important;
 }
-html.light #app-root-web #web-top-nav button:not([class*="bg-[#00A859]"]) {
+html.light #app-root-web #web-top-nav button:not([class*="bg-[#1B5BFF]"]) {
   color: #475569 !important;
 }
-html.light #app-root-web #web-top-nav button:not([class*="bg-[#00A859]"]):hover {
-  color: #0B2545 !important;
+html.light #app-root-web #web-top-nav button:not([class*="bg-[#1B5BFF]"]):hover {
+  color: #0A1B4A !important;
   background-color: #F1F5F9 !important;
 }
 
@@ -660,11 +660,11 @@ html.light #admin-panel-container h4 {
 html.light #admin-panel-container .text-\[\#F4E3D7\] {
   color: #0F172A !important;
 }
-html.light #admin-segment-bar button:not([class*="bg-[#00A859]"]) {
+html.light #admin-segment-bar button:not([class*="bg-[#1B5BFF]"]) {
   color: #475569 !important;
 }
-html.light #admin-segment-bar button:not([class*="bg-[#00A859]"]):hover {
-  color: #0B2545 !important;
+html.light #admin-segment-bar button:not([class*="bg-[#1B5BFF]"]):hover {
+  color: #0A1B4A !important;
   background-color: #F1F5F9 !important;
 }
 html.light #admin-biz-section .bg-white\/10.text-white,
@@ -725,7 +725,7 @@ html.light #account-tab-container .text-white {
 
 /* ─── Auth screen — light navy / emerald (matches app theme) ─ */
 html.light #auth-screen-root {
-  color: #0B2545 !important;
+  color: #0A1B4A !important;
 }
 html.light #auth-form-card {
   background-color: rgba(255, 255, 255, 0.96) !important;
@@ -741,7 +741,7 @@ html.light #auth-screen-content select,
 html.light #auth-screen-content textarea {
   background-color: #FFFFFF !important;
   border-color: #D7E0EA !important;
-  color: #0B2545 !important;
+  color: #0A1B4A !important;
 }
 html.light #auth-screen-root input::placeholder,
 html.light #auth-screen-content input::placeholder {
@@ -749,7 +749,7 @@ html.light #auth-screen-content input::placeholder {
 }
 html.light #auth-screen-root label,
 html.light #auth-screen-content label {
-  color: #0B2545 !important;
+  color: #0A1B4A !important;
 }
 html.light #auth-screen-root .text-white,
 html.light #auth-tab-bar .text-white {
@@ -766,11 +766,11 @@ html.light #auth-form-card button[type="submit"] {
 
 /* ─── Sheet / bottom-sheet cards (Legal, FAQ, Notifications) ─ */
 .sheet-panel-title {
-  color: #00A859;
+  color: #1B5BFF;
 }
 .sheet-panel-icon,
 .sheet-card-icon {
-  color: #00A859;
+  color: #1B5BFF;
 }
 .sheet-panel-meta {
   color: #8A7A68;
@@ -976,8 +976,8 @@ html.light .fixed.inset-0 .bg-\[\#13110E\] {
 /* Contact action buttons — keep high contrast in both themes */
 html.light #action-btn-call,
 html.dark #action-btn-call {
-  background-color: #00A859 !important;
-  border-color: #008C4A !important;
+  background-color: #1B5BFF !important;
+  border-color: #0B3FCC !important;
   color: #FFFFFF !important;
 }
 html.light #action-btn-call *,
@@ -1198,13 +1198,13 @@ html.light .skeleton {
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
 }
 .card-hover:hover {
-  border-color: rgba(0,168,89,0.35) !important;
-  box-shadow: 0 0 0 1px rgba(0,168,89,0.15);
+  border-color: rgba(27, 91, 255,0.35) !important;
+  box-shadow: 0 0 0 1px rgba(27, 91, 255,0.15);
   transform: translateY(-1px);
 }
 html.light .card-hover:hover {
-  border-color: rgba(0,168,89,0.30) !important;
-  box-shadow: 0 6px 20px rgba(0,168,89,0.10), 0 2px 8px rgba(0,0,0,0.05);
+  border-color: rgba(27, 91, 255,0.30) !important;
+  box-shadow: 0 6px 20px rgba(27, 91, 255,0.10), 0 2px 8px rgba(0,0,0,0.05);
 }
 
 /* ─── Open / Closed badge ────────────────────────────────── */
@@ -1229,7 +1229,7 @@ button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  outline: 2px solid #00A859;
+  outline: 2px solid #1B5BFF;
   outline-offset: 2px;
 }
 html.light button:focus-visible,
@@ -1255,7 +1255,7 @@ img.lazy-image.loaded { opacity: 1; }
 }
 
 /* ─── Selection color ────────────────────────────────────── */
-::selection { background-color: #00A859; color: white; }
+::selection { background-color: #1B5BFF; color: white; }
 html.light ::selection { background-color: var(--color-primary); color: white; }
 
 /* ─── Tab transition wrapper ─────────────────────────────── */

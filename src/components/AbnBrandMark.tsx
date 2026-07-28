@@ -14,12 +14,15 @@ interface AbnBrandMarkProps {
   className?: string;
 }
 
-/** Navy/emerald ABN mark + Ahle-Bait Network tagline */
+/** Official ABN mark + Ahlebait Network tagline */
 export const AbnBrandMark: React.FC<AbnBrandMarkProps> = ({ size = 'md', className = '' }) => (
   <div className={`flex flex-col items-center text-center bg-transparent ${className}`.trim()}>
-    <AbnLogo variant="full" size={size} tone="light" />
-    <p className={`${TAGLINE_CLASSES[size]} font-bold text-[#00A859] tracking-[0.22em] uppercase mt-3`}>
-      AHLE-BAIT NETWORK
+    <AbnLogo variant="full" size={size} />
+    <p className={`${TAGLINE_CLASSES[size]} font-bold text-[#1B5BFF] tracking-[0.22em] uppercase mt-3`}>
+      AHLEBAIT NETWORK
+    </p>
+    <p className="text-[9px] font-semibold tracking-[0.18em] uppercase text-[#0A1B4A] mt-1.5">
+      Connect · Collaborate · Grow
     </p>
   </div>
 );

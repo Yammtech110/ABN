@@ -23,12 +23,12 @@ import { userFacingError } from '../utils/userFacingError';
 type AuthMode = 'signin' | 'register' | 'verify' | 'forgot' | 'reset-code' | 'reset-choice';
 
 const fieldClass =
-  'w-full pl-11 pr-11 py-3.5 rounded-2xl bg-white border border-[#D7E0EA] focus:border-[#00A859] focus:ring-1 focus:ring-[#00A859]/25 outline-none text-[15px] text-[#0B2545] placeholder:text-slate-400 transition-all';
+  'w-full pl-11 pr-11 py-3.5 rounded-2xl bg-white border border-[#D7E0EA] focus:border-[#1B5BFF] focus:ring-1 focus:ring-[#1B5BFF]/25 outline-none text-[15px] text-[#0A1B4A] placeholder:text-slate-400 transition-all';
 
-const labelClass = 'block text-[11px] font-semibold tracking-wide text-[#0B2545] mb-1.5 uppercase';
+const labelClass = 'block text-[11px] font-semibold tracking-wide text-[#0A1B4A] mb-1.5 uppercase';
 
 const primaryBtn =
-  'w-full py-3.5 mt-1 rounded-2xl bg-gradient-to-r from-[#00A859] to-[#008C4A] text-white font-black text-sm tracking-wide shadow-[0_10px_28px_rgba(0,168,89,0.28)] hover:brightness-105 active:scale-[0.985] transition-all disabled:opacity-55 flex items-center justify-center gap-2';
+  'w-full py-3.5 mt-1 rounded-2xl bg-gradient-to-r from-[#1B5BFF] to-[#0B3FCC] text-white font-black text-sm tracking-wide shadow-[0_10px_28px_rgba(27, 91, 255,0.28)] hover:brightness-105 active:scale-[0.985] transition-all disabled:opacity-55 flex items-center justify-center gap-2';
 
 /** Premium auth gateway — Sign In / Register / OTP / Forgot password (backend-wired) */
 export const AuthScreen: React.FC = () => {
@@ -282,7 +282,7 @@ export const AuthScreen: React.FC = () => {
 
   return (
     <div
-      className="fixed inset-0 z-40 flex flex-col text-[#0B2545] overflow-y-auto bg-[#EEF2F6]"
+      className="fixed inset-0 z-40 flex flex-col text-[#0A1B4A] overflow-y-auto bg-[#EEF2F6]"
       id="auth-screen-root"
       style={{
         paddingTop: 'env(safe-area-inset-top)',
@@ -295,7 +295,7 @@ export const AuthScreen: React.FC = () => {
         className="pointer-events-none absolute inset-0 opacity-[0.35]"
         style={{
           backgroundImage:
-            'linear-gradient(rgba(11,37,69,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,168,89,0.06) 1px, transparent 1px)',
+            'linear-gradient(rgba(11,37,69,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(27, 91, 255,0.06) 1px, transparent 1px)',
           backgroundSize: '28px 28px',
           maskImage: 'radial-gradient(circle at 50% 20%, black 20%, transparent 75%)',
         }}
@@ -322,8 +322,11 @@ export const AuthScreen: React.FC = () => {
                 tone="light"
                 className="drop-shadow-[0_8px_24px_rgba(11,37,69,0.12)]"
               />
-              <p className="text-xs font-bold text-[#00A859] tracking-[0.22em] uppercase mt-3">
-                AHLE-BAIT NETWORK
+              <p className="text-xs font-bold text-[#1B5BFF] tracking-[0.22em] uppercase mt-3">
+                AHLEBAIT NETWORK
+              </p>
+              <p className="text-[9px] font-semibold tracking-[0.16em] uppercase text-[#0A1B4A] mt-1.5">
+                Connect · Collaborate · Grow
               </p>
             </motion.div>
             <motion.p
@@ -353,13 +356,13 @@ export const AuthScreen: React.FC = () => {
                       type="button"
                       onClick={() => switchMode(mode)}
                       className={`relative z-10 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-colors ${
-                        active ? 'text-white' : 'text-slate-500 hover:text-[#0B2545]'
+                        active ? 'text-white' : 'text-slate-500 hover:text-[#0A1B4A]'
                       }`}
                     >
                       {active && (
                         <motion.span
                           layoutId="authTabPill"
-                          className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#00A859] to-[#008C4A] shadow-md"
+                          className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#1B5BFF] to-[#0B3FCC] shadow-md"
                           transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                         />
                       )}
@@ -387,7 +390,7 @@ export const AuthScreen: React.FC = () => {
                   </p>
                 )}
                 {regSuccess && !error && (
-                  <p className="mb-3 text-emerald-800 text-xs text-center bg-emerald-50 border border-emerald-200 p-2.5 rounded-xl">
+                  <p className="mb-3 text-emerald-800 text-xs text-center bg-blue-50 border border-blue-200 p-2.5 rounded-xl">
                     {regSuccess}
                   </p>
                 )}
@@ -427,7 +430,7 @@ export const AuthScreen: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => setShowPassword((v) => !v)}
-                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#00A859]"
+                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#1B5BFF]"
                             aria-label={showPassword ? 'Hide password' : 'Show password'}
                           >
                             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -452,14 +455,14 @@ export const AuthScreen: React.FC = () => {
                         setRegSuccess('');
                         setPassword('');
                       }}
-                      className="w-full mt-4 text-center text-xs font-semibold text-[#00A859] hover:underline"
+                      className="w-full mt-4 text-center text-xs font-semibold text-[#1B5BFF] hover:underline"
                     >
                       Forgot password?
                     </button>
                     <button
                       type="button"
                       onClick={() => switchMode('register')}
-                      className="w-full mt-2.5 text-center text-xs text-slate-500 hover:text-[#0B2545]"
+                      className="w-full mt-2.5 text-center text-xs text-slate-500 hover:text-[#0A1B4A]"
                     >
                       {t.noAccountYet}
                     </button>
@@ -534,7 +537,7 @@ export const AuthScreen: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => setShowPassword((v) => !v)}
-                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#00A859]"
+                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#1B5BFF]"
                           >
                             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
@@ -557,7 +560,7 @@ export const AuthScreen: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => setShowConfirm((v) => !v)}
-                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#00A859]"
+                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#1B5BFF]"
                           >
                             {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
@@ -576,7 +579,7 @@ export const AuthScreen: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => switchMode('signin')}
-                      className="w-full mt-4 text-center text-xs text-slate-500 hover:text-[#0B2545]"
+                      className="w-full mt-4 text-center text-xs text-slate-500 hover:text-[#0A1B4A]"
                     >
                       {t.alreadyHaveAccount}
                     </button>
@@ -585,7 +588,7 @@ export const AuthScreen: React.FC = () => {
 
                 {authMode === 'verify' && (
                   <>
-                    <div className="flex items-center justify-center gap-2 mb-3 text-[#00A859]">
+                    <div className="flex items-center justify-center gap-2 mb-3 text-[#1B5BFF]">
                       <ShieldCheck className="w-5 h-5" />
                       <span className="text-xs font-black uppercase tracking-wider">Verify Email</span>
                     </div>
@@ -615,20 +618,20 @@ export const AuthScreen: React.FC = () => {
                       type="button"
                       onClick={handleResend}
                       disabled={isLoading}
-                      className="w-full mt-3 text-xs text-slate-500 hover:text-[#00A859]"
+                      className="w-full mt-3 text-xs text-slate-500 hover:text-[#1B5BFF]"
                     >
                       Resend code
                     </button>
                     <a
                       href={SUPPORT_MAILTO}
-                      className="block w-full mt-2 text-center text-[10px] text-slate-400 hover:text-[#00A859]"
+                      className="block w-full mt-2 text-center text-[10px] text-slate-400 hover:text-[#1B5BFF]"
                     >
                       Contact support
                     </a>
                     <button
                       type="button"
                       onClick={() => switchMode('signin')}
-                      className="w-full mt-3 flex items-center justify-center gap-1.5 text-xs text-slate-500 hover:text-[#0B2545]"
+                      className="w-full mt-3 flex items-center justify-center gap-1.5 text-xs text-slate-500 hover:text-[#0A1B4A]"
                     >
                       <ArrowLeft className="w-3.5 h-3.5" /> Back to Sign In
                     </button>
@@ -637,7 +640,7 @@ export const AuthScreen: React.FC = () => {
 
                 {authMode === 'forgot' && (
                   <>
-                    <div className="flex items-center justify-center gap-2 mb-3 text-[#00A859]">
+                    <div className="flex items-center justify-center gap-2 mb-3 text-[#1B5BFF]">
                       <KeyRound className="w-5 h-5" />
                       <span className="text-xs font-black uppercase tracking-wider">Forgot Password</span>
                     </div>
@@ -667,7 +670,7 @@ export const AuthScreen: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => switchMode('signin')}
-                      className="w-full mt-4 flex items-center justify-center gap-1.5 text-xs text-slate-500 hover:text-[#0B2545]"
+                      className="w-full mt-4 flex items-center justify-center gap-1.5 text-xs text-slate-500 hover:text-[#0A1B4A]"
                     >
                       <ArrowLeft className="w-3.5 h-3.5" /> Back to Sign In
                     </button>
@@ -676,7 +679,7 @@ export const AuthScreen: React.FC = () => {
 
                 {authMode === 'reset-code' && (
                   <>
-                    <div className="flex items-center justify-center gap-2 mb-3 text-[#00A859]">
+                    <div className="flex items-center justify-center gap-2 mb-3 text-[#1B5BFF]">
                       <ShieldCheck className="w-5 h-5" />
                       <span className="text-xs font-black uppercase tracking-wider">Enter Reset Code</span>
                     </div>
@@ -717,14 +720,14 @@ export const AuthScreen: React.FC = () => {
                         setVerifyCode('');
                         setRegSuccess('A new reset code was emailed. Check Gmail Inbox and Spam.');
                       }}
-                      className="w-full mt-3 text-xs text-slate-500 hover:text-[#00A859]"
+                      className="w-full mt-3 text-xs text-slate-500 hover:text-[#1B5BFF]"
                     >
                       Resend code
                     </button>
                     <button
                       type="button"
                       onClick={() => switchMode('signin')}
-                      className="w-full mt-3 text-xs text-slate-500 hover:text-[#0B2545]"
+                      className="w-full mt-3 text-xs text-slate-500 hover:text-[#0A1B4A]"
                     >
                       Back to Sign In
                     </button>
@@ -740,7 +743,7 @@ export const AuthScreen: React.FC = () => {
                       type="button"
                       disabled={isLoading}
                       onClick={handleKeepPassword}
-                      className="w-full py-3 mb-3 rounded-2xl border border-[#D7E0EA] text-sm font-bold text-[#0B2545] hover:border-[#00A859]/50 bg-white disabled:opacity-55"
+                      className="w-full py-3 mb-3 rounded-2xl border border-[#D7E0EA] text-sm font-bold text-[#0A1B4A] hover:border-[#1B5BFF]/50 bg-white disabled:opacity-55"
                     >
                       {isLoading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Keep current password'}
                     </button>
@@ -784,7 +787,7 @@ export const AuthScreen: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => switchMode('signin')}
-                      className="w-full mt-4 text-xs text-slate-500 hover:text-[#0B2545]"
+                      className="w-full mt-4 text-xs text-slate-500 hover:text-[#0A1B4A]"
                     >
                       Back to Sign In
                     </button>

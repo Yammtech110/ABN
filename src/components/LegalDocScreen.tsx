@@ -32,11 +32,11 @@ export const LegalDocScreen: React.FC<LegalDocScreenProps> = ({ docId, onBack })
           aria-label="Back"
           id="legal-page-back"
         >
-          <ArrowLeft className="w-4 h-4 text-[#00A859]" />
+          <ArrowLeft className="w-4 h-4 text-[#1B5BFF]" />
         </button>
         <div className="min-w-0 flex-1">
-          <h1 className="page-title text-sm font-black uppercase tracking-wider flex items-center gap-2 truncate text-[#0B2545]">
-            <Lock className="page-title-icon w-4 h-4 shrink-0 text-[#00A859]" />
+          <h1 className="page-title text-sm font-black uppercase tracking-wider flex items-center gap-2 truncate text-[#0A1B4A]">
+            <Lock className="page-title-icon w-4 h-4 shrink-0 text-[#1B5BFF]" />
             <span className="truncate">{doc.title}</span>
           </h1>
           <p className="page-meta text-[11px] mt-0.5 font-semibold text-slate-600">
@@ -51,7 +51,7 @@ export const LegalDocScreen: React.FC<LegalDocScreenProps> = ({ docId, onBack })
             key={s.heading}
             className={`py-4 ${i < doc.sections.length - 1 ? 'border-b border-[#E2E8F0]' : ''}`}
           >
-            <h2 className="text-[13px] font-extrabold text-[#0B2545] mb-2">{s.heading}</h2>
+            <h2 className="text-[13px] font-extrabold text-[#0A1B4A] mb-2">{s.heading}</h2>
             <p className="text-[12px] leading-relaxed text-slate-700">{s.body}</p>
           </section>
         ))}

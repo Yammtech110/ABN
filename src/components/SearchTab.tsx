@@ -205,19 +205,19 @@ export const SearchTab: React.FC<SearchTabProps> = ({
       <div className="flex items-center gap-3 pb-2 animate-fade-in-up" id="search-header">
         <button
           onClick={() => onSwitchTab('home')}
-          className="p-1 px-2 rounded-xl bg-[#EEF2F6] hover:bg-slate-100 text-[#00A859] border border-[#D7E0EA] transition-colors"
+          className="p-1 px-2 rounded-xl bg-[#EEF2F6] hover:bg-slate-100 text-[#1B5BFF] border border-[#D7E0EA] transition-colors"
           id="btn-search-back"
         >
           <ArrowLeft className="w-5 h-5 inline rounded" />
         </button>
-        <h2 className="text-xl font-extrabold text-[#0B2545] flex-1" id="search-header-title">
+        <h2 className="text-xl font-extrabold text-[#0A1B4A] flex-1" id="search-header-title">
           {language === 'en' ? 'Find a business' : 'ابحث عن نشاط تجاري'}
         </h2>
         <div className="flex rounded-xl border border-[#D7E0EA] overflow-hidden" id="search-view-toggle">
           <button
             type="button"
             onClick={() => setViewMode('list')}
-            className={`px-2.5 py-1.5 ${viewMode === 'list' ? 'bg-[#00A859] text-white' : 'bg-[#EEF2F6] text-gray-400'}`}
+            className={`px-2.5 py-1.5 ${viewMode === 'list' ? 'bg-[#1B5BFF] text-white' : 'bg-[#EEF2F6] text-gray-400'}`}
             aria-label="List view"
           >
             <List className="w-4 h-4" />
@@ -225,7 +225,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
           <button
             type="button"
             onClick={() => setViewMode('map')}
-            className={`px-2.5 py-1.5 ${viewMode === 'map' ? 'bg-[#00A859] text-white' : 'bg-[#EEF2F6] text-gray-400'}`}
+            className={`px-2.5 py-1.5 ${viewMode === 'map' ? 'bg-[#1B5BFF] text-white' : 'bg-[#EEF2F6] text-gray-400'}`}
             aria-label="Map view"
           >
             <Map className="w-4 h-4" />
@@ -240,11 +240,11 @@ export const SearchTab: React.FC<SearchTabProps> = ({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder={language === 'en' ? 'Plumber, restaurant, bookstore...' : 'سباك، مطعم، مكتبة كتب...'}
-          className="w-full pl-10 pr-4 py-3 bg-white border border-[#D7E0EA] rounded-2xl text-xs text-[#0B2545] placeholder-gray-500 outline-none focus:border-[#00A859] transition-all"
+          className="w-full pl-10 pr-4 py-3 bg-white border border-[#D7E0EA] rounded-2xl text-xs text-[#0A1B4A] placeholder-gray-500 outline-none focus:border-[#1B5BFF] transition-all"
           id="search-input-field"
         />
         {isSearching && (
-          <div className="absolute right-3 top-3.5 w-4 h-4 border-2 border-[#00A859] border-t-transparent rounded-full animate-spin" />
+          <div className="absolute right-3 top-3.5 w-4 h-4 border-2 border-[#1B5BFF] border-t-transparent rounded-full animate-spin" />
         )}
       </div>
 
@@ -257,7 +257,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
             setSelectedCity('All');
             setMapFocusId(null);
           }}
-          className="w-full px-3 py-2.5 rounded-xl bg-white border border-[#D7E0EA] text-xs text-[#0B2545] outline-none focus:border-[#00A859]"
+          className="w-full px-3 py-2.5 rounded-xl bg-white border border-[#D7E0EA] text-xs text-[#0A1B4A] outline-none focus:border-[#1B5BFF]"
           id="search-state-select"
         >
           <option value="All">All states</option>
@@ -273,7 +273,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
             setSelectedCity(e.target.value);
             setMapFocusId(null);
           }}
-          className="w-full px-3 py-2.5 rounded-xl bg-white border border-[#D7E0EA] text-xs text-[#0B2545] outline-none focus:border-[#00A859]"
+          className="w-full px-3 py-2.5 rounded-xl bg-white border border-[#D7E0EA] text-xs text-[#0A1B4A] outline-none focus:border-[#1B5BFF]"
           id="search-city-select"
         >
           {CITIES.map((city) => (
@@ -287,7 +287,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
           onClick={() => setOpenNowOnly((v) => !v)}
           className={`px-3 py-2.5 rounded-xl text-xs font-bold border transition-all ${
             openNowOnly
-              ? 'bg-emerald-50 text-[#00A859] border-emerald-300'
+              ? 'bg-blue-50 text-[#1B5BFF] border-emerald-300'
               : 'bg-white text-gray-400 border-[#D7E0EA]'
           }`}
           id="search-open-now-toggle"
@@ -297,7 +297,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
         <select
           value={minRating}
           onChange={(e) => setMinRating(Number(e.target.value))}
-          className="w-full px-3 py-2.5 rounded-xl bg-white border border-[#D7E0EA] text-xs text-[#0B2545] outline-none focus:border-[#00A859]"
+          className="w-full px-3 py-2.5 rounded-xl bg-white border border-[#D7E0EA] text-xs text-[#0A1B4A] outline-none focus:border-[#1B5BFF]"
           id="search-rating-select"
         >
           {MIN_RATINGS.map((opt) => (
@@ -313,8 +313,8 @@ export const SearchTab: React.FC<SearchTabProps> = ({
           onClick={() => setSelectedCategory('All')}
           className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold uppercase border transition-all ${
             selectedCategory === 'All'
-              ? 'bg-transparent text-[#00A859] border-[#00A859]/80'
-              : 'bg-[#EEF2F6] text-slate-500 border-[#D7E0EA] hover:text-[#0B2545]'
+              ? 'bg-transparent text-[#1B5BFF] border-[#1B5BFF]/80'
+              : 'bg-[#EEF2F6] text-slate-500 border-[#D7E0EA] hover:text-[#0A1B4A]'
           }`}
           id="cat-chip-all"
         >
@@ -328,8 +328,8 @@ export const SearchTab: React.FC<SearchTabProps> = ({
               onClick={() => setSelectedCategory(cat.id)}
               className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-medium border transition-all ${
                 isSelected
-                  ? 'bg-transparent text-[#00A859] border-[#00A859]'
-                  : 'bg-[#EEF2F6]/30 text-gray-500 border-[#D7E0EA]/55 hover:text-[#0B2545]'
+                  ? 'bg-transparent text-[#1B5BFF] border-[#1B5BFF]'
+                  : 'bg-[#EEF2F6]/30 text-gray-500 border-[#D7E0EA]/55 hover:text-[#0A1B4A]'
               }`}
               id={`cat-chip-${cat.id}`}
             >
@@ -346,7 +346,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
         {hasActiveFilters && (
           <button
             onClick={handleClearAll}
-            className="text-[#00A859]/85 hover:underline font-bold text-[11px]"
+            className="text-[#1B5BFF]/85 hover:underline font-bold text-[11px]"
             id="search-btn-clear"
           >
             Reset Filters
@@ -394,7 +394,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
                     onSelectBusiness(biz);
                   }}
                   className={`flex items-center gap-3.5 p-3 rounded-2xl bg-white border transition-all cursor-pointer animate-fade-in-up card-hover ${
-                    focused ? 'border-[#00A859]' : 'border-[#D7E0EA] hover:border-[#00A859]/40'
+                    focused ? 'border-[#1B5BFF]' : 'border-[#D7E0EA] hover:border-[#1B5BFF]/40'
                   }`}
                   id={`search-item-${biz.id}`}
                 >
@@ -402,14 +402,14 @@ export const SearchTab: React.FC<SearchTabProps> = ({
                     <BusinessThumbnail business={biz} eager />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-xs font-black text-[#0B2545] hover:text-[#00A859] truncate transition-colors leading-snug">
+                    <h4 className="text-xs font-black text-[#0A1B4A] hover:text-[#1B5BFF] truncate transition-colors leading-snug">
                       {biz.name}
                     </h4>
                     <p className="text-[10px] text-gray-400 font-medium capitalize mt-0.5">
                       {textEn(biz.subcategory)}
                     </p>
                     <div className="flex items-center gap-1 mt-1 text-[9px] text-gray-500">
-                      <MapPin className="w-3.5 h-3.5 text-[#00A859]" />
+                      <MapPin className="w-3.5 h-3.5 text-[#1B5BFF]" />
                       <span>
                         {biz.city}
                         {listingState(biz) ? `, ${listingState(biz)}` : ''}
@@ -422,7 +422,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
                           e.stopPropagation();
                           openBusinessInMaps(buildBusinessMapQuery(biz));
                         }}
-                        className="mt-1.5 text-[9px] font-bold text-[#00A859] hover:underline"
+                        className="mt-1.5 text-[9px] font-bold text-[#1B5BFF] hover:underline"
                       >
                         Open in Maps
                       </button>
@@ -434,8 +434,8 @@ export const SearchTab: React.FC<SearchTabProps> = ({
                         <CheckCircle className="w-3.5 h-3.5" />
                       </span>
                     )}
-                    <span className="text-[10px] font-black text-[#00A859] flex items-center gap-0.5">
-                      <Star className="w-3 h-3 fill-[#00A859]" /> {biz.rating}
+                    <span className="text-[10px] font-black text-[#1B5BFF] flex items-center gap-0.5">
+                      <Star className="w-3 h-3 fill-[#1B5BFF]" /> {biz.rating}
                     </span>
                     {isOpen !== null && (
                       <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded ${isOpen ? 'badge-open' : 'badge-closed'}`}>
