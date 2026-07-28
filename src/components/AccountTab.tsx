@@ -33,8 +33,6 @@ interface AccountTabProps {
 export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal }) => {
   const {
     language,
-    theme,
-    setTheme,
     currentUser,
     signOut,
     deleteAccount,
@@ -263,33 +261,6 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
             </button>
           </>
         )}
-
-        <div className="flex items-center justify-between p-4" id="row-theme-switch">
-          <span className="flex items-center gap-3 text-xs text-[#0B2545] font-semibold">
-            <Eye className="w-4.5 h-4.5 text-[#00A859]" />
-            Theme
-          </span>
-          <div className="flex rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] p-0.5">
-            <button
-              type="button"
-              onClick={() => setTheme('light')}
-              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold ${
-                theme === 'light' ? 'bg-[#00A859] text-white' : 'text-gray-400'
-              }`}
-            >
-              Light
-            </button>
-            <button
-              type="button"
-              onClick={() => setTheme('dark')}
-              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold ${
-                theme === 'dark' ? 'bg-[#00A859] text-white' : 'text-gray-400'
-              }`}
-            >
-              Dark
-            </button>
-          </div>
-        </div>
 
         <button
           onClick={handleOpenNotificationCenter}

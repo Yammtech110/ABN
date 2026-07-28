@@ -347,7 +347,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
     onSwitchTab('search');
   };
 
-  const renderCategoryIcon = (iconName: string, className = 'w-5 h-5 text-[#0B2545]') => {
+  const renderCategoryIcon = (iconName: string, className = 'w-5 h-5 text-[#00A859]') => {
     const IconComponent = ICON_MAP[iconName] || HelpCircle;
     return <IconComponent className={className} />;
   };
@@ -442,7 +442,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           </button>
         </div>
 
-        <p className="relative text-[11px] font-bold tracking-[0.18em] uppercase text-[#00A859] mb-1">
+        <p className="relative text-[11px] font-bold tracking-[0.22em] uppercase text-[#0B2545] mb-1">
           Welcome to ABN
         </p>
         <h1 className="relative leading-[0.95] mb-2 max-w-[70%]">
@@ -544,11 +544,11 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                 id={`city-pill-${key}`}
               >
                 {key === 'all'
-                  ? <Globe className={`w-3.5 h-3.5 ${active ? 'text-white' : 'text-[#0B2545]'}`} />
-                  : <MapPin className={`w-3 h-3 ${active ? 'text-[#00A859]' : 'text-[#0B2545]'}`} />}
+                  ? <Globe className={`w-3.5 h-3.5 ${active ? 'text-white' : 'text-[#00A859]'}`} />
+                  : <MapPin className={`w-3 h-3 ${active ? 'text-[#00A859]' : 'text-[#00A859]'}`} />}
                 {label}
                 <span className={`min-w-[18px] h-[18px] px-1 rounded-full text-[9px] font-black flex items-center justify-center ${
-                  active ? 'bg-[#00A859] text-white' : 'bg-[#0B2545]/10 text-[#0B2545]'
+                  active ? 'bg-[#00A859] text-white' : 'bg-emerald-50 text-[#00A859]'
                 }`}>{count}</span>
               </button>
             );
@@ -660,8 +660,8 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               className="flex flex-col items-center gap-2 text-center"
               id={`cat-card-${cat.id}`}
             >
-              <div className="w-14 h-14 rounded-full bg-[#E8EEF5] border border-[#C5D3E3] flex items-center justify-center shadow-sm">
-                {renderCategoryIcon(cat.iconName, 'w-6 h-6 text-[#0B2545]')}
+              <div className="w-14 h-14 rounded-full bg-[#EEF7F1] border border-emerald-100 flex items-center justify-center shadow-sm">
+                {renderCategoryIcon(cat.iconName, 'w-6 h-6 text-[#00A859]')}
               </div>
               <span className="text-[10px] font-bold text-[#0B2545] leading-tight line-clamp-2 w-full">
                 {cat.name.en}
@@ -673,8 +673,8 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             className="flex flex-col items-center gap-2 text-center"
             id="cat-card-more"
           >
-            <div className="w-14 h-14 rounded-full bg-[#0B2545] border border-[#0B2545] flex items-center justify-center shadow-sm">
-              <Grid3X3 className="w-6 h-6 text-white" />
+            <div className="w-14 h-14 rounded-full bg-[#EEF7F1] border border-emerald-100 flex items-center justify-center shadow-sm">
+              <Grid3X3 className="w-6 h-6 text-[#00A859]" strokeWidth={2.25} />
             </div>
             <span className="text-[10px] font-bold text-[#0B2545]">More</span>
           </button>
@@ -840,8 +840,8 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             { icon: Users, title: 'Build Community', body: 'Grow connections that last.' },
           ].map((item) => (
             <div key={item.title} className="text-center space-y-1.5">
-              <div className="mx-auto w-10 h-10 rounded-full bg-[#E8EEF5] flex items-center justify-center">
-                <item.icon className="w-4 h-4 text-[#0B2545]" />
+              <div className="mx-auto w-10 h-10 rounded-full bg-[#EEF7F1] flex items-center justify-center">
+                <item.icon className="w-4 h-4 text-[#00A859]" />
               </div>
               <p className="text-[11px] font-extrabold text-[#0B2545]">{item.title}</p>
               <p className="text-[9px] text-slate-500 leading-snug">{item.body}</p>
