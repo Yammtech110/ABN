@@ -38,7 +38,7 @@ export const OfflineGate: React.FC<OfflineGateProps> = ({ children }) => {
           <WifiOff className="w-8 h-8 text-white" strokeWidth={2} />
         </div>
         <h1 className="text-xl font-black tracking-[0.12em] uppercase text-white mb-2">
-          Connect to Internet
+          CONNECT TO INTERNET
         </h1>
         <p className="text-sm text-white/75 max-w-[280px] leading-relaxed">
           No network connection. Please turn on mobile data or Wi‑Fi, then reopen the app.

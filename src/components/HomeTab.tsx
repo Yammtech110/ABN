@@ -44,7 +44,6 @@ import {
   Handshake,
   Grid3X3,
   Globe,
-  RefreshCw,
   ChevronDown,
   ChevronRight,
 } from 'lucide-react';
