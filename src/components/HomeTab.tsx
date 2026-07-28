@@ -54,49 +54,53 @@ const NAVY = '#0B2545';
 /** Decorative network globe behind the home hero (matches mockup). */
 const HeroGlobe: React.FC = () => (
   <svg
-    className="pointer-events-none absolute -right-6 top-2 w-[78%] max-w-[340px] h-auto opacity-[0.55]"
+    className="pointer-events-none absolute -right-4 -top-1 w-[82%] max-w-[360px] h-auto opacity-[0.72]"
     viewBox="0 0 360 320"
     fill="none"
     aria-hidden="true"
     id="home-hero-globe"
   >
     <defs>
-      <radialGradient id="globeFill" cx="50%" cy="45%" r="55%">
-        <stop offset="0%" stopColor="#B8D4E8" stopOpacity="0.55" />
-        <stop offset="70%" stopColor="#9FBFDA" stopOpacity="0.28" />
-        <stop offset="100%" stopColor="#9FBFDA" stopOpacity="0" />
+      <radialGradient id="globeFill" cx="48%" cy="42%" r="58%">
+        <stop offset="0%" stopColor="#C5D9EC" stopOpacity="0.7" />
+        <stop offset="55%" stopColor="#8FB0D0" stopOpacity="0.35" />
+        <stop offset="100%" stopColor="#0B2545" stopOpacity="0.06" />
       </radialGradient>
+      <linearGradient id="globeStroke" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stopColor="#0B2545" stopOpacity="0.35" />
+        <stop offset="100%" stopColor="#3D6A92" stopOpacity="0.55" />
+      </linearGradient>
     </defs>
-    {/* Globe disc */}
-    <circle cx="210" cy="150" r="118" fill="url(#globeFill)" stroke="#7FA8C8" strokeWidth="1.2" opacity="0.9" />
-    {/* Latitude lines */}
-    <ellipse cx="210" cy="150" rx="118" ry="38" stroke="#7FA8C8" strokeWidth="1" opacity="0.55" />
-    <ellipse cx="210" cy="150" rx="118" ry="72" stroke="#7FA8C8" strokeWidth="1" opacity="0.4" />
-    <ellipse cx="210" cy="150" rx="118" ry="100" stroke="#7FA8C8" strokeWidth="1" opacity="0.3" />
-    {/* Longitude lines */}
-    <ellipse cx="210" cy="150" rx="42" ry="118" stroke="#7FA8C8" strokeWidth="1" opacity="0.45" />
-    <ellipse cx="210" cy="150" rx="78" ry="118" stroke="#7FA8C8" strokeWidth="1" opacity="0.35" />
-    <path d="M210 32 V268" stroke="#7FA8C8" strokeWidth="1" opacity="0.4" />
+    {/* Globe disc — navy-tinted */}
+    <circle cx="210" cy="150" r="120" fill="url(#globeFill)" stroke="url(#globeStroke)" strokeWidth="1.6" />
+    {/* Latitude */}
+    <ellipse cx="210" cy="150" rx="120" ry="40" stroke="#0B2545" strokeWidth="1.1" opacity="0.28" />
+    <ellipse cx="210" cy="150" rx="120" ry="74" stroke="#0B2545" strokeWidth="1" opacity="0.22" />
+    <ellipse cx="210" cy="150" rx="120" ry="102" stroke="#0B2545" strokeWidth="1" opacity="0.16" />
+    {/* Longitude */}
+    <ellipse cx="210" cy="150" rx="44" ry="120" stroke="#0B2545" strokeWidth="1.1" opacity="0.28" />
+    <ellipse cx="210" cy="150" rx="80" ry="120" stroke="#0B2545" strokeWidth="1" opacity="0.2" />
+    <path d="M210 30 V270" stroke="#0B2545" strokeWidth="1.1" opacity="0.22" />
     {/* Network arcs */}
-    <path d="M95 120 C140 70, 250 55, 310 110" stroke="#00A859" strokeWidth="1.4" opacity="0.45" strokeDasharray="4 5" />
-    <path d="M110 200 C165 240, 255 235, 320 175" stroke="#00A859" strokeWidth="1.2" opacity="0.35" strokeDasharray="3 6" />
-    <path d="M130 90 C180 130, 240 125, 290 85" stroke="#0B2545" strokeWidth="1" opacity="0.25" />
-    {/* Connection nodes */}
-    <circle cx="130" cy="95" r="4.5" fill="#00A859" opacity="0.85" />
-    <circle cx="130" cy="95" r="8" stroke="#00A859" strokeWidth="1.2" opacity="0.35" />
-    <circle cx="250" cy="70" r="4" fill="#00A859" opacity="0.8" />
-    <circle cx="250" cy="70" r="7.5" stroke="#00A859" strokeWidth="1.2" opacity="0.3" />
-    <circle cx="290" cy="140" r="4.5" fill="#00A859" opacity="0.9" />
-    <circle cx="290" cy="140" r="8" stroke="#00A859" strokeWidth="1.2" opacity="0.35" />
-    <circle cx="175" cy="195" r="3.5" fill="#0B2545" opacity="0.45" />
-    <circle cx="310" cy="185" r="3.5" fill="#00A859" opacity="0.7" />
-    {/* Soft city silhouette along bottom-right */}
+    <path d="M90 115 C140 65, 250 50, 315 105" stroke="#0B2545" strokeWidth="1.3" opacity="0.35" strokeDasharray="4 5" />
+    <path d="M105 205 C165 245, 255 240, 325 170" stroke="#00A859" strokeWidth="1.3" opacity="0.45" strokeDasharray="3 5" />
+    <path d="M125 88 C180 128, 245 122, 295 80" stroke="#0B2545" strokeWidth="1.1" opacity="0.3" />
+    {/* Pins */}
+    <circle cx="128" cy="92" r="5" fill="#00A859" />
+    <circle cx="128" cy="92" r="9" stroke="#00A859" strokeWidth="1.4" opacity="0.4" />
+    <circle cx="252" cy="68" r="4.5" fill="#00A859" />
+    <circle cx="252" cy="68" r="8.5" stroke="#00A859" strokeWidth="1.3" opacity="0.35" />
+    <circle cx="292" cy="138" r="5" fill="#0B2545" />
+    <circle cx="292" cy="138" r="9" stroke="#0B2545" strokeWidth="1.3" opacity="0.3" />
+    <circle cx="178" cy="198" r="4" fill="#00A859" opacity="0.9" />
+    <circle cx="318" cy="182" r="4" fill="#0B2545" opacity="0.7" />
+    {/* City skyline — navy */}
     <path
-      d="M155 268 h18 v-22 h10 v14 h12 v-30 h14 v30 h8 v-18 h16 v18 h10 v-12 h14 v28 h22"
-      stroke="#8AABB8"
-      strokeWidth="1.5"
+      d="M150 272 h20 v-26 h11 v16 h13 v-34 h15 v34 h9 v-20 h17 v20 h11 v-14 h15 v30 h24"
+      stroke="#0B2545"
+      strokeWidth="1.8"
       fill="none"
-      opacity="0.35"
+      opacity="0.28"
     />
   </svg>
 );
@@ -349,7 +353,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
     onSwitchTab('search');
   };
 
-  const renderCategoryIcon = (iconName: string, className = 'w-5 h-5 text-[#00A859]') => {
+  const renderCategoryIcon = (iconName: string, className = 'w-5 h-5 text-[#0B2545]') => {
     const IconComponent = ICON_MAP[iconName] || HelpCircle;
     return <IconComponent className={className} />;
   };
@@ -419,7 +423,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         id="home-hero"
         style={{
           background:
-            'radial-gradient(100% 90% at 85% 20%, rgba(0,168,89,0.10) 0%, transparent 50%), linear-gradient(165deg, #E4EFF7 0%, #F3F7FA 42%, #EEF6F1 100%)',
+            'radial-gradient(90% 80% at 88% 18%, rgba(11,37,69,0.10) 0%, transparent 55%), linear-gradient(165deg, #D6E4F2 0%, #E8F0F7 38%, #EEF4F8 100%)',
         }}
       >
         <HeroGlobe />
@@ -559,11 +563,11 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                 id={`city-pill-${key}`}
               >
                 {key === 'all'
-                  ? <Globe className={`w-3.5 h-3.5 ${active ? 'text-[#00A859]' : 'text-[#00A859]'}`} />
-                  : <MapPin className="w-3 h-3 text-[#00A859]" />}
+                  ? <Globe className={`w-3.5 h-3.5 ${active ? 'text-white' : 'text-[#0B2545]'}`} />
+                  : <MapPin className={`w-3 h-3 ${active ? 'text-[#00A859]' : 'text-[#0B2545]'}`} />}
                 {label}
                 <span className={`min-w-[18px] h-[18px] px-1 rounded-full text-[9px] font-black flex items-center justify-center ${
-                  active ? 'bg-[#00A859] text-white' : 'bg-emerald-50 text-[#00A859]'
+                  active ? 'bg-[#00A859] text-white' : 'bg-[#0B2545]/10 text-[#0B2545]'
                 }`}>{count}</span>
               </button>
             );
@@ -595,8 +599,8 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               className="flex flex-col items-center gap-2 text-center"
               id={`cat-card-${cat.id}`}
             >
-              <div className="w-14 h-14 rounded-full bg-[#F0F7F3] border border-emerald-100 flex items-center justify-center shadow-sm">
-                {renderCategoryIcon(cat.iconName, 'w-6 h-6 text-[#00A859]')}
+              <div className="w-14 h-14 rounded-full bg-[#E8EEF5] border border-[#C5D3E3] flex items-center justify-center shadow-sm">
+                {renderCategoryIcon(cat.iconName, 'w-6 h-6 text-[#0B2545]')}
               </div>
               <span className="text-[10px] font-bold text-[#0B2545] leading-tight line-clamp-2 w-full">
                 {cat.name.en}
@@ -608,8 +612,8 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             className="flex flex-col items-center gap-2 text-center"
             id="cat-card-more"
           >
-            <div className="w-14 h-14 rounded-full bg-[#EEF2F6] border border-[#D7E0EA] flex items-center justify-center shadow-sm">
-              <Grid3X3 className="w-6 h-6 text-[#0B2545]" />
+            <div className="w-14 h-14 rounded-full bg-[#0B2545] border border-[#0B2545] flex items-center justify-center shadow-sm">
+              <Grid3X3 className="w-6 h-6 text-white" />
             </div>
             <span className="text-[10px] font-bold text-[#0B2545]">More</span>
           </button>
@@ -646,13 +650,13 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         className="rounded-[24px] p-4 flex items-center gap-3 animate-fade-in-up"
         style={{
           animationDelay: '0.14s',
-          background: `linear-gradient(120deg, ${NAVY} 0%, #123B5D 55%, #0E3A2A 100%)`,
+          background: `linear-gradient(125deg, ${NAVY} 0%, #123B5D 48%, #0B2545 100%)`,
         }}
         id="home-jobs-banner"
       >
         <div className="flex-1 min-w-0">
           <h3 className="text-[15px] font-extrabold text-white leading-snug mb-1">
-            Find the right talent. Grow your business.
+            Find the right talent. <span className="text-[#00A859]">Grow your business.</span>
           </h3>
           <p className="text-[11px] text-white/70 mb-3">
             {activeJobs.length > 0
@@ -668,8 +672,8 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             See All Jobs <ArrowRight className="w-3.5 h-3.5 text-[#00A859]" />
           </button>
         </div>
-        <div className="w-16 h-16 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center flex-shrink-0">
-          <Search className="w-7 h-7 text-[#00A859]" />
+        <div className="w-16 h-16 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0">
+          <Briefcase className="w-7 h-7 text-white" />
         </div>
       </section>
 
@@ -743,13 +747,14 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                 className="flex-shrink-0 w-[168px] rounded-[20px] bg-white border border-[#D7E0EA] shadow-sm overflow-hidden snap-start"
                 id={`featured-card-${biz.id}`}
               >
-                <div className="relative h-[110px] bg-slate-100">
+                <div className="relative h-[110px] bg-[#0B2545]">
                   <button
                     type="button"
                     onClick={() => onSelectBusiness(biz)}
-                    className="w-full h-full block"
+                    className="w-full h-full block relative"
                   >
-                    <BusinessThumbnail business={biz} className="w-full h-full object-cover" eager />
+                    <BusinessThumbnail business={biz} className="w-full h-full object-cover opacity-90" eager />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0B2545]/55 to-transparent pointer-events-none" />
                   </button>
                   <button
                     type="button"
@@ -757,10 +762,10 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                       e.stopPropagation();
                       void toggleFavorite(biz.id);
                     }}
-                    className="absolute top-2 right-2 p-1.5 rounded-full bg-white/90 shadow-sm"
+                    className="absolute top-2 right-2 p-1.5 rounded-full bg-white/95 shadow-sm"
                     aria-label={saved ? 'Remove favorite' : 'Save'}
                   >
-                    <Heart className={`w-3.5 h-3.5 ${saved ? 'fill-red-500 text-red-500' : 'text-slate-400'}`} />
+                    <Heart className={`w-3.5 h-3.5 ${saved ? 'fill-red-500 text-red-500' : 'text-[#0B2545]'}`} />
                   </button>
                 </div>
                 <button
@@ -857,7 +862,9 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         id="home-community-block"
       >
         <div className="flex items-center gap-2 mb-4">
-          <Handshake className="w-5 h-5 text-[#00A859]" />
+          <div className="w-8 h-8 rounded-full bg-[#0B2545] flex items-center justify-center">
+            <Handshake className="w-4 h-4 text-white" />
+          </div>
           <h3 className="text-[15px] font-extrabold text-[#0B2545]">Stronger Together</h3>
         </div>
         <div className="grid grid-cols-3 gap-3">
@@ -867,8 +874,8 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             { icon: Users, title: 'Build Community', body: 'Grow connections that last.' },
           ].map((item) => (
             <div key={item.title} className="text-center space-y-1.5">
-              <div className="mx-auto w-10 h-10 rounded-full bg-[#F0F7F3] flex items-center justify-center">
-                <item.icon className="w-4 h-4 text-[#00A859]" />
+              <div className="mx-auto w-10 h-10 rounded-full bg-[#E8EEF5] flex items-center justify-center">
+                <item.icon className="w-4 h-4 text-[#0B2545]" />
               </div>
               <p className="text-[11px] font-extrabold text-[#0B2545]">{item.title}</p>
               <p className="text-[9px] text-slate-500 leading-snug">{item.body}</p>
