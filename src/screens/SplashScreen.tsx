@@ -90,7 +90,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ fading = false }) =>
         transition={{ duration: 0.75, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
         className="mb-5 drop-shadow-[0_0_32px_rgba(0,168,89,0.35)]"
       >
-        <AbnLogo size="splash" className="brightness-110" />
+        <AbnLogo size="splash" tone="dark" className="drop-shadow-[0_0_32px_rgba(0,168,89,0.35)]" />
       </motion.div>
 
       <motion.p

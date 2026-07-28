@@ -14,11 +14,11 @@ interface AbnBrandMarkProps {
   className?: string;
 }
 
-/** Gold ABN mark + Ahle-Bait Network tagline (logo already includes ABN letters) */
+/** Navy/emerald ABN mark + Ahle-Bait Network tagline */
 export const AbnBrandMark: React.FC<AbnBrandMarkProps> = ({ size = 'md', className = '' }) => (
   <div className={`flex flex-col items-center text-center bg-transparent ${className}`.trim()}>
-    <AbnLogo variant="full" size={size} />
-    <p className={`${TAGLINE_CLASSES[size]} font-bold text-[#C9A24A] tracking-[0.22em] uppercase mt-3`}>
+    <AbnLogo variant="full" size={size} tone="light" />
+    <p className={`${TAGLINE_CLASSES[size]} font-bold text-[#00A859] tracking-[0.22em] uppercase mt-3`}>
       AHLE-BAIT NETWORK
     </p>
   </div>

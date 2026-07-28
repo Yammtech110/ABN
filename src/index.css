@@ -723,16 +723,14 @@ html.light #account-tab-container .text-white {
   color: #0F172A !important;
 }
 
-/* ─── Auth screen — always premium dark (ignore light theme) ─ */
+/* ─── Auth screen — light navy / emerald (matches app theme) ─ */
 html.light #auth-screen-root {
-  color: #F8EDE3 !important;
-  background:
-    radial-gradient(120% 80% at 50% -10%, #3A2818 0%, #1A120E 42%, #0A0705 100%) !important;
+  color: #0B2545 !important;
 }
 html.light #auth-form-card {
-  background-color: rgba(19, 16, 13, 0.94) !important;
-  border-color: rgba(58, 46, 34, 0.95) !important;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55) !important;
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  border-color: #D7E0EA !important;
+  box-shadow: 0 20px 50px rgba(11, 37, 69, 0.1) !important;
   backdrop-filter: blur(16px);
 }
 html.light #auth-screen-root input,
@@ -741,55 +739,29 @@ html.light #auth-screen-root textarea,
 html.light #auth-screen-content input,
 html.light #auth-screen-content select,
 html.light #auth-screen-content textarea {
-  background-color: rgba(0, 0, 0, 0.35) !important;
-  border-color: #3A2E22 !important;
-  color: #F8EDE3 !important;
+  background-color: #FFFFFF !important;
+  border-color: #D7E0EA !important;
+  color: #0B2545 !important;
 }
 html.light #auth-screen-root input::placeholder,
 html.light #auth-screen-content input::placeholder {
-  color: #7A6A5A !important;
+  color: #94A3B8 !important;
 }
 html.light #auth-screen-root label,
 html.light #auth-screen-content label {
-  color: #C9A887 !important;
+  color: #0B2545 !important;
 }
-html.light #auth-screen-root .text-\[\#F4E3D7\],
-html.light #auth-screen-root .text-\[\#F8EDE3\],
 html.light #auth-screen-root .text-white,
-html.light #auth-screen-content .text-\[\#F4E3D7\],
-html.light #auth-screen-content .text-\[\#F8EDE3\] {
-  color: #F8EDE3 !important;
-}
-html.light #auth-screen-root .text-\[\#9A8A78\],
-html.light #auth-screen-root .text-\[\#B9A28A\],
-html.light #auth-screen-root .text-\[\#8A7A68\],
-html.light #auth-screen-root .text-\[\#C9A887\],
-html.light #auth-screen-content .text-\[\#9A8A78\],
-html.light #auth-screen-content .text-\[\#B9A28A\] {
-  color: #C9B8A4 !important;
-}
-html.light #auth-screen-root .text-\[\#FFA048\],
-html.light #auth-screen-content .text-\[\#FFA048\] {
-  color: #FFA048 !important;
-}
-html.light #auth-screen-root .text-black,
-html.light #auth-screen-content .text-black {
-  color: #0A0705 !important;
-}
-html.light #auth-screen-root .rounded-3xl,
-html.light #auth-screen-root .rounded-\[28px\],
-html.light #auth-screen-root .rounded-\[27px\] {
-  background-color: transparent;
-  box-shadow: none;
+html.light #auth-tab-bar .text-white {
+  color: #FFFFFF !important;
 }
 html.light #auth-tab-bar {
-  background-color: rgba(0, 0, 0, 0.45) !important;
-  border-color: #2D2319 !important;
+  background-color: #EEF2F6 !important;
+  border-color: #D7E0EA !important;
 }
-html.light #auth-screen-root .border-\[\#2D2319\],
-html.light #auth-screen-root .border-\[\#3A2E22\],
-html.light #auth-screen-root .border-\[\#3A2E22\]\/90 {
-  border-color: #3A2E22 !important;
+html.light #btn-auth-primary,
+html.light #auth-form-card button[type="submit"] {
+  color: #FFFFFF !important;
 }
 
 /* ─── Sheet / bottom-sheet cards (Legal, FAQ, Notifications) ─ */
@@ -1413,38 +1385,3 @@ html.dark .page-shell h2 {
   color: var(--color-text) !important;
 }
 
-/* Restore cream text on auth (always dark premium) — overrides safety net */
-html.light #auth-screen-root .text-\[\#C9A887\],
-html.light #auth-screen-content .text-\[\#C9A887\],
-html.light #auth-screen-root .text-\[\#B9A28A\],
-html.light #auth-screen-content .text-\[\#B9A28A\],
-html.light #auth-screen-root .text-\[\#9A8A78\],
-html.light #auth-screen-content .text-\[\#9A8A78\],
-html.light #auth-screen-root .text-\[\#F8EDE3\],
-html.light #auth-screen-content .text-\[\#F8EDE3\],
-html.light #auth-screen-root .text-\[\#F4E3D7\],
-html.light #auth-screen-content .text-\[\#F4E3D7\],
-html.light #auth-screen-root .text-\[\#D4C4B0\] {
-  color: inherit;
-}
-html.light #auth-screen-root .text-\[\#C9A887\],
-html.light #auth-screen-content .text-\[\#C9A887\] {
-  color: #C9A887 !important;
-}
-html.light #auth-screen-root .text-\[\#B9A28A\],
-html.light #auth-screen-content .text-\[\#B9A28A\] {
-  color: #B9A28A !important;
-}
-html.light #auth-screen-root .text-\[\#9A8A78\],
-html.light #auth-screen-content .text-\[\#9A8A78\] {
-  color: #9A8A78 !important;
-}
-html.light #auth-screen-root .text-\[\#F8EDE3\],
-html.light #auth-screen-content .text-\[\#F8EDE3\],
-html.light #auth-screen-root .text-\[\#F4E3D7\],
-html.light #auth-screen-content .text-\[\#F4E3D7\] {
-  color: #F8EDE3 !important;
-}
-html.light #auth-screen-root .text-\[\#D4C4B0\] {
-  color: #D4C4B0 !important;
-}
