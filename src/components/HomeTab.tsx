@@ -45,10 +45,61 @@ import {
   Store,
   Handshake,
   Grid3X3,
+  Globe,
 } from 'lucide-react';
 import { Business, BusinessStatus } from '../types';
 
 const NAVY = '#0B2545';
+
+/** Decorative network globe behind the home hero (matches mockup). */
+const HeroGlobe: React.FC = () => (
+  <svg
+    className="pointer-events-none absolute -right-6 top-2 w-[78%] max-w-[340px] h-auto opacity-[0.55]"
+    viewBox="0 0 360 320"
+    fill="none"
+    aria-hidden="true"
+    id="home-hero-globe"
+  >
+    <defs>
+      <radialGradient id="globeFill" cx="50%" cy="45%" r="55%">
+        <stop offset="0%" stopColor="#B8D4E8" stopOpacity="0.55" />
+        <stop offset="70%" stopColor="#9FBFDA" stopOpacity="0.28" />
+        <stop offset="100%" stopColor="#9FBFDA" stopOpacity="0" />
+      </radialGradient>
+    </defs>
+    {/* Globe disc */}
+    <circle cx="210" cy="150" r="118" fill="url(#globeFill)" stroke="#7FA8C8" strokeWidth="1.2" opacity="0.9" />
+    {/* Latitude lines */}
+    <ellipse cx="210" cy="150" rx="118" ry="38" stroke="#7FA8C8" strokeWidth="1" opacity="0.55" />
+    <ellipse cx="210" cy="150" rx="118" ry="72" stroke="#7FA8C8" strokeWidth="1" opacity="0.4" />
+    <ellipse cx="210" cy="150" rx="118" ry="100" stroke="#7FA8C8" strokeWidth="1" opacity="0.3" />
+    {/* Longitude lines */}
+    <ellipse cx="210" cy="150" rx="42" ry="118" stroke="#7FA8C8" strokeWidth="1" opacity="0.45" />
+    <ellipse cx="210" cy="150" rx="78" ry="118" stroke="#7FA8C8" strokeWidth="1" opacity="0.35" />
+    <path d="M210 32 V268" stroke="#7FA8C8" strokeWidth="1" opacity="0.4" />
+    {/* Network arcs */}
+    <path d="M95 120 C140 70, 250 55, 310 110" stroke="#00A859" strokeWidth="1.4" opacity="0.45" strokeDasharray="4 5" />
+    <path d="M110 200 C165 240, 255 235, 320 175" stroke="#00A859" strokeWidth="1.2" opacity="0.35" strokeDasharray="3 6" />
+    <path d="M130 90 C180 130, 240 125, 290 85" stroke="#0B2545" strokeWidth="1" opacity="0.25" />
+    {/* Connection nodes */}
+    <circle cx="130" cy="95" r="4.5" fill="#00A859" opacity="0.85" />
+    <circle cx="130" cy="95" r="8" stroke="#00A859" strokeWidth="1.2" opacity="0.35" />
+    <circle cx="250" cy="70" r="4" fill="#00A859" opacity="0.8" />
+    <circle cx="250" cy="70" r="7.5" stroke="#00A859" strokeWidth="1.2" opacity="0.3" />
+    <circle cx="290" cy="140" r="4.5" fill="#00A859" opacity="0.9" />
+    <circle cx="290" cy="140" r="8" stroke="#00A859" strokeWidth="1.2" opacity="0.35" />
+    <circle cx="175" cy="195" r="3.5" fill="#0B2545" opacity="0.45" />
+    <circle cx="310" cy="185" r="3.5" fill="#00A859" opacity="0.7" />
+    {/* Soft city silhouette along bottom-right */}
+    <path
+      d="M155 268 h18 v-22 h10 v14 h12 v-30 h14 v30 h8 v-18 h16 v18 h10 v-12 h14 v28 h22"
+      stroke="#8AABB8"
+      strokeWidth="1.5"
+      fill="none"
+      opacity="0.35"
+    />
+  </svg>
+);
 
 const JOB_CATEGORY_COLORS: Record<JobCategory, string> = {
   'IT':               'bg-blue-100 text-blue-700 border-blue-200',
@@ -364,33 +415,34 @@ export const HomeTab: React.FC<HomeTabProps> = ({
 
       {/* ── Hero ─────────────────────────────────────────────── */}
       <section
-        className="relative overflow-hidden rounded-[28px] px-4 pt-3 pb-5 animate-fade-in-up"
+        className="relative overflow-hidden rounded-[28px] px-4 pt-3 pb-5 animate-fade-in-up min-h-[280px]"
         id="home-hero"
         style={{
           background:
-            'radial-gradient(120% 90% at 80% 10%, rgba(0,168,89,0.12) 0%, transparent 55%), linear-gradient(165deg, #E8F1F8 0%, #F4F7FA 45%, #EEF6F1 100%)',
+            'radial-gradient(100% 90% at 85% 20%, rgba(0,168,89,0.10) 0%, transparent 50%), linear-gradient(165deg, #E4EFF7 0%, #F3F7FA 42%, #EEF6F1 100%)',
         }}
       >
+        <HeroGlobe />
         <div
-          className="pointer-events-none absolute inset-0 opacity-[0.35]"
+          className="pointer-events-none absolute inset-0 opacity-[0.22]"
           style={{
             backgroundImage:
-              'radial-gradient(circle at 20% 30%, rgba(11,37,69,0.08) 1.5px, transparent 2px), radial-gradient(circle at 70% 60%, rgba(0,168,89,0.12) 1.5px, transparent 2px)',
-            backgroundSize: '42px 42px, 56px 56px',
+              'radial-gradient(circle at 18% 28%, rgba(11,37,69,0.1) 1.2px, transparent 1.8px)',
+            backgroundSize: '28px 28px',
           }}
         />
-        <div className="relative flex items-center justify-between mb-4">
-          <button
-            type="button"
-            onClick={() => void handleRefreshApp()}
-            disabled={isRefreshing}
-            className="p-2.5 rounded-full bg-white/80 border border-white shadow-sm text-[#0B2545] disabled:opacity-60"
-            aria-label="Refresh"
-            id="btn-home-refresh"
-          >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-          </button>
+        <div className="relative flex items-center justify-end mb-4">
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => void handleRefreshApp()}
+              disabled={isRefreshing}
+              className="p-2.5 rounded-full bg-white/80 border border-white shadow-sm text-[#0B2545] disabled:opacity-60"
+              aria-label="Refresh"
+              id="btn-home-refresh"
+            >
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </button>
             {currentUser && (
               <button
                 type="button"
@@ -426,11 +478,11 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         <p className="relative text-[11px] font-bold tracking-[0.18em] uppercase text-[#00A859] mb-1">
           Welcome to ABN
         </p>
-        <h1 className="relative leading-[0.95] mb-2">
+        <h1 className="relative leading-[0.95] mb-2 max-w-[70%]">
           <span className="block text-[34px] sm:text-[40px] font-black tracking-tight text-[#0B2545]">AHLEBAIT</span>
           <span className="block text-[34px] sm:text-[40px] font-black tracking-tight text-[#00A859]">NETWORK</span>
         </h1>
-        <p className="relative text-[13px] text-slate-600 font-medium mb-4 max-w-[280px]">
+        <p className="relative text-[13px] text-slate-600 font-medium mb-4 max-w-[240px]">
           Connecting Businesses. Empowering Our Community.
         </p>
 
@@ -506,7 +558,9 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                 }`}
                 id={`city-pill-${key}`}
               >
-                <MapPin className="w-3 h-3 text-[#00A859]" />
+                {key === 'all'
+                  ? <Globe className={`w-3.5 h-3.5 ${active ? 'text-[#00A859]' : 'text-[#00A859]'}`} />
+                  : <MapPin className="w-3 h-3 text-[#00A859]" />}
                 {label}
                 <span className={`min-w-[18px] h-[18px] px-1 rounded-full text-[9px] font-black flex items-center justify-center ${
                   active ? 'bg-[#00A859] text-white' : 'bg-emerald-50 text-[#00A859]'
