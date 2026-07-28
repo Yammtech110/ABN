@@ -470,6 +470,23 @@ export const HomeTab: React.FC<HomeTabProps> = ({
       </section>
 
       <div className="space-y-5 px-4 pt-4">
+
+      {/* Register CTA — above search */}
+      {currentUser &&
+        !businesses.some((b) => b.ownerId === currentUser?.id || b.ownerId === currentUser?.email) && (
+        <button
+          onClick={() => onSwitchTab('business')}
+          className="w-full p-4 rounded-[24px] bg-gradient-to-r from-[#00A859] to-[#008C4A] text-white shadow-lg hover:shadow-xl transition-all active:scale-[0.99] flex items-center justify-between animate-fade-in-up"
+          id="btn-register-banner"
+        >
+          <div className="text-left">
+            <h2 className="text-base font-black">Register as a Business / Service Provider</h2>
+            <p className="text-xs font-semibold opacity-90">Join the community directory today</p>
+          </div>
+          <ArrowRight className="w-5 h-5" />
+        </button>
+      )}
+
       {/* ── Search ───────────────────────────────────────────── */}
       <form
         onSubmit={handleSearchSubmit}
@@ -539,10 +556,90 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         </div>
       </div>
 
+      {/* ── Featured Businesses / Service Providers — below cities */}
+      <section className="space-y-3 animate-fade-in-up" style={{ animationDelay: '0.1s' }} id="home-featured-block">
+        <div className="flex items-center justify-between">
+          <h3 className="text-[15px] font-extrabold text-[#0B2545]">Featured Businesses / Service Providers</h3>
+          <button
+            onClick={() => { setSearchQueryText(''); onSwitchTab('search'); }}
+            className="text-[12px] text-[#00A859] font-bold flex items-center gap-0.5 flex-shrink-0"
+          >
+            See all <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+        <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none snap-x">
+          {(apiResults !== null ? activeBusinesses : featuredBusinesses).slice(0, 8).map((biz) => {
+            const isOpen = isBusinessOpenNow(biz.workingHours.en);
+            const saved = favorites.includes(biz.id);
+            return (
+              <div
+                key={biz.id}
+                className="flex-shrink-0 w-[168px] rounded-[20px] bg-white border border-[#D7E0EA] shadow-sm overflow-hidden snap-start"
+                id={`featured-card-${biz.id}`}
+              >
+                <div className="relative h-[110px] bg-[#0B2545]">
+                  <button
+                    type="button"
+                    onClick={() => onSelectBusiness(biz)}
+                    className="w-full h-full block relative"
+                  >
+                    <BusinessThumbnail business={biz} className="w-full h-full object-cover opacity-90" eager />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0B2545]/55 to-transparent pointer-events-none" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      void toggleFavorite(biz.id);
+                    }}
+                    className="absolute top-2 right-2 p-1.5 rounded-full bg-white/95 shadow-sm"
+                    aria-label={saved ? 'Remove favorite' : 'Save'}
+                  >
+                    <Heart className={`w-3.5 h-3.5 ${saved ? 'fill-red-500 text-red-500' : 'text-[#0B2545]'}`} />
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onSelectBusiness(biz)}
+                  className="w-full text-left p-3 space-y-1"
+                >
+                  <h4 className="text-[12px] font-extrabold text-[#0B2545] truncate">{biz.name}</h4>
+                  <p className="text-[10px] text-slate-500 truncate capitalize">{textEn(biz.subcategory)}</p>
+                  <p className="text-[10px] text-slate-500 flex items-center gap-0.5 truncate">
+                    <MapPin className="w-3 h-3 text-[#00A859] flex-shrink-0" />
+                    {biz.city}
+                  </p>
+                  <div className="flex items-center gap-1.5 pt-0.5">
+                    <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-amber-500">
+                      <Star className="w-3 h-3 fill-amber-400" /> {biz.rating || '—'}
+                    </span>
+                    {biz.reviewsCount > 0 && (
+                      <span className="text-[9px] text-slate-400">({biz.reviewsCount})</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                    {biz.isVerified && (
+                      <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-[#123B5D]">
+                        <CheckCircle className="w-3 h-3 text-sky-500" /> Verified
+                      </span>
+                    )}
+                    {isOpen !== null && (
+                      <span className={`text-[9px] font-bold ${isOpen ? 'text-[#00A859]' : 'text-red-500'}`}>
+                        {isOpen ? 'Open Now' : 'Closed'}
+                      </span>
+                    )}
+                  </div>
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
       {/* ── Browse by Category ───────────────────────────────── */}
       <section
         className="rounded-[24px] bg-white border border-[#D7E0EA] shadow-sm p-4 animate-fade-in-up"
-        style={{ animationDelay: '0.1s' }}
+        style={{ animationDelay: '0.12s' }}
         id="home-categories-block"
       >
         <div className="flex items-center justify-between mb-4">
@@ -674,101 +771,6 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           </div>
         </div>
       )}
-
-      {currentUser &&
-        !businesses.some((b) => b.ownerId === currentUser?.id || b.ownerId === currentUser?.email) && (
-        <button
-          onClick={() => onSwitchTab('business')}
-          className="w-full p-4 rounded-[24px] bg-gradient-to-r from-[#00A859] to-[#008C4A] text-white shadow-lg hover:shadow-xl transition-all active:scale-[0.99] flex items-center justify-between animate-fade-in-up"
-          id="btn-register-banner"
-        >
-          <div className="text-left">
-            <h2 className="text-base font-black">Register as a Business</h2>
-            <p className="text-xs font-semibold opacity-90">Join the community directory today</p>
-          </div>
-          <ArrowRight className="w-5 h-5" />
-        </button>
-      )}
-
-      {/* ── Featured Businesses ──────────────────────────────── */}
-      <section className="space-y-3 animate-fade-in-up" style={{ animationDelay: '0.16s' }} id="home-featured-block">
-        <div className="flex items-center justify-between">
-          <h3 className="text-[15px] font-extrabold text-[#0B2545]">Featured Businesses</h3>
-          <button
-            onClick={() => { setSearchQueryText(''); onSwitchTab('search'); }}
-            className="text-[12px] text-[#00A859] font-bold flex items-center gap-0.5"
-          >
-            See all <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-        <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none snap-x">
-          {(apiResults !== null ? activeBusinesses : featuredBusinesses).slice(0, 8).map((biz) => {
-            const isOpen = isBusinessOpenNow(biz.workingHours.en);
-            const saved = favorites.includes(biz.id);
-            return (
-              <div
-                key={biz.id}
-                className="flex-shrink-0 w-[168px] rounded-[20px] bg-white border border-[#D7E0EA] shadow-sm overflow-hidden snap-start"
-                id={`featured-card-${biz.id}`}
-              >
-                <div className="relative h-[110px] bg-[#0B2545]">
-                  <button
-                    type="button"
-                    onClick={() => onSelectBusiness(biz)}
-                    className="w-full h-full block relative"
-                  >
-                    <BusinessThumbnail business={biz} className="w-full h-full object-cover opacity-90" eager />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0B2545]/55 to-transparent pointer-events-none" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      void toggleFavorite(biz.id);
-                    }}
-                    className="absolute top-2 right-2 p-1.5 rounded-full bg-white/95 shadow-sm"
-                    aria-label={saved ? 'Remove favorite' : 'Save'}
-                  >
-                    <Heart className={`w-3.5 h-3.5 ${saved ? 'fill-red-500 text-red-500' : 'text-[#0B2545]'}`} />
-                  </button>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => onSelectBusiness(biz)}
-                  className="w-full text-left p-3 space-y-1"
-                >
-                  <h4 className="text-[12px] font-extrabold text-[#0B2545] truncate">{biz.name}</h4>
-                  <p className="text-[10px] text-slate-500 truncate capitalize">{textEn(biz.subcategory)}</p>
-                  <p className="text-[10px] text-slate-500 flex items-center gap-0.5 truncate">
-                    <MapPin className="w-3 h-3 text-[#00A859] flex-shrink-0" />
-                    {biz.city}
-                  </p>
-                  <div className="flex items-center gap-1.5 pt-0.5">
-                    <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-amber-500">
-                      <Star className="w-3 h-3 fill-amber-400" /> {biz.rating || '—'}
-                    </span>
-                    {biz.reviewsCount > 0 && (
-                      <span className="text-[9px] text-slate-400">({biz.reviewsCount})</span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
-                    {biz.isVerified && (
-                      <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-[#123B5D]">
-                        <CheckCircle className="w-3 h-3 text-sky-500" /> Verified
-                      </span>
-                    )}
-                    {isOpen !== null && (
-                      <span className={`text-[9px] font-bold ${isOpen ? 'text-[#00A859]' : 'text-red-500'}`}>
-                        {isOpen ? 'Open Now' : 'Closed'}
-                      </span>
-                    )}
-                  </div>
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      </section>
 
       {(apiResults !== null || inputSearch.trim() || selectedCity !== 'all') && (
         <section className="space-y-3 animate-fade-in-up" id="home-listings-block">
