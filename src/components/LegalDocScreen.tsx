@@ -32,11 +32,11 @@ export const LegalDocScreen: React.FC<LegalDocScreenProps> = ({ docId, onBack })
           aria-label="Back"
           id="legal-page-back"
         >
-          <ArrowLeft className="w-4 h-4 text-[#EA580C]" />
+          <ArrowLeft className="w-4 h-4 text-[#F2994A]" />
         </button>
         <div className="min-w-0 flex-1">
           <h1 className="page-title text-sm font-black uppercase tracking-wider flex items-center gap-2 truncate text-[#7C2D12]">
-            <Lock className="page-title-icon w-4 h-4 shrink-0 text-[#EA580C]" />
+            <Lock className="page-title-icon w-4 h-4 shrink-0 text-[#F2994A]" />
             <span className="truncate">{doc.title}</span>
           </h1>
           <p className="page-meta text-[11px] mt-0.5 font-semibold text-slate-600">

@@ -954,7 +954,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
       aria-labelledby="approval-notice-title"
     >
       <div className="relative w-full max-w-sm rounded-3xl bg-white border border-[#D7E0EA] p-6 text-center shadow-xl">
-        <Clock className="w-10 h-10 text-[#EA580C] mx-auto mb-3" />
+        <Clock className="w-10 h-10 text-[#F2994A] mx-auto mb-3" />
         <h3 id="approval-notice-title" className="text-sm font-black text-[#7C2D12] mb-2">
           Approval Time is 24 hours
         </h3>
@@ -966,7 +966,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
         <button
           type="button"
           onClick={() => setShowApprovalNotice(false)}
-          className="w-full py-2.5 rounded-xl bg-[#EA580C] text-white text-xs font-extrabold uppercase tracking-wide"
+          className="w-full py-2.5 rounded-xl bg-[#F2994A] text-white text-xs font-extrabold uppercase tracking-wide"
           id="btn-dismiss-approval-notice"
         >
           OK
@@ -982,7 +982,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
         className="p-2 rounded-full bg-[#EEF2F6] hover:bg-slate-100 border border-[#D7E0EA] transition-colors"
         aria-label="Back"
       >
-        <ArrowLeft className="w-4 h-4 text-[#EA580C]" />
+        <ArrowLeft className="w-4 h-4 text-[#F2994A]" />
       </button>
       <div>
         <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">
@@ -994,7 +994,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
           <h2 className="text-base font-extrabold text-[#7C2D12] leading-tight flex items-center gap-2">
             {kind === 'service'
               ? <Zap className="w-4 h-4 text-orange-400" />
-              : <Briefcase className="w-4 h-4 text-[#EA580C]" />}
+              : <Briefcase className="w-4 h-4 text-[#F2994A]" />}
             {myBusiness.name}
           </h2>
         )}
@@ -1045,7 +1045,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
         {approvalNoticeModal}
       <div className="space-y-6" id="portal-registration-blocked">
         <div className="text-center py-12 px-6 rounded-3xl bg-white border border-[#D7E0EA]">
-          <AlertTriangle className="w-10 h-10 text-[#EA580C] mx-auto mb-3" />
+          <AlertTriangle className="w-10 h-10 text-[#F2994A] mx-auto mb-3" />
           <p className="text-xs text-gray-300 max-w-sm mx-auto">
             {!canManageListing(myBusiness) ? t.listingPending : t.listingExists}
           </p>
@@ -1061,10 +1061,10 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
     <div className="space-y-6" id="portal-tab-container">
 
       {latestPortalAlert && (
-        <div className="p-3.5 rounded-2xl bg-[#EA580C]/10 border border-[#EA580C]/30 flex gap-2.5 items-start">
-          <AlertTriangle className="w-4 h-4 text-[#EA580C] shrink-0 mt-0.5" />
+        <div className="p-3.5 rounded-2xl bg-[#F2994A]/10 border border-[#F2994A]/30 flex gap-2.5 items-start">
+          <AlertTriangle className="w-4 h-4 text-[#F2994A] shrink-0 mt-0.5" />
           <div className="min-w-0">
-            <p className="text-[10px] font-black text-[#EA580C] uppercase tracking-wider">{latestPortalAlert.title}</p>
+            <p className="text-[10px] font-black text-[#F2994A] uppercase tracking-wider">{latestPortalAlert.title}</p>
             <p className="text-[10px] text-gray-300 mt-1 leading-relaxed">{latestPortalAlert.message}</p>
           </div>
         </div>
@@ -1140,19 +1140,19 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                   }
                   setRegistrationType('business');
                 }}
-                className="p-5 rounded-3xl bg-white border border-[#D7E0EA] hover:border-[#EA580C] transition-all flex flex-col text-left space-y-2 group shadow-sm active:scale-95"
+                className="p-5 rounded-3xl bg-white border border-[#D7E0EA] hover:border-[#F2994A] transition-all flex flex-col text-left space-y-2 group shadow-sm active:scale-95"
               >
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 rounded-2xl bg-[#EA580C]/10 flex items-center justify-center border border-[#EA580C]/30 group-hover:scale-105 transition-transform">
-                      <Briefcase className="w-5 h-5 text-[#EA580C]" />
+                    <div className="w-10 h-10 rounded-2xl bg-[#F2994A]/10 flex items-center justify-center border border-[#F2994A]/30 group-hover:scale-105 transition-transform">
+                      <Briefcase className="w-5 h-5 text-[#F2994A]" />
                     </div>
                     <div>
                       <h3 className="text-sm font-black text-[#7C2D12]">{language === 'en' ? 'Register as a Business' : 'سجل كصاحب عمل'}</h3>
                       <span className="text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-md mt-1 inline-block border border-green-500/20">🎁 FREE 2 Months, then $50/mo</span>
                     </div>
                   </div>
-                  <ArrowRight className="w-5 h-5 text-gray-600 group-hover:text-[#EA580C] transition-colors" />
+                  <ArrowRight className="w-5 h-5 text-gray-600 group-hover:text-[#F2994A] transition-colors" />
                 </div>
                 <p className="text-[10px] text-gray-400 mt-2 ml-[52px]">
                   {language === 'en' ? 'Best for shops, restaurants, and physical store locations.' : 'الأفضل للمتاجر والمطاعم والمواقع التجارية الفعلية.'}
@@ -1331,7 +1331,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                         ? (language === 'en' ? 'e.g. Al-Kawthar Grocery' : 'مثال: بقالة الكوثر')
                         : (language === 'en' ? 'e.g. Hassan Al-Rashid' : 'مثال: حسن الراشد')
                     }
-                    className={`w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] outline-none focus:border-[#EA580C] ${
+                    className={`w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] outline-none focus:border-[#F2994A] ${
                       isManageForm ? 'opacity-80 cursor-not-allowed pr-9' : ''
                     }`}
                     required
@@ -1348,7 +1348,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                   <select
                     value={regCatId}
                     onChange={(e) => setRegCatId(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border text-xs app-field outline-none focus:border-[#EA580C]"
+                    className="w-full p-2.5 rounded-xl border text-xs app-field outline-none focus:border-[#F2994A]"
                     required
                   >
                     {categories.map((c) => (
@@ -1378,7 +1378,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                 </div>
 
                 {pendingChangeRequest?.status === 'pending' && (
-                  <p className="text-[10px] font-bold text-[#EA580C] bg-orange-50 rounded-xl px-3 py-2 border border-[#D7E0EA]">
+                  <p className="text-[10px] font-bold text-[#F2994A] bg-orange-50 rounded-xl px-3 py-2 border border-[#D7E0EA]">
                     {language === 'en'
                       ? `Pending admin review${pendingChangeRequest.proposedName ? ` · proposed name: ${pendingChangeRequest.proposedName}` : ''}`
                       : `بانتظار مراجعة المشرف${pendingChangeRequest.proposedName ? ` · الاسم المقترح: ${pendingChangeRequest.proposedName}` : ''}`}
@@ -1401,7 +1401,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                         setChangeReqError('');
                         setChangeReqName(myBusiness?.name || '');
                       }}
-                      className="w-full py-2.5 rounded-xl border border-[#EA580C]/40 bg-[#EA580C]/10 hover:bg-[#EA580C]/20 text-[#EA580C] text-[10px] font-extrabold uppercase tracking-wider transition-all"
+                      className="w-full py-2.5 rounded-xl border border-[#F2994A]/40 bg-[#F2994A]/10 hover:bg-[#F2994A]/20 text-[#F2994A] text-[10px] font-extrabold uppercase tracking-wider transition-all"
                       id="btn-toggle-change-request"
                     >
                       {showChangeRequest
@@ -1419,7 +1419,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                             type="text"
                             value={changeReqName}
                             onChange={(e) => setChangeReqName(e.target.value)}
-                            className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] outline-none focus:border-[#EA580C]"
+                            className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] outline-none focus:border-[#F2994A]"
                           />
                         </div>
                         <ImageUploadGrid
@@ -1447,7 +1447,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                             value={changeReqNote}
                             onChange={(e) => setChangeReqNote(e.target.value)}
                             rows={2}
-                            className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] outline-none focus:border-[#EA580C]"
+                            className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] outline-none focus:border-[#F2994A]"
                             placeholder={language === 'en' ? 'Why are you changing this?' : 'لماذا تريد التغيير؟'}
                           />
                         </div>
@@ -1455,7 +1455,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                           type="button"
                           disabled={changeReqBusy}
                           onClick={(e) => void handleSubmitChangeRequest(e as unknown as React.FormEvent)}
-                          className="w-full py-2.5 rounded-xl bg-[#EA580C] text-white text-[10px] font-extrabold uppercase tracking-wider disabled:opacity-50"
+                          className="w-full py-2.5 rounded-xl bg-[#F2994A] text-white text-[10px] font-extrabold uppercase tracking-wider disabled:opacity-50"
                           id="btn-submit-change-request"
                         >
                           {changeReqBusy
@@ -1480,7 +1480,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                     : (language === 'en' ? 'Describe your professional services, skills, and service area…' : 'صف خدماتك المهنية ومجال عملك…')
                 }
                 onChange={(e) => setRegDesc(e.target.value)}
-                className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] placeholder-gray-600 outline-none focus:border-[#EA580C]/40 transition-colors resize-none"
+                className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] placeholder-gray-600 outline-none focus:border-[#F2994A]/40 transition-colors resize-none"
                 required
               />
             </div>
@@ -1497,7 +1497,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                     setRegCity('');
                   }
                 }}
-                className="w-full p-2.5 rounded-xl border text-xs app-field outline-none focus:border-[#EA580C]"
+                className="w-full p-2.5 rounded-xl border text-xs app-field outline-none focus:border-[#F2994A]"
                 required
               >
                 <option value="">{language === 'en' ? 'Select state…' : 'اختر الولاية…'}</option>
@@ -1516,7 +1516,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                   value={regCity}
                   onChange={(e) => setRegCity(e.target.value)}
                   disabled={!regState}
-                  className="w-full p-2.5 rounded-xl border text-xs app-field outline-none focus:border-[#EA580C] disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full p-2.5 rounded-xl border text-xs app-field outline-none focus:border-[#F2994A] disabled:opacity-50 disabled:cursor-not-allowed"
                   required
                 >
                   <option value="">
@@ -1545,7 +1545,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                   value={regZipCode}
                   onChange={(e) => setRegZipCode(formatZipInput(e.target.value))}
                   placeholder="77001"
-                  className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] placeholder-gray-600 outline-none focus:border-[#EA580C]"
+                  className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] placeholder-gray-600 outline-none focus:border-[#F2994A]"
                   required
                 />
               </div>
@@ -1557,7 +1557,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                 type="text"
                 value={regAddress}
                 onChange={(e) => setRegAddress(e.target.value)}
-                className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] outline-none focus:border-[#EA580C]"
+                className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] outline-none focus:border-[#F2994A]"
                 required
               />
             </div>
@@ -1571,7 +1571,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                 value={regHours}
                 onChange={(e) => setRegHours(e.target.value)}
                 placeholder={language === 'en' ? 'e.g. Mon–Sat 9:00 AM – 9:00 PM' : 'مثال: الإثنين–السبت 9:00 ص – 9:00 م'}
-                className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] placeholder-gray-600 outline-none focus:border-[#EA580C]"
+                className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] placeholder-gray-600 outline-none focus:border-[#F2994A]"
                 required
               />
             </div>
@@ -1585,7 +1585,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                     value={regPhone}
                     placeholder={t.phoneHint}
                     onChange={(e) => setRegPhone(formatUSPhoneInput(e.target.value))}
-                    className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] placeholder-gray-600 outline-none focus:border-[#EA580C]"
+                    className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] placeholder-gray-600 outline-none focus:border-[#F2994A]"
                     required
                   />
                 </div>
@@ -1596,7 +1596,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                     placeholder={t.phoneHint}
                     value={regWhatsapp}
                     onChange={(e) => setRegWhatsapp(formatUSPhoneInput(e.target.value))}
-                    className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] placeholder-gray-600 outline-none focus:border-[#EA580C]"
+                    className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] placeholder-gray-600 outline-none focus:border-[#F2994A]"
                     required
                   />
                 </div>
@@ -1610,7 +1610,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                   value={regPhone}
                   placeholder={t.phoneHint}
                   onChange={(e) => setRegPhone(formatUSPhoneInput(e.target.value))}
-                  className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] placeholder-gray-600 outline-none focus:border-[#EA580C]"
+                  className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] placeholder-gray-600 outline-none focus:border-[#F2994A]"
                   required
                 />
                 <p className="mt-1 text-[9px] text-gray-600">{t.phoneHint}</p>
@@ -1622,7 +1622,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                   placeholder={t.phoneHint}
                   value={regWhatsapp}
                   onChange={(e) => setRegWhatsapp(formatUSPhoneInput(e.target.value))}
-                  className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] placeholder-gray-600 outline-none focus:border-[#EA580C]"
+                  className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] placeholder-gray-600 outline-none focus:border-[#F2994A]"
                   required
                 />
                 <p className="mt-1 text-[9px] text-gray-600">{t.phoneHint}</p>
@@ -1633,7 +1633,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
             <button
               type="submit"
               disabled={isManageForm ? isSavingManage : isSubmittingReg}
-              className="w-full py-3 mt-4 bg-[#EA580C] hover:bg-opacity-95 text-white font-extrabold rounded-2xl text-xs tracking-wider uppercase transition-all shadow-[0_0_15px_rgba(234, 88, 12,0.4)] hover:shadow-[0_0_20px_rgba(234, 88, 12,0.6)] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 mt-4 bg-[#F2994A] hover:bg-opacity-95 text-white font-extrabold rounded-2xl text-xs tracking-wider uppercase transition-all shadow-[0_0_15px_rgba(242, 153, 74,0.4)] hover:shadow-[0_0_20px_rgba(242, 153, 74,0.6)] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               id="btn-register-biz"
             >
               {isManageForm
@@ -1668,7 +1668,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
           {/* Header row */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-[#D7E0EA]">
             <div>
-              <span className="text-[10px] text-[#EA580C] font-bold uppercase tracking-wider block">
+              <span className="text-[10px] text-[#F2994A] font-bold uppercase tracking-wider block">
                 {t.businessPortal} Dashboard
               </span>
               <h2 className="text-xl font-bold text-[#7C2D12] flex items-center gap-2">
@@ -1698,7 +1698,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold border flex items-center gap-1.5 transition-colors ${
                   myBusiness.status === 'suspended'
                     ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed'
-                    : 'bg-[#EEF2F6] border-[#D7E0EA] text-gray-300 hover:text-[#EA580C] hover:border-[#EA580C]/40'
+                    : 'bg-[#EEF2F6] border-[#D7E0EA] text-gray-300 hover:text-[#F2994A] hover:border-[#F2994A]/40'
                 }`}
                 title={myBusiness.status === 'suspended' ? 'Dashboard Locked due to Expired Subscription' : 'Edit profile'}
                 id="btn-dash-edit"
@@ -1709,7 +1709,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
 
               <button
                 onClick={() => setActivePortalTab('pay')}
-                className="px-3 py-1.5 rounded-xl bg-[#EA580C] text-white hover:bg-opacity-95 transition-all text-xs font-extrabold flex items-center gap-1.5 shadow-[0_0_15px_rgba(234, 88, 12,0.4)] hover:shadow-[0_0_20px_rgba(234, 88, 12,0.6)] active:scale-95"
+                className="px-3 py-1.5 rounded-xl bg-[#F2994A] text-white hover:bg-opacity-95 transition-all text-xs font-extrabold flex items-center gap-1.5 shadow-[0_0_15px_rgba(242, 153, 74,0.4)] hover:shadow-[0_0_20px_rgba(242, 153, 74,0.6)] active:scale-95"
                 id="btn-dash-renew"
               >
                 <CreditCard className="w-3.5 h-3.5" />
@@ -1757,7 +1757,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
               </span>
               <button
                 onClick={() => setActivePortalTab('pay')}
-                className="ml-auto px-3 py-1 bg-[#EA580C] text-white text-[10px] font-black rounded-lg flex-shrink-0"
+                className="ml-auto px-3 py-1 bg-[#F2994A] text-white text-[10px] font-black rounded-lg flex-shrink-0"
               >
                 Renew Now
               </button>
@@ -1788,7 +1788,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
               <div className="mt-4">
                 {myBusiness.status === 'active' ? (
                   <p className="text-xs leading-relaxed text-gray-300">
-                    {t.memberExpiry} <strong className="text-[#EA580C]">{myBusiness.membershipExpiryDate}</strong>.
+                    {t.memberExpiry} <strong className="text-[#F2994A]">{myBusiness.membershipExpiryDate}</strong>.
                     <br />
                     {language === 'en'
                       ? '✓ Your page is actively appearing in directory search listings.'
@@ -1834,9 +1834,9 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                   id="btn-edit-cancel"
                   aria-label="Back to dashboard"
                 >
-                  <ArrowLeft className="w-4 h-4 text-[#EA580C]" />
+                  <ArrowLeft className="w-4 h-4 text-[#F2994A]" />
                 </button>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-[#EA580C]">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#F2994A]">
                   {language === 'en' ? 'Profile Management' : 'إدارة بيانات صفحتك'}
                 </h3>
               </div>
@@ -1948,7 +1948,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
 
                 <button
                   type="submit"
-                  className="w-full py-2 bg-[#EA580C] hover:bg-opacity-95 text-white font-extrabold rounded-xl text-xs transition-all shadow-md"
+                  className="w-full py-2 bg-[#F2994A] hover:bg-opacity-95 text-white font-extrabold rounded-xl text-xs transition-all shadow-md"
                   id="btn-edit-submit"
                 >
                   {t.saveChanges}
@@ -1967,18 +1967,18 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                   id="btn-pay-cancel"
                   aria-label="Back to dashboard"
                 >
-                  <ArrowLeft className="w-4 h-4 text-[#EA580C]" />
+                  <ArrowLeft className="w-4 h-4 text-[#F2994A]" />
                 </button>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-[#EA580C]">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#F2994A]">
                   {language === 'en' ? 'Subscribe to Keep Listing' : 'اشترك لإبقاء إدراجك'}
                 </h3>
               </div>
 
               {/* Plan summary card */}
-              <div className="p-4 rounded-2xl bg-gradient-to-br from-[#EEF2F6] to-white border border-[#EA580C]/20 space-y-3">
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-[#EEF2F6] to-white border border-[#F2994A]/20 space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-[#EA580C]/10 flex items-center justify-center border border-[#EA580C]/30">
-                    {kind === 'service' ? <Zap className="w-5 h-5 text-orange-400" /> : <Briefcase className="w-5 h-5 text-[#EA580C]" />}
+                  <div className="w-10 h-10 rounded-2xl bg-[#F2994A]/10 flex items-center justify-center border border-[#F2994A]/30">
+                    {kind === 'service' ? <Zap className="w-5 h-5 text-orange-400" /> : <Briefcase className="w-5 h-5 text-[#F2994A]" />}
                   </div>
                   <div>
                     <h4 className="text-xs font-black text-[#7C2D12]">
@@ -1986,7 +1986,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                         ? (language === 'en' ? 'Service Provider Plan' : 'خطة مزود الخدمة')
                         : (language === 'en' ? 'Business Directory Plan' : 'خطة دليل الأعمال')}
                     </h4>
-                    <span className="text-sm font-black text-[#EA580C]">${planAmount}.00 / month</span>
+                    <span className="text-sm font-black text-[#F2994A]">${planAmount}.00 / month</span>
                   </div>
                 </div>
                 <p className="text-[11px] text-gray-400 leading-relaxed">
@@ -1994,10 +1994,10 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                     ? `Your listing stays active and visible to all community members for 30 days. Auto-renews monthly unless cancelled in your Apple ID or Google Play subscription settings at least 24 hours before renewal.`
                     : 'يبقى إدراجك نشطاً وظاهراً لجميع أفراد المجتمع لمدة 30 يوماً. يتجدد تلقائياً كل شهر.'}
                 </p>
-                <a href="/legal/subscription.html" target="_blank" rel="noopener noreferrer" className="text-[10px] text-[#EA580C] font-bold hover:underline">
+                <a href="/legal/subscription.html" target="_blank" rel="noopener noreferrer" className="text-[10px] text-[#F2994A] font-bold hover:underline">
                   Read Subscription Terms
                 </a>
-                <a href="/legal/privacy.html" target="_blank" rel="noopener noreferrer" className="block text-[10px] text-gray-500 hover:text-[#EA580C]">
+                <a href="/legal/privacy.html" target="_blank" rel="noopener noreferrer" className="block text-[10px] text-gray-500 hover:text-[#F2994A]">
                   Privacy Policy
                 </a>
               </div>
@@ -2005,7 +2005,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
               {/* HOW PAYMENT WORKS — clarity box */}
               <div className="p-4 rounded-2xl bg-[#EEF2F6] border border-[#D7E0EA] space-y-2 text-[11px] text-gray-400 leading-relaxed">
                 <div className="flex items-center gap-2 text-xs font-black text-[#7C2D12] mb-2">
-                  <Smartphone className="w-4 h-4 text-[#EA580C]" />
+                  <Smartphone className="w-4 h-4 text-[#F2994A]" />
                   <span>{language === 'en' ? 'How Payments Work' : 'كيف تعمل المدفوعات'}</span>
                 </div>
                 <div className="space-y-2">
@@ -2033,7 +2033,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                 id="btn-iap-subscribe"
                 onClick={handleIAPSubscribe}
                 disabled={isProcessingPay}
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#EA580C] to-[#C2410C] hover:from-[#C2410C] hover:to-[#EA580C] text-white font-extrabold text-sm uppercase tracking-wider shadow-[0_0_25px_rgba(234, 88, 12,0.5)] hover:shadow-[0_0_35px_rgba(234, 88, 12,0.7)] transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#F2994A] to-[#D87D2E] hover:from-[#D87D2E] hover:to-[#F2994A] text-white font-extrabold text-sm uppercase tracking-wider shadow-[0_0_25px_rgba(242, 153, 74,0.5)] hover:shadow-[0_0_35px_rgba(242, 153, 74,0.7)] transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isProcessingPay ? (
                   <><RefreshCw className="w-4 h-4 animate-spin" /> {language === 'en' ? 'Processing...' : 'جاري المعالجة...'}</>
@@ -2061,7 +2061,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
 
           {/* PAYMENT HISTORY LISTING LOG */}
           <div className="p-5 rounded-3xl bg-white border border-[#D7E0EA] space-y-3" id="dash-payments-history">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-[#EA580C] flex items-center gap-1.5">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#F2994A] flex items-center gap-1.5">
               <History className="w-4 h-4" />
               {t.paymentHistory}
             </h3>
@@ -2086,14 +2086,14 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                   ) : (
                     businessPayments.map((p) => (
                       <tr key={p.id}>
-                        <td className="py-2.5 font-mono text-[9px] text-[#EA580C] pr-2">{p.refNo}</td>
+                        <td className="py-2.5 font-mono text-[9px] text-[#F2994A] pr-2">{p.refNo}</td>
                         <td className="py-2.5 text-[10px]">{p.date}</td>
                         <td className="py-2.5 font-bold text-[#7C2D12]">${p.amount}.00</td>
                         <td className="py-2.5">
                           <button
                             type="button"
                             onClick={() => setSelectedReceipt(p)}
-                            className="text-[9px] font-extrabold uppercase bg-[#EEF2F6] border border-[#D7E0EA] hover:bg-[#EA580C] hover:text-[#7C2D12] text-[#EA580C] px-2 py-0.5 rounded transition-all active:scale-95"
+                            className="text-[9px] font-extrabold uppercase bg-[#EEF2F6] border border-[#D7E0EA] hover:bg-[#F2994A] hover:text-[#7C2D12] text-[#F2994A] px-2 py-0.5 rounded transition-all active:scale-95"
                           >
                             {language === 'en' ? 'View' : 'عرض'}
                           </button>
@@ -2121,7 +2121,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
 
                 {/* Receipt Header Style */}
                 <div className="text-center space-y-2 border-b border-[#D7E0EA]/60 pb-4 mb-4">
-                  <div className="w-11 h-11 rounded-2xl bg-[#EA580C]/10 text-[#EA580C] flex items-center justify-center mx-auto border border-[#3A2E21]/60">
+                  <div className="w-11 h-11 rounded-2xl bg-[#F2994A]/10 text-[#F2994A] flex items-center justify-center mx-auto border border-[#3A2E21]/60">
                     <CheckCircle className="w-6 h-6" />
                   </div>
                   <h3 className="text-sm font-black uppercase text-[#7C2D12] tracking-wider">
@@ -2156,7 +2156,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
 
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400">{language === 'en' ? 'Detected Amount' : 'المبلغ المستكشف'}</span>
-                    <span className="font-black text-[#EA580C]">${selectedReceipt.amount}.00 USD</span>
+                    <span className="font-black text-[#F2994A]">${selectedReceipt.amount}.00 USD</span>
                   </div>
 
                   <div className="flex justify-between items-center">
@@ -2165,7 +2165,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                   </div>
 
                   <div className="p-3.5 rounded-2xl bg-white border border-[#D7E0EA] space-y-2 mt-4 text-[10px] text-gray-400 leading-relaxed font-sans">
-                    <span className="font-bold text-[#EA580C] block text-[11px] uppercase tracking-wider">
+                    <span className="font-bold text-[#F2994A] block text-[11px] uppercase tracking-wider">
                       {language === 'en' ? 'Payment recorded on server' : 'تم تسجيل الدفع على الخادم'}
                     </span>
                     <p>
@@ -2190,7 +2190,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                     void navigator.clipboard?.writeText(lines).catch(() => undefined);
                     window.print();
                   }}
-                  className="mt-5 w-full py-2 bg-[#EA580C] hover:bg-opacity-95 text-white font-extrabold text-xs rounded-xl shadow transition-all active:scale-95"
+                  className="mt-5 w-full py-2 bg-[#F2994A] hover:bg-opacity-95 text-white font-extrabold text-xs rounded-xl shadow transition-all active:scale-95"
                 >
                   {language === 'en' ? 'Print Receipt Record' : 'طباعة وحفظ المستند'}
                 </button>

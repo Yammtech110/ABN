@@ -172,9 +172,9 @@ function TabContent({
                 className="p-2 rounded-full bg-white hover:bg-slate-100 border border-[#D7E0EA] transition-colors"
                 aria-label="Back to Account"
               >
-                <ArrowLeft className="w-4 h-4 text-[#EA580C]" />
+                <ArrowLeft className="w-4 h-4 text-[#F2994A]" />
               </button>
-              <span className="text-xs font-bold text-[#EA580C] uppercase tracking-wider">Admin Panel</span>
+              <span className="text-xs font-bold text-[#F2994A] uppercase tracking-wider">Admin Panel</span>
             </div>
             <AdminPanelTab />
           </div>
@@ -206,7 +206,7 @@ function BottomNav({
 
   const tabClass = (active: boolean) =>
     `flex flex-col items-center justify-center flex-1 py-2 transition-all ${
-      active ? 'text-[#EA580C] scale-105 font-black' : 'text-slate-600 hover:text-[#7C2D12]'
+      active ? 'text-[#F2994A] scale-105 font-black' : 'text-slate-600 hover:text-[#7C2D12]'
     }`;
 
   return (
@@ -219,7 +219,7 @@ function BottomNav({
             className={tabClass(activeTab === 'home')}
             id="tab-btn-home"
           >
-            <Home className={`w-5 h-5 mb-0.5 ${activeTab === 'home' ? 'fill-[#EA580C]' : ''}`} />
+            <Home className={`w-5 h-5 mb-0.5 ${activeTab === 'home' ? 'fill-[#F2994A]' : ''}`} />
             <span className="text-[9px] tracking-tight">{t.home}</span>
           </button>
           <button
@@ -245,7 +245,7 @@ function BottomNav({
           >
             <MessageSquare className="w-5 h-5 mb-0.5" />
             {unreadCount > 0 && (
-              <span className="absolute top-1 right-[18%] min-w-[14px] h-[14px] px-0.5 rounded-full bg-[#EA580C] text-white text-[8px] font-black flex items-center justify-center">
+              <span className="absolute top-1 right-[18%] min-w-[14px] h-[14px] px-0.5 rounded-full bg-[#F2994A] text-white text-[8px] font-black flex items-center justify-center">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
@@ -303,7 +303,7 @@ function WebTopNav({
       onClick={onClick ?? (() => setActiveTab(tab))}
       className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-all ${
         activeTab === tab || (tab === 'account' && isAccountActive)
-          ? 'bg-[#EA580C] text-white shadow-[0_0_15px_rgba(234, 88, 12,0.35)]'
+          ? 'bg-[#F2994A] text-white shadow-[0_0_15px_rgba(242, 153, 74,0.35)]'
           : 'text-slate-500 hover:text-[#7C2D12] hover:bg-slate-100'
       }`}
       id={`web-tab-${tab}`}
@@ -433,7 +433,7 @@ function DirectoryAppContent() {
           className="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-[#191512] to-[#0A0705] text-[#F4E3D7]"
           id="auth-boot-loading"
         >
-          <Loader2 className="w-8 h-8 text-[#EA580C] animate-spin mb-3" />
+          <Loader2 className="w-8 h-8 text-[#F2994A] animate-spin mb-3" />
           <p className="text-xs text-slate-500 font-medium">Checking session…</p>
         </div>
       </>
@@ -538,7 +538,7 @@ function DirectoryAppContent() {
               <div className="min-w-0">
                 <h1 className="text-2xl font-black tracking-tight">
                   <span className="text-[#7C2D12]">AHLE</span>
-                  <span className="text-[#EA580C]">BAIT</span>
+                  <span className="text-[#F2994A]">BAIT</span>
                 </h1>
                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest truncate">{t.tagline}</p>
               </div>

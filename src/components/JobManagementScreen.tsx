@@ -240,7 +240,7 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
             className="p-2 rounded-full bg-[#EEF2F6] hover:bg-slate-100 border border-[#D7E0EA] transition-colors"
             aria-label="Back"
           >
-            <ArrowLeft className="w-4 h-4 text-[#EA580C]" />
+            <ArrowLeft className="w-4 h-4 text-[#F2994A]" />
           </button>
         )}
         <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-900/20 border border-amber-700/40">
@@ -264,7 +264,7 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
             className="p-2 rounded-full bg-[#EEF2F6] hover:bg-slate-100 border border-[#D7E0EA] transition-colors"
             aria-label="Back to job list"
           >
-            <ArrowLeft className="w-4 h-4 text-[#EA580C]" />
+            <ArrowLeft className="w-4 h-4 text-[#F2994A]" />
           </button>
           <div>
             <h2 className="text-sm font-extrabold text-[#7C2D12]">
@@ -307,7 +307,7 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
                 onChange={(e) => setFormTitle(e.target.value)}
                 placeholder={language === 'en' ? 'e.g. Senior Web Developer' : 'مثال: مطور ويب أول'}
                 required
-                className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-white outline-none focus:border-[#EA580C]/40"
+                className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-white outline-none focus:border-[#F2994A]/40"
               />
             </div>
             <div>
@@ -335,7 +335,7 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
               onChange={(e) => setFormRequirements(e.target.value)}
               rows={4}
               placeholder={language === 'en' ? 'List required skills, experience, qualifications...' : 'أدرج المهارات والخبرات والمؤهلات المطلوبة...'}
-              className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-white outline-none focus:border-[#EA580C]/40 resize-none"
+              className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-white outline-none focus:border-[#F2994A]/40 resize-none"
             />
           </div>
 
@@ -352,7 +352,7 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
                   placeholder={language === 'en' ? 'Min — e.g. 1500' : 'الأدنى'}
                   min="0"
                   required
-                  className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-white outline-none focus:border-[#EA580C]/40"
+                  className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-white outline-none focus:border-[#F2994A]/40"
                 />
               </div>
               <div>
@@ -363,7 +363,7 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
                   placeholder={language === 'en' ? 'Max — e.g. 3500' : 'الأقصى'}
                   min="0"
                   required
-                  className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-white outline-none focus:border-[#EA580C]/40"
+                  className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-white outline-none focus:border-[#F2994A]/40"
                 />
               </div>
             </div>
@@ -379,7 +379,7 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
               onChange={(e) => setFormEmail(e.target.value)}
               placeholder="recruitment@yourbusiness.com"
               required
-              className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-white outline-none focus:border-[#EA580C]/40"
+              className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-white outline-none focus:border-[#F2994A]/40"
             />
             <p className="text-[9px] text-gray-500 mt-1">
               {language === 'en' ? 'Applicants will send their CVs directly to this email.' : 'سيرسل المتقدمون سيرتهم الذاتية مباشرةً إلى هذا البريد.'}
@@ -389,7 +389,7 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3 bg-[#EA580C] hover:bg-opacity-95 text-white font-extrabold rounded-xl text-xs transition-all shadow-md mt-2 disabled:opacity-60 flex items-center justify-center gap-2"
+            className="w-full py-3 bg-[#F2994A] hover:bg-opacity-95 text-white font-extrabold rounded-xl text-xs transition-all shadow-md mt-2 disabled:opacity-60 flex items-center justify-center gap-2"
           >
             {isLoading
               ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />{language === 'en' ? 'Saving…' : 'جارٍ الحفظ…'}</>
@@ -412,7 +412,7 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
             className="p-2 rounded-full bg-[#EEF2F6] hover:bg-slate-100 border border-[#D7E0EA] transition-colors"
             aria-label="Back"
           >
-            <ArrowLeft className="w-4 h-4 text-[#EA580C]" />
+            <ArrowLeft className="w-4 h-4 text-[#F2994A]" />
           </button>
           <div className="flex-1 min-w-0">
             <h2 className="text-sm font-extrabold text-[#7C2D12]">
@@ -425,7 +425,7 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
           {isHiring && (
             <button
               onClick={openNewForm}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#EA580C] text-white text-xs font-extrabold transition-all hover:bg-opacity-90 flex-shrink-0"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#F2994A] text-white text-xs font-extrabold transition-all hover:bg-opacity-90 flex-shrink-0"
               id="btn-add-new-job"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -438,7 +438,7 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
       {embedded && (
         <div className="flex items-center justify-between gap-2 pb-1">
           <div className="min-w-0">
-            <p className="text-[10px] font-bold text-[#EA580C] uppercase tracking-wider">
+            <p className="text-[10px] font-bold text-[#F2994A] uppercase tracking-wider">
               {language === 'en' ? 'Manage Job Openings' : 'إدارة الوظائف'}
             </p>
             <p className="text-[9px] text-gray-500 truncate">
@@ -448,7 +448,7 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
           {isHiring && (
             <button
               onClick={openNewForm}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#EA580C] text-white text-[10px] font-extrabold transition-all hover:bg-opacity-90 flex-shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F2994A] text-white text-[10px] font-extrabold transition-all hover:bg-opacity-90 flex-shrink-0"
               id="btn-add-new-job-inline"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -521,10 +521,10 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
                 <div className="flex gap-1.5 flex-shrink-0">
                   <button
                     onClick={() => openEditForm(job)}
-                    className="p-1.5 rounded-lg bg-[#EEF2F6] border border-[#D7E0EA] hover:border-[#EA580C]/40 transition-all"
+                    className="p-1.5 rounded-lg bg-[#EEF2F6] border border-[#D7E0EA] hover:border-[#F2994A]/40 transition-all"
                     aria-label="Edit job"
                   >
-                    <Pencil className="w-3 h-3 text-gray-400 hover:text-[#EA580C]" />
+                    <Pencil className="w-3 h-3 text-gray-400 hover:text-[#F2994A]" />
                   </button>
                   <button
                     onClick={() => handleDelete(job.id)}
@@ -544,7 +544,7 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
               )}
 
               <div className="flex items-center gap-1.5 pt-1.5 border-t border-[#D7E0EA]/60">
-                <Mail className="w-3 h-3 text-[#EA580C] flex-shrink-0" />
+                <Mail className="w-3 h-3 text-[#F2994A] flex-shrink-0" />
                 <span className="text-[9px] text-gray-500 truncate">{job.hiringEmail}</span>
                 <span className="ml-auto text-[8px] text-gray-600 flex-shrink-0">
                   {language === 'en' ? 'Posted' : 'نُشر'} {job.postedDate}

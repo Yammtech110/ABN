@@ -51,12 +51,12 @@ export const SavedTab: React.FC<SavedTabProps> = ({ onSelectBusiness, onSwitchTa
         <div className="flex items-center justify-between gap-2">
           <h2 className="text-xl font-extrabold text-[#7C2D12]" id="saved-header-title">
             {t.savedLists}{' '}
-            <span className="text-[#EA580C]">({favoritesLoading ? '…' : savedBusinesses.length})</span>
+            <span className="text-[#F2994A]">({favoritesLoading ? '…' : savedBusinesses.length})</span>
           </h2>
           <button
             type="button"
             onClick={() => refreshFavorites()}
-            className="text-[9px] font-bold text-[#EA580C] hover:underline shrink-0"
+            className="text-[9px] font-bold text-[#F2994A] hover:underline shrink-0"
           >
             Refresh
           </button>
@@ -68,7 +68,7 @@ export const SavedTab: React.FC<SavedTabProps> = ({ onSelectBusiness, onSwitchTa
 
       {favoritesLoading && (
         <div className="flex items-center justify-center gap-2 py-10 text-gray-500 text-xs">
-          <Loader2 className="w-4 h-4 animate-spin text-[#EA580C]" />
+          <Loader2 className="w-4 h-4 animate-spin text-[#F2994A]" />
           Loading your saved businesses…
         </div>
       )}
@@ -79,7 +79,7 @@ export const SavedTab: React.FC<SavedTabProps> = ({ onSelectBusiness, onSwitchTa
           <button
             type="button"
             onClick={() => refreshFavorites()}
-            className="text-[9px] font-bold text-[#EA580C] hover:underline"
+            className="text-[9px] font-bold text-[#F2994A] hover:underline"
           >
             Retry
           </button>
@@ -94,7 +94,7 @@ export const SavedTab: React.FC<SavedTabProps> = ({ onSelectBusiness, onSwitchTa
           </p>
           <button
             onClick={() => onSwitchTab('search')}
-            className="mt-6 px-4 py-2 bg-[#EA580C] hover:bg-opacity-95 text-white font-extrabold text-xs rounded-xl transition-all shadow-md active:scale-95 flex items-center gap-1 mx-auto"
+            className="mt-6 px-4 py-2 bg-[#F2994A] hover:bg-opacity-95 text-white font-extrabold text-xs rounded-xl transition-all shadow-md active:scale-95 flex items-center gap-1 mx-auto"
             id="saved-btn-browse"
           >
             <BookOpen className="w-4 h-4" />
@@ -108,7 +108,7 @@ export const SavedTab: React.FC<SavedTabProps> = ({ onSelectBusiness, onSwitchTa
           {savedBusinesses.map((biz) => (
             <div
               key={biz.id}
-              className="p-3 rounded-2xl bg-white border border-[#D7E0EA] hover:border-[#EA580C]/30 transition-all relative flex gap-3.5 animate-fade-in-up card-hover"
+              className="p-3 rounded-2xl bg-white border border-[#D7E0EA] hover:border-[#F2994A]/30 transition-all relative flex gap-3.5 animate-fade-in-up card-hover"
               id={`saved-card-${biz.id}`}
             >
               <div
@@ -125,15 +125,15 @@ export const SavedTab: React.FC<SavedTabProps> = ({ onSelectBusiness, onSwitchTa
                 id={`saved-info-${biz.id}`}
               >
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[8px] tracking-wider uppercase font-extrabold px-1.5 py-0.5 rounded bg-[#EEF2F6] text-[#EA580C] border border-[#D7E0EA]/80">
+                  <span className="text-[8px] tracking-wider uppercase font-extrabold px-1.5 py-0.5 rounded bg-[#EEF2F6] text-[#F2994A] border border-[#D7E0EA]/80">
                     {textEn(biz.subcategory)}
                   </span>
                 </div>
-                <h3 className="text-xs font-black text-[#7C2D12] hover:text-[#EA580C] truncate mt-1 leading-snug">
+                <h3 className="text-xs font-black text-[#7C2D12] hover:text-[#F2994A] truncate mt-1 leading-snug">
                   {biz.name}
                 </h3>
                 <span className="text-[9px] text-gray-500 flex items-center gap-0.5 mt-1 font-sans">
-                  <MapPin className="w-3.5 h-3.5 text-[#EA580C]" />
+                  <MapPin className="w-3.5 h-3.5 text-[#F2994A]" />
                   {t[biz.city.replace(/\s+/g, '').toLowerCase() as keyof typeof t] as string || biz.city} ({biz.area})
                 </span>
               </div>
@@ -148,8 +148,8 @@ export const SavedTab: React.FC<SavedTabProps> = ({ onSelectBusiness, onSwitchTa
                   <Heart className="w-4 h-4 fill-current text-red-500" />
                 </button>
                 <div className="flex items-center gap-1.5 pb-0.5">
-                  <Star className="w-3 h-3 text-[#EA580C] fill-[#EA580C]" />
-                  <span className="text-[10px] font-black text-[#EA580C]">{biz.rating}</span>
+                  <Star className="w-3 h-3 text-[#F2994A] fill-[#F2994A]" />
+                  <span className="text-[10px] font-black text-[#F2994A]">{biz.rating}</span>
                 </div>
               </div>
             </div>

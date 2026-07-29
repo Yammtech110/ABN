@@ -66,11 +66,11 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ onBack
           aria-label="Back"
           id="notifications-page-back"
         >
-          <ArrowLeft className="w-4 h-4 text-[#EA580C]" />
+          <ArrowLeft className="w-4 h-4 text-[#F2994A]" />
         </button>
         <div className="min-w-0 flex-1">
           <h1 className="page-title text-sm font-black uppercase tracking-wider flex items-center gap-2 text-[#7C2D12]">
-            <Bell className="page-title-icon w-4 h-4 text-[#EA580C]" />
+            <Bell className="page-title-icon w-4 h-4 text-[#F2994A]" />
             Notifications
             {unread > 0 && (
               <span className="page-badge text-[9px] px-1.5 py-0.5 rounded-full font-bold">
@@ -112,7 +112,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ onBack
         {!notificationsLoading && visible.length === 0 && !notificationsError && (
           <div className="text-center py-16 px-6">
             <div className="page-empty-icon mx-auto mb-3 w-12 h-12 rounded-2xl flex items-center justify-center">
-              <Bell className="w-6 h-6 text-[#EA580C]" />
+              <Bell className="w-6 h-6 text-[#F2994A]" />
             </div>
             <p className="text-xs font-extrabold text-[#7C2D12]">No notifications yet</p>
             <p className="text-[11px] mt-2 leading-relaxed text-slate-600">
@@ -135,7 +135,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ onBack
                     <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotColor}`} />
                     <span className="font-semibold text-slate-600">{n.date || 'Today'}</span>
                     <span className="text-slate-400">•</span>
-                    <span className="font-bold uppercase tracking-wider truncate text-[#EA580C]">
+                    <span className="font-bold uppercase tracking-wider truncate text-[#F2994A]">
                       {notificationKindLabel(kind)}
                     </span>
                   </div>

@@ -30,7 +30,7 @@ export const AbnLogo: React.FC<AbnLogoProps> = ({
     src="/abn-logo.png"
     alt="ABN — Ahlebait Network"
     className={`object-contain object-center ${SIZE_CLASSES[size]} ${className}`.trim()}
-    style={{ filter: 'hue-rotate(168deg) saturate(1.45) brightness(1.05)' }}
+    style={{ filter: 'hue-rotate(155deg) saturate(1.35) brightness(1.12)' }}
     draggable={false}
   />
 );
