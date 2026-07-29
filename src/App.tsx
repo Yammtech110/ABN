@@ -245,7 +245,7 @@ function BottomNav({
           >
             <MessageSquare className="w-5 h-5 mb-0.5" />
             {unreadCount > 0 && (
-              <span className="absolute top-1 right-[18%] min-w-[14px] h-[14px] px-0.5 rounded-full bg-[#F2994A] text-white text-[8px] font-black flex items-center justify-center">
+              <span className="absolute top-1 right-[18%] min-w-[14px] h-[14px] px-0.5 rounded-full bg-[#F2994A] text-black text-[8px] font-black flex items-center justify-center">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
@@ -303,7 +303,7 @@ function WebTopNav({
       onClick={onClick ?? (() => setActiveTab(tab))}
       className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-all ${
         activeTab === tab || (tab === 'account' && isAccountActive)
-          ? 'bg-[#F2994A] text-white shadow-[0_0_15px_rgba(242, 153, 74,0.35)]'
+          ? 'bg-[#F2994A] text-black shadow-[0_0_15px_rgba(242, 153, 74,0.35)]'
           : 'text-slate-500 hover:text-[#7C2D12] hover:bg-slate-100'
       }`}
       id={`web-tab-${tab}`}
