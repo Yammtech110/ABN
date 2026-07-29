@@ -710,8 +710,8 @@ export const AdminPanelTab: React.FC = () => {
   if (isNativeApp()) {
     return (
       <div className="p-8 text-center rounded-3xl bg-white border border-[#D7E0EA] text-gray-400" id="admin-web-only-state">
-        <ShieldAlert className="w-12 h-12 text-[#1B5BFF] mx-auto mb-3" />
-        <h3 className="text-sm font-black text-[#1B5BFF] uppercase tracking-widest">{t.adminPanel}</h3>
+        <ShieldAlert className="w-12 h-12 text-[#EA580C] mx-auto mb-3" />
+        <h3 className="text-sm font-black text-[#EA580C] uppercase tracking-widest">{t.adminPanel}</h3>
         <p className="text-xs text-gray-500 mt-2 max-w-sm mx-auto leading-relaxed">
           The admin panel is available only on the web app. Approvals and changes you make there appear automatically in the Android and iOS apps.
         </p>
@@ -849,8 +849,8 @@ export const AdminPanelTab: React.FC = () => {
       {/* Title */}
       <div className="pb-1.5 border-b border-[#D7E0EA] flex justify-between items-center" id="admin-main-header">
         <div>
-          <h2 className="text-xl font-extrabold text-[#0A1B4A] flex items-center gap-2">
-            <Sliders className="w-5 h-5 text-[#1B5BFF]" />
+          <h2 className="text-xl font-extrabold text-[#7C2D12] flex items-center gap-2">
+            <Sliders className="w-5 h-5 text-[#EA580C]" />
             {t.adminTitle}
           </h2>
           <p className="text-[10px] text-gray-500 font-medium">Platform-wide control, dues audit, and directory indexing</p>
@@ -858,7 +858,7 @@ export const AdminPanelTab: React.FC = () => {
       </div>
 
       {adminToast && (
-        <div className="px-4 py-2.5 rounded-xl bg-blue-50 border border-blue-200 text-[#0B3FCC] text-xs font-semibold flex items-center gap-2 animate-scale-up">
+        <div className="px-4 py-2.5 rounded-xl bg-orange-50 border border-orange-200 text-[#C2410C] text-xs font-semibold flex items-center gap-2 animate-scale-up">
           <CheckCircle className="w-4 h-4 shrink-0" />
           {adminToast}
         </div>
@@ -869,7 +869,7 @@ export const AdminPanelTab: React.FC = () => {
         <button
           onClick={() => setAdminTab('biz')}
           className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
-            adminTab === 'biz' ? 'bg-[#1B5BFF] text-white shadow-md' : 'text-gray-400 hover:text-[#0A1B4A]'
+            adminTab === 'biz' ? 'bg-[#EA580C] text-white shadow-md' : 'text-gray-400 hover:text-[#7C2D12]'
           }`}
         >
           <Award className="w-4 h-4" />
@@ -884,7 +884,7 @@ export const AdminPanelTab: React.FC = () => {
         <button
           onClick={() => setAdminTab('pay')}
           className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
-            adminTab === 'pay' ? 'bg-[#1B5BFF] text-white shadow-md' : 'text-gray-400 hover:text-[#0A1B4A]'
+            adminTab === 'pay' ? 'bg-[#EA580C] text-white shadow-md' : 'text-gray-400 hover:text-[#7C2D12]'
           }`}
         >
           <DollarSign className="w-4 h-4" />
@@ -894,7 +894,7 @@ export const AdminPanelTab: React.FC = () => {
         <button
           onClick={() => setAdminTab('jobs')}
           className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
-            adminTab === 'jobs' ? 'bg-[#1B5BFF] text-white shadow-md' : 'text-gray-400 hover:text-[#0A1B4A]'
+            adminTab === 'jobs' ? 'bg-[#EA580C] text-white shadow-md' : 'text-gray-400 hover:text-[#7C2D12]'
           }`}
         >
           <Briefcase className="w-4 h-4" />
@@ -909,7 +909,7 @@ export const AdminPanelTab: React.FC = () => {
         <button
           onClick={() => setAdminTab('cat')}
           className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
-            adminTab === 'cat' ? 'bg-[#1B5BFF] text-white shadow-md' : 'text-gray-400 hover:text-[#0A1B4A]'
+            adminTab === 'cat' ? 'bg-[#EA580C] text-white shadow-md' : 'text-gray-400 hover:text-[#7C2D12]'
           }`}
         >
           <Grid className="w-4 h-4" />
@@ -919,7 +919,7 @@ export const AdminPanelTab: React.FC = () => {
         <button
           onClick={() => setAdminTab('users')}
           className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
-            adminTab === 'users' ? 'bg-[#1B5BFF] text-white shadow-md' : 'text-gray-400 hover:text-[#0A1B4A]'
+            adminTab === 'users' ? 'bg-[#EA580C] text-white shadow-md' : 'text-gray-400 hover:text-[#7C2D12]'
           }`}
         >
           <Users className="w-4 h-4" />
@@ -934,7 +934,7 @@ export const AdminPanelTab: React.FC = () => {
         <button
           onClick={() => setAdminTab('log')}
           className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
-            adminTab === 'log' ? 'bg-[#1B5BFF] text-white shadow-md' : 'text-gray-400 hover:text-[#0A1B4A]'
+            adminTab === 'log' ? 'bg-[#EA580C] text-white shadow-md' : 'text-gray-400 hover:text-[#7C2D12]'
           }`}
         >
           <ScrollText className="w-4 h-4" />
@@ -949,14 +949,14 @@ export const AdminPanelTab: React.FC = () => {
           {/* Financial Controls Analytics */}
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="bg-[#F8FAFC] border border-[#D7E0EA] p-4 rounded-2xl relative overflow-hidden">
-              <DollarSign className="w-10 h-10 text-[#1B5BFF] absolute right-3 top-3 opacity-10" />
+              <DollarSign className="w-10 h-10 text-[#EA580C] absolute right-3 top-3 opacity-10" />
               <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">Collected Revenue</p>
-              <h3 className="text-xl font-black text-[#0A1B4A]">{formatUsd(platformRevenue)}</h3>
+              <h3 className="text-xl font-black text-[#7C2D12]">{formatUsd(platformRevenue)}</h3>
             </div>
             <div className="bg-[#F8FAFC] border border-[#D7E0EA] p-4 rounded-2xl relative overflow-hidden">
               <Award className="w-10 h-10 text-green-500 absolute right-3 top-3 opacity-10" />
               <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">Active Listings</p>
-              <h3 className="text-xl font-black text-[#1B5BFF]">{activePaidListings.length}</h3>
+              <h3 className="text-xl font-black text-[#EA580C]">{activePaidListings.length}</h3>
             </div>
           </div>
 
@@ -973,7 +973,7 @@ export const AdminPanelTab: React.FC = () => {
               <button
                 type="button"
                 onClick={() => void loadChangeRequests()}
-                className="text-[9px] font-bold text-[#1B5BFF] hover:underline"
+                className="text-[9px] font-bold text-[#EA580C] hover:underline"
               >
                 Refresh
               </button>
@@ -993,12 +993,12 @@ export const AdminPanelTab: React.FC = () => {
                     <span className="text-amber-400 font-bold uppercase">Pending</span>
                   </div>
                   <p>
-                    <strong className="text-[#0A1B4A]">Listing:</strong> {req.currentName}
+                    <strong className="text-[#7C2D12]">Listing:</strong> {req.currentName}
                     {req.ownerEmail ? ` · ${req.ownerEmail}` : ''}
                   </p>
                   {req.proposedName && (
                     <p>
-                      <strong className="text-[#1B5BFF]">New name:</strong> {req.proposedName}
+                      <strong className="text-[#EA580C]">New name:</strong> {req.proposedName}
                     </p>
                   )}
                   {(req.proposedImageUrl || req.proposedCoverUrl) && (
@@ -1044,13 +1044,13 @@ export const AdminPanelTab: React.FC = () => {
           </div>
 
           <div className="flex items-center justify-between gap-2">
-            <h3 className="text-xs font-black uppercase tracking-wider text-[#1B5BFF]">
+            <h3 className="text-xs font-black uppercase tracking-wider text-[#EA580C]">
               Directory Index approvals & Status Locking
             </h3>
             <button
               type="button"
               onClick={loadVettingData}
-              className="text-[9px] font-bold text-[#1B5BFF] hover:underline shrink-0"
+              className="text-[9px] font-bold text-[#EA580C] hover:underline shrink-0"
             >
               {vettingLoading ? 'Refreshing…' : 'Refresh'}
             </button>
@@ -1063,7 +1063,7 @@ export const AdminPanelTab: React.FC = () => {
               placeholder="Search vendors by name, email, or city..." 
               value={vendorSearch}
               onChange={(e) => setVendorSearch(e.target.value)}
-              className="bg-transparent border-none text-[#0A1B4A] text-sm outline-none w-full placeholder:text-gray-500"
+              className="bg-transparent border-none text-[#7C2D12] text-sm outline-none w-full placeholder:text-gray-500"
             />
           </div>
 
@@ -1081,13 +1081,13 @@ export const AdminPanelTab: React.FC = () => {
                 className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all flex items-center gap-1.5 ${
                   bizFilter === key
                     ? key === 'all'
-                      ? 'bg-[#EEF2F6] text-[#0A1B4A] border border-[#D7E0EA]'
+                      ? 'bg-[#EEF2F6] text-[#7C2D12] border border-[#D7E0EA]'
                       : key === 'submissions'
-                      ? 'bg-[#1B5BFF] text-white shadow-lg shadow-[#1B5BFF]/20'
+                      ? 'bg-[#EA580C] text-white shadow-lg shadow-[#EA580C]/20'
                       : key === 'active'
-                        ? 'bg-blue-50 text-[#1B5BFF] border border-blue-200'
+                        ? 'bg-orange-50 text-[#EA580C] border border-orange-200'
                         : key === 'pending'
-                          ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50'
+                          ? 'bg-orange-500/20 text-orange-400 border border-orange-500/50'
                           : 'bg-red-500/20 text-red-400 border border-red-500/50'
                     : 'bg-white text-gray-400 border border-[#D7E0EA]'
                 }`}
@@ -1103,7 +1103,7 @@ export const AdminPanelTab: React.FC = () => {
           </div>
 
           {vettingCounts.submissions > 0 && (
-            <div className="flex items-start gap-2 p-3 rounded-xl bg-[#1B5BFF]/10 border border-[#1B5BFF]/30 text-[10px] text-[#1B5BFF]">
+            <div className="flex items-start gap-2 p-3 rounded-xl bg-[#EA580C]/10 border border-[#EA580C]/30 text-[10px] text-[#EA580C]">
               <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
               <p>
                 {language === 'en'
@@ -1128,7 +1128,7 @@ export const AdminPanelTab: React.FC = () => {
                         : 'لا توجد طلبات تسجيل جديدة بانتظار الموافقة.'}
                     </p>
                     {vettingCounts.active > 0 && (
-                      <p className="text-[10px] text-[#1B5BFF]">
+                      <p className="text-[10px] text-[#EA580C]">
                         {language === 'en'
                           ? `${vettingCounts.active} listing(s) already approved — open All Listings or Registered / Active to manage them.`
                           : `${vettingCounts.active} نشاط/أنشطة موافق عليها — افتح "كل القوائم" أو "مسجل / نشط" لإدارتها.`}
@@ -1156,7 +1156,7 @@ export const AdminPanelTab: React.FC = () => {
                   <div className="flex justify-between items-start gap-2">
                     <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h4 className="text-xs font-black text-[#0A1B4A] truncate">{biz.name}</h4>
+                          <h4 className="text-xs font-black text-[#7C2D12] truncate">{biz.name}</h4>
                           <span className="px-1.5 py-0.5 rounded text-[7px] font-bold uppercase bg-[#EEF2F6] text-gray-400">
                             {biz.listingType === 'service' ? 'Service' : 'Business'}
                           </span>
@@ -1181,13 +1181,13 @@ export const AdminPanelTab: React.FC = () => {
 
                     <div className="text-right space-y-1 shrink-0">
                       {awaitingApproval && (
-                        <span className="px-2 py-0.5 rounded-full text-[8px] font-bold tracking-widest uppercase block bg-[#1B5BFF]/15 text-[#1B5BFF]">
+                        <span className="px-2 py-0.5 rounded-full text-[8px] font-bold tracking-widest uppercase block bg-[#EA580C]/15 text-[#EA580C]">
                           AWAITING APPROVAL
                         </span>
                       )}
                       <span className={`px-2 py-0.5 rounded-full text-[8px] font-bold tracking-widest uppercase block ${
-                        biz.status === 'active' ? 'bg-blue-50 text-[#1B5BFF]' :
-                        biz.status === 'pending' ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-600'
+                        biz.status === 'active' ? 'bg-orange-50 text-[#EA580C]' :
+                        biz.status === 'pending' ? 'bg-orange-50 text-orange-600' : 'bg-red-50 text-red-600'
                       }`}>
                         {biz.status.toUpperCase()}
                       </span>
@@ -1230,7 +1230,7 @@ export const AdminPanelTab: React.FC = () => {
                         <button
                           onClick={() => handleMarkAsPaid(biz)}
                           disabled={isBusy}
-                          className="px-3 py-1 rounded bg-[#1B5BFF]/20 text-[#1B5BFF] hover:bg-[#1B5BFF]/30 border border-[#1B5BFF]/50 font-bold text-[10px] flex items-center gap-1 disabled:opacity-50"
+                          className="px-3 py-1 rounded bg-[#EA580C]/20 text-[#EA580C] hover:bg-[#EA580C]/30 border border-[#EA580C]/50 font-bold text-[10px] flex items-center gap-1 disabled:opacity-50"
                         >
                           <DollarSign className="w-3 h-3" /> {isBusy ? 'Recording…' : 'Mark as Paid'}
                         </button>
@@ -1272,13 +1272,13 @@ export const AdminPanelTab: React.FC = () => {
       {adminTab === 'pay' && (
         <div className="space-y-4 animate-scale-up" id="admin-pay-section">
           <div className="flex items-center justify-between gap-2">
-            <h3 className="text-xs font-black uppercase tracking-wider text-[#1B5BFF]">
+            <h3 className="text-xs font-black uppercase tracking-wider text-[#EA580C]">
               {t.payments} — Membership Fees Register (2-month free trial, then $30–$50/mo)
             </h3>
             <button
               type="button"
               onClick={loadDuesLedger}
-              className="text-[9px] font-bold text-[#1B5BFF] hover:underline shrink-0"
+              className="text-[9px] font-bold text-[#EA580C] hover:underline shrink-0"
             >
               Refresh
             </button>
@@ -1300,13 +1300,13 @@ export const AdminPanelTab: React.FC = () => {
               {
                 label: language === 'en' ? 'Total Transactions' : 'عدد المعاملات',
                 value: duesStats.transactionCount,
-                color: 'text-[#1B5BFF]',
+                color: 'text-[#EA580C]',
                 hint: language === 'en' ? 'Paid renewals' : 'تجديدات مدفوعة',
               },
               {
                 label: language === 'en' ? 'Active Listings' : 'نشاطات نشطة',
                 value: duesStats.activeListings,
-                color: 'text-blue-400',
+                color: 'text-orange-400',
                 hint: language === 'en' ? 'Including free trial' : 'يشمل التجربة المجانية',
               }
             ].map(({ label, value, color, hint }) => (
@@ -1357,14 +1357,14 @@ export const AdminPanelTab: React.FC = () => {
                           <div className="flex items-center gap-1.5">
                             {biz && <BusinessThumbnail business={biz} eager className="w-6 h-6 rounded object-cover" />}
                             <div>
-                              <span className="font-semibold text-[#0A1B4A] text-[10px] block">{row.businessName}</span>
+                              <span className="font-semibold text-[#7C2D12] text-[10px] block">{row.businessName}</span>
                               {row.status === 'trial' && (
                                 <span className="text-[8px] text-green-400 font-bold">FREE TRIAL</span>
                               )}
                             </div>
                           </div>
                         </td>
-                        <td className="py-3 pr-2 font-mono font-bold text-[#1B5BFF]">
+                        <td className="py-3 pr-2 font-mono font-bold text-[#EA580C]">
                           {row.amount === 0 ? '$0' : `$${row.amount}`}
                         </td>
                         <td className="py-3 pr-2 text-gray-400">{row.date}</td>
@@ -1388,7 +1388,7 @@ export const AdminPanelTab: React.FC = () => {
 
           {/* Subscription status overview */}
           <div className="p-4 rounded-3xl bg-white border border-[#D7E0EA] space-y-2">
-            <h4 className="text-[10px] font-black uppercase tracking-wider text-[#1B5BFF] mb-3">
+            <h4 className="text-[10px] font-black uppercase tracking-wider text-[#EA580C] mb-3">
               {language === 'en' ? 'All Business Subscription Status' : 'حالة اشتراك جميع النشاطات'}
             </h4>
             {businesses.map((biz) => {
@@ -1406,7 +1406,7 @@ export const AdminPanelTab: React.FC = () => {
                 <div key={biz.id} className="flex items-center justify-between py-2 border-b border-[#D7E0EA]/40 last:border-0">
                   <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full flex-shrink-0 ${biz.status === 'active' ? 'bg-green-400 animate-pulse' : 'bg-red-500'}`} />
-                    <span className="text-[10px] font-semibold text-[#0A1B4A]">{biz.name}</span>
+                    <span className="text-[10px] font-semibold text-[#7C2D12]">{biz.name}</span>
                   </div>
                   <div className="flex items-center gap-2 text-[9px]">
                     <span className="text-gray-500">{expiryStr}</span>
@@ -1437,13 +1437,13 @@ export const AdminPanelTab: React.FC = () => {
       {adminTab === 'jobs' && (
         <div className="space-y-4 animate-scale-up" id="admin-jobs-section">
           <div className="flex items-center justify-between gap-2">
-            <h3 className="text-xs font-black uppercase tracking-wider text-[#1B5BFF]">
+            <h3 className="text-xs font-black uppercase tracking-wider text-[#EA580C]">
               Job Board — Business Postings
             </h3>
             <button
               type="button"
               onClick={loadAdminJobs}
-              className="text-[9px] font-bold text-[#1B5BFF] hover:underline shrink-0"
+              className="text-[9px] font-bold text-[#EA580C] hover:underline shrink-0"
             >
               {jobsLoading ? 'Refreshing…' : 'Refresh'}
             </button>
@@ -1451,7 +1451,7 @@ export const AdminPanelTab: React.FC = () => {
 
           <div className="grid grid-cols-3 gap-3">
             {([
-              ['all', language === 'en' ? 'Total Jobs' : 'إجمالي الوظائف', jobCounts.all, 'text-[#1B5BFF]'],
+              ['all', language === 'en' ? 'Total Jobs' : 'إجمالي الوظائف', jobCounts.all, 'text-[#EA580C]'],
               ['active', language === 'en' ? 'Active' : 'نشطة', jobCounts.active, 'text-green-400'],
               ['blocked', language === 'en' ? 'Blocked' : 'محظورة', jobCounts.blocked, 'text-red-400'],
             ] as const).map(([key, label, count, color]) => (
@@ -1461,7 +1461,7 @@ export const AdminPanelTab: React.FC = () => {
                 onClick={() => setJobFilter(key)}
                 className={`p-3.5 rounded-2xl border text-center transition-all ${
                   jobFilter === key
-                    ? 'bg-[#1B5BFF]/10 border-[#1B5BFF]/40'
+                    ? 'bg-[#EA580C]/10 border-[#EA580C]/40'
                     : 'bg-white border-[#D7E0EA]'
                 }`}
               >
@@ -1478,7 +1478,7 @@ export const AdminPanelTab: React.FC = () => {
               placeholder="Search by job title, business, category, or email…"
               value={jobSearch}
               onChange={(e) => setJobSearch(e.target.value)}
-              className="bg-transparent border-none text-[#0A1B4A] text-sm outline-none w-full placeholder:text-gray-500"
+              className="bg-transparent border-none text-[#7C2D12] text-sm outline-none w-full placeholder:text-gray-500"
             />
           </div>
 
@@ -1517,7 +1517,7 @@ export const AdminPanelTab: React.FC = () => {
                           (e.target as HTMLImageElement).style.display = 'none';
                         }}
                       />
-                      <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-wider bg-black/70 text-[#1B5BFF]">
+                      <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-wider bg-black/70 text-[#EA580C]">
                         Job image
                       </span>
                     </div>
@@ -1534,11 +1534,11 @@ export const AdminPanelTab: React.FC = () => {
                         className="w-11 h-11 rounded-lg object-cover bg-[#F8FAFC] border border-[#D7E0EA] shrink-0"
                       />
                       <div className="min-w-0">
-                        <h4 className="text-xs font-black text-[#0A1B4A] truncate">{job.title}</h4>
+                        <h4 className="text-xs font-black text-[#7C2D12] truncate">{job.title}</h4>
                         <span className="text-[9px] text-gray-500 block uppercase tracking-wider mt-0.5">
                           {job.businessName}
                         </span>
-                        <span className="text-[8px] text-[#1B5BFF] font-bold block mt-0.5">{job.category}</span>
+                        <span className="text-[8px] text-[#EA580C] font-bold block mt-0.5">{job.category}</span>
                         <span className="text-[8px] text-gray-600 block truncate">{job.hiringEmail}</span>
                         {job.requirements && (
                           <p className="text-[9px] text-gray-500 mt-1.5 line-clamp-2">{job.requirements}</p>
@@ -1598,7 +1598,7 @@ export const AdminPanelTab: React.FC = () => {
       {/* SEGMENT 3: DYNAMIC CATEGORY CREATOR */}
       {adminTab === 'cat' && (
         <div className="space-y-4 animate-scale-up" id="admin-cat-section">
-          <h3 className="text-xs font-black uppercase tracking-wider text-[#1B5BFF]">
+          <h3 className="text-xs font-black uppercase tracking-wider text-[#EA580C]">
             Create Categories & Subcategories
           </h3>
 
@@ -1613,7 +1613,7 @@ export const AdminPanelTab: React.FC = () => {
                 placeholder="e.g. Construction"
                 value={newCatNameEn}
                 onChange={(e) => setNewCatNameEn(e.target.value)}
-                className="w-full p-2 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#0A1B4A]"
+                className="w-full p-2 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12]"
                 required
               />
             </div>
@@ -1635,7 +1635,7 @@ export const AdminPanelTab: React.FC = () => {
             <button
               type="submit"
               disabled={catSubmitting}
-              className="w-full py-2 bg-[#1B5BFF] hover:bg-opacity-95 text-white font-extrabold text-xs rounded-xl disabled:opacity-60"
+              className="w-full py-2 bg-[#EA580C] hover:bg-opacity-95 text-white font-extrabold text-xs rounded-xl disabled:opacity-60"
               id="btn-admin-add-cat-submit"
             >
               {catSubmitting ? 'Saving…' : '+ Create Category Record'}
@@ -1651,7 +1651,7 @@ export const AdminPanelTab: React.FC = () => {
               <button
                 type="button"
                 onClick={() => refreshCategories()}
-                className="text-[9px] font-bold text-[#1B5BFF] hover:underline"
+                className="text-[9px] font-bold text-[#EA580C] hover:underline"
               >
                 Refresh
               </button>
@@ -1671,8 +1671,8 @@ export const AdminPanelTab: React.FC = () => {
               {categories.map((c) => (
                 <div key={c.id} className="p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA]/40 flex justify-between items-center gap-2">
                   <div className="min-w-0">
-                    <span className="text-xs font-bold text-[#0A1B4A] block truncate">{c.name.en}</span>
-                    <span className="text-[8px] text-[#1B5BFF] font-bold block">{c.group}</span>
+                    <span className="text-xs font-bold text-[#7C2D12] block truncate">{c.name.en}</span>
+                    <span className="text-[8px] text-[#EA580C] font-bold block">{c.group}</span>
                   </div>
                   <button
                     type="button"
@@ -1730,7 +1730,7 @@ export const AdminPanelTab: React.FC = () => {
                 <p className="text-[10px] text-red-400">{usersError}</p>
                 <button
                   onClick={loadDirectoryUsers}
-                  className="text-[9px] font-bold text-[#1B5BFF] hover:underline"
+                  className="text-[9px] font-bold text-[#EA580C] hover:underline"
                 >
                   Retry
                 </button>
@@ -1753,7 +1753,7 @@ export const AdminPanelTab: React.FC = () => {
                     </span>
                   </div>
                   {user.role === 'admin' ? (
-                    <span className="shrink-0 px-2.5 py-1 text-[9px] font-bold rounded bg-[#1B5BFF]/15 text-[#1B5BFF]">
+                    <span className="shrink-0 px-2.5 py-1 text-[9px] font-bold rounded bg-[#EA580C]/15 text-[#EA580C]">
                       Admin
                     </span>
                   ) : (
@@ -1790,8 +1790,8 @@ export const AdminPanelTab: React.FC = () => {
                     onClick={() => setReportFilter(filter)}
                     className={`px-2 py-1 text-[9px] font-bold rounded uppercase ${
                       reportFilter === filter
-                        ? 'bg-[#1B5BFF] text-white'
-                        : 'bg-slate-100 text-gray-400 hover:text-[#0A1B4A]'
+                        ? 'bg-[#EA580C] text-white'
+                        : 'bg-slate-100 text-gray-400 hover:text-[#7C2D12]'
                     }`}
                   >
                     {filter}
@@ -1809,7 +1809,7 @@ export const AdminPanelTab: React.FC = () => {
                 <p className="text-[10px] text-red-400">{reportsError}</p>
                 <button
                   onClick={loadIntegrityReports}
-                  className="text-[9px] font-bold text-[#1B5BFF] hover:underline"
+                  className="text-[9px] font-bold text-[#EA580C] hover:underline"
                 >
                   Retry
                 </button>
@@ -1834,11 +1834,11 @@ export const AdminPanelTab: React.FC = () => {
                     </span>
                   </div>
                   <p>
-                    <strong className="text-[#0A1B4A]">Reporter:</strong> {rep.reporterName}
+                    <strong className="text-[#7C2D12]">Reporter:</strong> {rep.reporterName}
                     {rep.reporterEmail ? ` (${rep.reporterEmail})` : ''}
                   </p>
                   <p>
-                    <strong className="text-[#0A1B4A]">Flagged Listing:</strong> {rep.businessName}
+                    <strong className="text-[#7C2D12]">Flagged Listing:</strong> {rep.businessName}
                   </p>
                   <p className="text-gray-400 text-[11px] leading-relaxed mt-1">
                     <strong className="text-gray-350">Incident details: </strong>
@@ -1863,13 +1863,13 @@ export const AdminPanelTab: React.FC = () => {
         <div className="space-y-4 animate-fade-in-up" id="admin-activity-log">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-bold text-[#0A1B4A]">Admin activity log</h3>
+              <h3 className="text-sm font-bold text-[#7C2D12]">Admin activity log</h3>
               <p className="text-[10px] text-gray-500">Who approved, suspended, or declined what</p>
             </div>
             <button
               type="button"
               onClick={() => void loadActivityLogs()}
-              className="px-3 py-1.5 rounded-xl text-[10px] font-bold bg-[#EEF2F6] border border-[#D7E0EA] text-[#1B5BFF]"
+              className="px-3 py-1.5 rounded-xl text-[10px] font-bold bg-[#EEF2F6] border border-[#D7E0EA] text-[#EA580C]"
             >
               Refresh
             </button>
@@ -1892,7 +1892,7 @@ export const AdminPanelTab: React.FC = () => {
                 className="p-3.5 rounded-2xl bg-white border border-[#D7E0EA] space-y-1"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <span className="text-[11px] font-black uppercase tracking-wide text-[#1B5BFF]">
+                  <span className="text-[11px] font-black uppercase tracking-wide text-[#EA580C]">
                     {row.action.replace(/_/g, ' ')}
                   </span>
                   <span className="text-[9px] text-gray-500 whitespace-nowrap">
@@ -1901,7 +1901,7 @@ export const AdminPanelTab: React.FC = () => {
                       : row.date}
                   </span>
                 </div>
-                <p className="text-xs text-[#0A1B4A] font-semibold">
+                <p className="text-xs text-[#7C2D12] font-semibold">
                   {row.targetName || row.targetId || '—'}
                   <span className="text-gray-500 font-normal"> · {row.targetType}</span>
                 </p>

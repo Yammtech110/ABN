@@ -49,7 +49,7 @@ import {
 } from 'lucide-react';
 import { Business, BusinessStatus } from '../types';
 
-const NAVY = '#0A1B4A';
+const NAVY = '#7C2D12';
 
 /** Network map graphic for navy hero (final mockup). */
 const HeroNetworkMap: React.FC = () => (
@@ -63,18 +63,18 @@ const HeroNetworkMap: React.FC = () => (
   >
     <defs>
       <radialGradient id="netGlow" cx="70%" cy="35%" r="50%">
-        <stop offset="0%" stopColor="#1B5BFF" stopOpacity="0.45" />
-        <stop offset="100%" stopColor="#0A1B4A" stopOpacity="0" />
+        <stop offset="0%" stopColor="#EA580C" stopOpacity="0.45" />
+        <stop offset="100%" stopColor="#7C2D12" stopOpacity="0" />
       </radialGradient>
     </defs>
     <rect width="390" height="280" fill="url(#netGlow)" />
     {/* Connection lines */}
-    <path d="M40 80 L120 60 L200 95 L280 50 L350 90" stroke="#8EB6FF" strokeWidth="1" opacity="0.5" />
-    <path d="M60 160 L140 130 L220 170 L300 120 L360 155" stroke="#8EB6FF" strokeWidth="1" opacity="0.35" strokeDasharray="4 6" />
+    <path d="M40 80 L120 60 L200 95 L280 50 L350 90" stroke="#FDBA74" strokeWidth="1" opacity="0.5" />
+    <path d="M60 160 L140 130 L220 170 L300 120 L360 155" stroke="#FDBA74" strokeWidth="1" opacity="0.35" strokeDasharray="4 6" />
     <path d="M90 220 L170 190 L250 230 L330 200" stroke="#5B8CFF" strokeWidth="1" opacity="0.4" />
-    <path d="M120 60 L140 130 L170 190" stroke="#8EB6FF" strokeWidth="0.8" opacity="0.35" />
-    <path d="M200 95 L220 170 L250 230" stroke="#8EB6FF" strokeWidth="0.8" opacity="0.3" />
-    <path d="M280 50 L300 120 L330 200" stroke="#8EB6FF" strokeWidth="0.8" opacity="0.35" />
+    <path d="M120 60 L140 130 L170 190" stroke="#FDBA74" strokeWidth="0.8" opacity="0.35" />
+    <path d="M200 95 L220 170 L250 230" stroke="#FDBA74" strokeWidth="0.8" opacity="0.3" />
+    <path d="M280 50 L300 120 L330 200" stroke="#FDBA74" strokeWidth="0.8" opacity="0.35" />
     {/* Nodes */}
     {[
       [40, 80], [120, 60], [200, 95], [280, 50], [350, 90],
@@ -82,17 +82,17 @@ const HeroNetworkMap: React.FC = () => (
       [90, 220], [170, 190], [250, 230], [330, 200], [180, 110],
     ].map(([x, y], i) => (
       <g key={i}>
-        <circle cx={x} cy={y} r="3.5" fill={i % 3 === 0 ? '#FFFFFF' : '#1B5BFF'} />
-        <circle cx={x} cy={y} r="7" stroke="#8EB6FF" strokeWidth="1" opacity="0.35" />
+        <circle cx={x} cy={y} r="3.5" fill={i % 3 === 0 ? '#FFFFFF' : '#EA580C'} />
+        <circle cx={x} cy={y} r="7" stroke="#FDBA74" strokeWidth="1" opacity="0.35" />
       </g>
     ))}
   </svg>
 );
 
 const JOB_CATEGORY_COLORS: Record<JobCategory, string> = {
-  'IT':               'bg-blue-100 text-blue-700 border-blue-200',
+  'IT':               'bg-orange-100 text-orange-700 border-orange-200',
   'Graphic Designing':'bg-purple-100 text-purple-700 border-purple-200',
-  'Developer':        'bg-blue-100 text-emerald-700 border-blue-200',
+  'Developer':        'bg-orange-100 text-emerald-700 border-orange-200',
   'Chef':             'bg-amber-100 text-amber-700 border-amber-200',
   'Maid':             'bg-pink-100 text-pink-700 border-pink-200',
   'Others':           'bg-slate-100 text-slate-700 border-slate-300',
@@ -341,7 +341,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
     onSwitchTab('search');
   };
 
-  const renderCategoryIcon = (iconName: string, className = 'w-5 h-5 text-[#1B5BFF]') => {
+  const renderCategoryIcon = (iconName: string, className = 'w-5 h-5 text-[#EA580C]') => {
     const IconComponent = ICON_MAP[iconName] || HelpCircle;
     return <IconComponent className={className} />;
   };
@@ -357,9 +357,9 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             className="p-2 rounded-full bg-white hover:bg-slate-50 border border-[#D7E0EA] transition-colors"
             aria-label="Back to home"
           >
-            <ArrowRight className="w-4 h-4 text-[#1B5BFF] rotate-180" />
+            <ArrowRight className="w-4 h-4 text-[#EA580C] rotate-180" />
           </button>
-          <h2 className="text-sm font-extrabold text-[#0A1B4A] flex-1 truncate">Job Details</h2>
+          <h2 className="text-sm font-extrabold text-[#7C2D12] flex-1 truncate">Job Details</h2>
         </div>
         <div className="p-5 rounded-3xl bg-white border border-[#D7E0EA] shadow-sm space-y-5">
           <div className="flex items-center gap-3">
@@ -371,7 +371,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               />
             </div>
             <div className="min-w-0">
-              <h3 className="text-sm font-extrabold text-[#0A1B4A] leading-tight">{selectedJob.title}</h3>
+              <h3 className="text-sm font-extrabold text-[#7C2D12] leading-tight">{selectedJob.title}</h3>
               <p className="text-[10px] text-slate-500 mt-0.5 truncate">{selectedJob.businessName}</p>
             </div>
           </div>
@@ -379,12 +379,12 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${JOB_CATEGORY_COLORS[selectedJob.category]}`}>
               {selectedJob.category}
             </span>
-            <span className="text-[10px] font-extrabold text-[#1B5BFF] bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-full">
+            <span className="text-[10px] font-extrabold text-[#EA580C] bg-orange-50 border border-orange-200 px-2.5 py-1 rounded-full">
               ${selectedJob.salaryMin.toLocaleString()} – ${selectedJob.salaryMax.toLocaleString()}/mo
             </span>
           </div>
           <div>
-            <h4 className="text-[10px] font-extrabold text-[#1B5BFF] uppercase tracking-wider mb-2">
+            <h4 className="text-[10px] font-extrabold text-[#EA580C] uppercase tracking-wider mb-2">
               Requirements & Skills
             </h4>
             <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-wrap">
@@ -393,7 +393,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           </div>
           <a
             href={`mailto:${selectedJob.hiringEmail}?subject=Job Application: ${encodeURIComponent(selectedJob.title)} at ${encodeURIComponent(selectedJob.businessName)}`}
-            className="flex items-center justify-center gap-2 w-full py-3.5 bg-[#1B5BFF] hover:bg-[#0B3FCC] text-white font-extrabold rounded-2xl text-sm transition-all shadow-lg active:scale-95 no-underline"
+            className="flex items-center justify-center gap-2 w-full py-3.5 bg-[#EA580C] hover:bg-[#C2410C] text-white font-extrabold rounded-2xl text-sm transition-all shadow-lg active:scale-95 no-underline"
           >
             Apply via Email
           </a>
@@ -409,7 +409,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
       <section
         className="relative overflow-hidden px-4 pt-[max(0.85rem,env(safe-area-inset-top))] pb-5"
         id="home-hero"
-        style={{ background: 'linear-gradient(165deg, #061433 0%, #0A1B4A 42%, #123A7A 100%)' }}
+        style={{ background: 'linear-gradient(165deg, #431407 0%, #7C2D12 42%, #9A3412 100%)' }}
       >
         <HeroNetworkMap />
 
@@ -425,7 +425,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               <p className="text-[9px] font-bold tracking-[0.18em] uppercase text-white mt-0.5">
                 Ahlebait Network
               </p>
-              <p className="text-[8px] font-semibold tracking-[0.16em] uppercase text-[#8EB6FF] mt-0.5">
+              <p className="text-[8px] font-semibold tracking-[0.16em] uppercase text-[#FDBA74] mt-0.5">
                 Connect · Collaborate · Grow
               </p>
             </div>
@@ -448,15 +448,15 @@ export const HomeTab: React.FC<HomeTabProps> = ({
 
         <div className="relative flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] font-semibold text-white/95">
           <span className="inline-flex items-center gap-1.5">
-            <Building2 className="w-3.5 h-3.5 text-[#8EB6FF]" />
+            <Building2 className="w-3.5 h-3.5 text-[#FDBA74]" />
             {Math.max(liveListings.length, 1).toLocaleString()}+ Businesses
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <MapPin className="w-3.5 h-3.5 text-[#8EB6FF]" />
+            <MapPin className="w-3.5 h-3.5 text-[#FDBA74]" />
             {Math.max(cityCount, 1)}+ Cities
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <Users className="w-3.5 h-3.5 text-[#8EB6FF]" />
+            <Users className="w-3.5 h-3.5 text-[#FDBA74]" />
             12,000+ Members
           </span>
         </div>
@@ -467,19 +467,19 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         {/* Search */}
         <form onSubmit={handleSearchSubmit} id="home-search-form">
           <div
-            className="relative flex items-center bg-white rounded-2xl border border-[#D7E0EA] shadow-[0_14px_36px_rgba(10,27,74,0.14)] px-1.5 py-1.5"
+            className="relative flex items-center bg-white rounded-2xl border border-[#D7E0EA] shadow-[0_14px_36px_rgba(124,45,18,0.14)] px-1.5 py-1.5"
             id="home-search-box"
           >
             {isSearching
-              ? <span className="absolute left-3.5 w-4 h-4 border-2 border-[#1B5BFF] border-t-transparent rounded-full animate-spin" />
-              : <Search className="absolute left-3.5 w-4 h-4 text-[#1B5BFF]" />
+              ? <span className="absolute left-3.5 w-4 h-4 border-2 border-[#EA580C] border-t-transparent rounded-full animate-spin" />
+              : <Search className="absolute left-3.5 w-4 h-4 text-[#EA580C]" />
             }
             <input
               type="text"
               value={inputSearch}
               onChange={(e) => { setInputSearch(e.target.value); if (!e.target.value.trim()) setApiResults(null); }}
               placeholder="Search businesses, professionals or services..."
-              className="w-full pl-10 pr-[7.8rem] py-3 bg-transparent text-[13px] text-[#0A1B4A] placeholder:text-slate-400 outline-none"
+              className="w-full pl-10 pr-[7.8rem] py-3 bg-transparent text-[13px] text-[#7C2D12] placeholder:text-slate-400 outline-none"
               id="home-search-input"
             />
             <button
@@ -489,7 +489,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                 setSearchQueryText(query);
                 onSwitchTab('search');
               }}
-              className="absolute right-1.5 px-2.5 py-2 rounded-xl bg-[#1B5BFF] text-white font-bold text-[11px] flex items-center gap-1"
+              className="absolute right-1.5 px-2.5 py-2 rounded-xl bg-[#EA580C] text-white font-bold text-[11px] flex items-center gap-1"
               id="home-location-badge-btn"
             >
               <MapPin className="w-3 h-3" />
@@ -513,15 +513,15 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                   data-active={active ? 'true' : 'false'}
                   className={`city-pill flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[11px] font-bold border transition-all snap-start ${
                     active
-                      ? 'city-pill-active bg-[#1B5BFF] text-white border-[#1B5BFF] shadow-md'
-                      : 'bg-white text-[#1B5BFF] border-[#1B5BFF]/45'
+                      ? 'city-pill-active bg-[#EA580C] text-white border-[#EA580C] shadow-md'
+                      : 'bg-white text-[#EA580C] border-[#EA580C]/45'
                   }`}
                   id={`city-pill-${key}`}
                 >
                   {key === 'all'
-                    ? <Globe className={`w-3.5 h-3.5 ${active ? 'text-white' : 'text-[#1B5BFF]'}`} />
-                    : <MapPin className={`w-3 h-3 ${active ? 'text-white' : 'text-[#1B5BFF]'}`} />}
-                  <span className={active ? 'text-white' : 'text-[#1B5BFF]'}>{label}</span>
+                    ? <Globe className={`w-3.5 h-3.5 ${active ? 'text-white' : 'text-[#EA580C]'}`} />
+                    : <MapPin className={`w-3 h-3 ${active ? 'text-white' : 'text-[#EA580C]'}`} />}
+                  <span className={active ? 'text-white' : 'text-[#EA580C]'}>{label}</span>
                 </button>
               );
             })}
@@ -531,10 +531,10 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         {/* Featured Businesses — mockup cards */}
         <section className="space-y-3" id="home-featured-block">
           <div className="flex items-center justify-between">
-            <h3 className="text-[16px] font-extrabold text-[#0A1B4A]">Featured Businesses</h3>
+            <h3 className="text-[16px] font-extrabold text-[#7C2D12]">Featured Businesses</h3>
             <button
               onClick={() => { setSearchQueryText(''); onSwitchTab('search'); }}
-              className="text-[12px] text-[#1B5BFF] font-bold flex items-center gap-0.5"
+              className="text-[12px] text-[#EA580C] font-bold flex items-center gap-0.5"
             >
               See all <ArrowRight className="w-3.5 h-3.5" />
             </button>
@@ -558,21 +558,21 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                     <Heart className={`w-4 h-4 ${saved ? 'fill-red-500 text-red-500' : 'text-slate-300'}`} />
                   </button>
                   <button type="button" onClick={() => onSelectBusiness(biz)} className="w-full text-left space-y-2">
-                    <div className="w-12 h-12 rounded-xl bg-[#EEF3FF] border border-blue-100 overflow-hidden flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-xl bg-[#EEF3FF] border border-orange-100 overflow-hidden flex items-center justify-center">
                       <BusinessThumbnail business={biz} className="w-full h-full object-cover" eager />
                     </div>
                     <div className="flex items-center gap-1 min-w-0 pr-5">
-                      <h4 className="text-[13px] font-extrabold text-[#0A1B4A] truncate">{biz.name}</h4>
-                      {biz.isVerified && <CheckCircle className="w-3.5 h-3.5 text-[#1B5BFF] flex-shrink-0" />}
+                      <h4 className="text-[13px] font-extrabold text-[#7C2D12] truncate">{biz.name}</h4>
+                      {biz.isVerified && <CheckCircle className="w-3.5 h-3.5 text-[#EA580C] flex-shrink-0" />}
                     </div>
                     <p className="text-[11px] text-slate-500 capitalize truncate">{textEn(biz.subcategory)}</p>
                     <p className="text-[11px] text-slate-500 flex items-center gap-1 truncate">
-                      <MapPin className="w-3 h-3 text-[#1B5BFF] flex-shrink-0" />
+                      <MapPin className="w-3 h-3 text-[#EA580C] flex-shrink-0" />
                       {biz.city}
                     </p>
                     <div className="flex items-center justify-between gap-2 pt-0.5">
                       <div className="flex items-center gap-1.5 min-w-0">
-                        <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-[#0A1B4A]">
+                        <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-[#7C2D12]">
                           <Star className="w-3 h-3 fill-amber-400 text-amber-400" /> {biz.rating || '—'}
                         </span>
                         {biz.reviewsCount > 0 && (
@@ -586,7 +586,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                           </span>
                         )}
                       </div>
-                      <ChevronRight className="w-4 h-4 text-[#1B5BFF] flex-shrink-0" />
+                      <ChevronRight className="w-4 h-4 text-[#EA580C] flex-shrink-0" />
                     </div>
                   </button>
                 </div>
@@ -600,7 +600,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           !businesses.some((b) => b.ownerId === currentUser?.id || b.ownerId === currentUser?.email) && (
           <button
             onClick={() => onSwitchTab('business')}
-            className="w-full p-4 rounded-2xl bg-gradient-to-r from-[#1B5BFF] to-[#0B3FCC] text-white shadow-lg flex items-center justify-between"
+            className="w-full p-4 rounded-2xl bg-gradient-to-r from-[#EA580C] to-[#C2410C] text-white shadow-lg flex items-center justify-between"
             id="btn-register-banner"
           >
             <div className="text-left">
@@ -614,10 +614,10 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         {/* Browse Businesses */}
         <section id="home-categories-block">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-[16px] font-extrabold text-[#0A1B4A]">Browse Businesses</h3>
+            <h3 className="text-[16px] font-extrabold text-[#7C2D12]">Browse Businesses</h3>
             <button
               onClick={() => onSwitchTab('search')}
-              className="text-[12px] text-[#1B5BFF] font-bold flex items-center gap-0.5"
+              className="text-[12px] text-[#EA580C] font-bold flex items-center gap-0.5"
               id="btn-categories-seeall"
             >
               See all <ArrowRight className="w-3.5 h-3.5" />
@@ -631,8 +631,8 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                 className="flex flex-col items-center gap-1.5 text-center bg-transparent border-0 shadow-none p-0"
                 id={`cat-card-${cat.id}`}
               >
-                {renderCategoryIcon(cat.iconName, 'w-7 h-7 text-[#1B5BFF]')}
-                <span className="text-[10px] font-semibold text-[#0A1B4A] leading-tight line-clamp-2 w-full">
+                {renderCategoryIcon(cat.iconName, 'w-7 h-7 text-[#EA580C]')}
+                <span className="text-[10px] font-semibold text-[#7C2D12] leading-tight line-clamp-2 w-full">
                   {cat.name.en}
                 </span>
               </button>
@@ -642,8 +642,8 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               className="flex flex-col items-center gap-1.5 text-center bg-transparent border-0 shadow-none p-0"
               id="cat-card-more"
             >
-              <Grid3X3 className="w-7 h-7 text-[#1B5BFF]" strokeWidth={2} />
-              <span className="text-[10px] font-semibold text-[#0A1B4A]">More</span>
+              <Grid3X3 className="w-7 h-7 text-[#EA580C]" strokeWidth={2} />
+              <span className="text-[10px] font-semibold text-[#7C2D12]">More</span>
             </button>
           </div>
         </section>
@@ -654,26 +654,26 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           id="home-hire-card"
         >
           <div className="flex-1 min-w-0">
-            <h3 className="text-[16px] font-extrabold text-[#0A1B4A] mb-1">Looking to Hire?</h3>
+            <h3 className="text-[16px] font-extrabold text-[#7C2D12] mb-1">Looking to Hire?</h3>
             <p className="text-[12px] text-slate-500 leading-snug mb-3">
               Post a job and reach professionals across the Ahlebait community.
             </p>
             <button
               type="button"
               onClick={() => onSwitchTab(currentUser ? 'job-board' : 'account')}
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#1B5BFF] text-white text-[12px] font-extrabold"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#EA580C] text-white text-[12px] font-extrabold"
               id="btn-post-job-cta"
             >
               Post a Job <ArrowRight className="w-3.5 h-3.5 text-white" />
             </button>
           </div>
-          <Briefcase className="w-9 h-9 text-[#1B5BFF] flex-shrink-0" />
+          <Briefcase className="w-9 h-9 text-[#EA580C] flex-shrink-0" />
         </section>
 
         {/* Find the Right Talent */}
         <section
           className="rounded-2xl p-4 flex items-center gap-3"
-          style={{ background: `linear-gradient(125deg, ${NAVY} 0%, #123A7A 55%, #0A1B4A 100%)` }}
+          style={{ background: `linear-gradient(125deg, ${NAVY} 0%, #9A3412 55%, #7C2D12 100%)` }}
           id="home-jobs-banner"
         >
           <div className="flex-1 min-w-0">
@@ -690,12 +690,12 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               Explore Jobs <ArrowRight className="w-3.5 h-3.5 text-white" />
             </button>
           </div>
-          <Search className="w-8 h-8 text-[#8EB6FF] flex-shrink-0" />
+          <Search className="w-8 h-8 text-[#FDBA74] flex-shrink-0" />
         </section>
 
         {activeJobs.length > 0 && (
           <div className="space-y-3" id="home-jobs-row">
-            <h3 className="text-[16px] font-extrabold text-[#0A1B4A]">Active Job Openings</h3>
+            <h3 className="text-[16px] font-extrabold text-[#7C2D12]">Active Job Openings</h3>
             <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none snap-x" id="home-jobs-scroll">
               {activeJobs.map((job) => (
                 <button
@@ -714,8 +714,8 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                     </div>
                     <p className="text-[9px] font-semibold text-slate-600 truncate">{job.businessName}</p>
                   </div>
-                  <h4 className="text-[12px] font-extrabold text-[#0A1B4A] leading-tight line-clamp-2">{job.title}</h4>
-                  <div className="text-[10px] font-extrabold text-[#1B5BFF]">
+                  <h4 className="text-[12px] font-extrabold text-[#7C2D12] leading-tight line-clamp-2">{job.title}</h4>
+                  <div className="text-[10px] font-extrabold text-[#EA580C]">
                     ${job.salaryMin.toLocaleString()} – ${job.salaryMax.toLocaleString()}/mo
                   </div>
                 </button>
@@ -731,14 +731,14 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         >
           <div className="flex items-start justify-between gap-4 mb-4">
             <div className="min-w-0 flex-1">
-              <h3 className="text-[16px] font-extrabold text-[#0A1B4A] mb-1">Stronger Together</h3>
+              <h3 className="text-[16px] font-extrabold text-[#7C2D12] mb-1">Stronger Together</h3>
               <p className="text-[11px] text-slate-500 leading-snug mb-3">
                 One network connecting local businesses, professionals, and community organizations.
               </p>
               <button
                 type="button"
                 onClick={() => onSwitchTab('search')}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-[#1B5BFF] text-[#1B5BFF] text-[11px] font-extrabold bg-transparent"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-[#EA580C] text-[#EA580C] text-[11px] font-extrabold bg-transparent"
               >
                 Learn More
               </button>
@@ -753,7 +753,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                 <line x1="66" y1="66" x2="22" y2="92" stroke="#B8C9E8" strokeWidth="1" />
                 <line x1="66" y1="66" x2="22" y2="40" stroke="#B8C9E8" strokeWidth="1" />
               </svg>
-              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-[#0A1B4A] flex items-center justify-center shadow-md">
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-[#7C2D12] flex items-center justify-center shadow-md">
                 <Handshake className="w-5 h-5 text-white" />
               </div>
               {[
@@ -766,7 +766,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               ].map((n) => (
                 <span
                   key={n.label}
-                  className={`absolute ${n.style} text-[7px] font-bold text-[#1B5BFF] whitespace-nowrap`}
+                  className={`absolute ${n.style} text-[7px] font-bold text-[#EA580C] whitespace-nowrap`}
                 >
                   {n.label}
                 </span>

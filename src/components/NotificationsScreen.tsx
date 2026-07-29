@@ -66,11 +66,11 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ onBack
           aria-label="Back"
           id="notifications-page-back"
         >
-          <ArrowLeft className="w-4 h-4 text-[#1B5BFF]" />
+          <ArrowLeft className="w-4 h-4 text-[#EA580C]" />
         </button>
         <div className="min-w-0 flex-1">
-          <h1 className="page-title text-sm font-black uppercase tracking-wider flex items-center gap-2 text-[#0A1B4A]">
-            <Bell className="page-title-icon w-4 h-4 text-[#1B5BFF]" />
+          <h1 className="page-title text-sm font-black uppercase tracking-wider flex items-center gap-2 text-[#7C2D12]">
+            <Bell className="page-title-icon w-4 h-4 text-[#EA580C]" />
             Notifications
             {unread > 0 && (
               <span className="page-badge text-[9px] px-1.5 py-0.5 rounded-full font-bold">
@@ -112,9 +112,9 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ onBack
         {!notificationsLoading && visible.length === 0 && !notificationsError && (
           <div className="text-center py-16 px-6">
             <div className="page-empty-icon mx-auto mb-3 w-12 h-12 rounded-2xl flex items-center justify-center">
-              <Bell className="w-6 h-6 text-[#1B5BFF]" />
+              <Bell className="w-6 h-6 text-[#EA580C]" />
             </div>
-            <p className="text-xs font-extrabold text-[#0A1B4A]">No notifications yet</p>
+            <p className="text-xs font-extrabold text-[#7C2D12]">No notifications yet</p>
             <p className="text-[11px] mt-2 leading-relaxed text-slate-600">
               Listing approvals, payments, membership alerts, and admin updates will appear here.
             </p>
@@ -128,14 +128,14 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ onBack
             return (
               <li
                 key={n.id}
-                className={`px-4 py-3.5 ${n.isRead ? 'bg-white' : 'bg-blue-50/50'}`}
+                className={`px-4 py-3.5 ${n.isRead ? 'bg-white' : 'bg-orange-50/50'}`}
               >
                 <div className="flex items-center justify-between gap-2 text-[9px] mb-1.5">
                   <div className="flex items-center gap-1.5 min-w-0">
                     <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotColor}`} />
                     <span className="font-semibold text-slate-600">{n.date || 'Today'}</span>
                     <span className="text-slate-400">•</span>
-                    <span className="font-bold uppercase tracking-wider truncate text-[#1B5BFF]">
+                    <span className="font-bold uppercase tracking-wider truncate text-[#EA580C]">
                       {notificationKindLabel(kind)}
                     </span>
                   </div>
@@ -143,7 +143,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ onBack
                     {formatNotificationRole(n.receiverRole)}
                   </span>
                 </div>
-                <h2 className="text-[12px] font-extrabold leading-snug text-[#0A1B4A]">{n.title}</h2>
+                <h2 className="text-[12px] font-extrabold leading-snug text-[#7C2D12]">{n.title}</h2>
                 <p className="text-[11px] mt-1 leading-relaxed text-slate-700">{n.message}</p>
               </li>
             );

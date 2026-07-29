@@ -210,14 +210,14 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in" id="details-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="relative w-full max-w-2xl h-[90vh] overflow-y-auto rounded-3xl bg-[#EEF2F6] border border-[#D7E0EA] text-[#0A1B4A] scrollbar-thin" id="details-modal-container">
+      <div className="relative w-full max-w-2xl h-[90vh] overflow-y-auto rounded-3xl bg-[#EEF2F6] border border-[#D7E0EA] text-[#7C2D12] scrollbar-thin" id="details-modal-container">
         
         {/* Floating Close & Favorite Buttons */}
         <div className="absolute top-4 right-4 z-10 flex gap-2" id="details-floating-controls">
           <button
             onClick={handleToggleFavorite}
             className={`p-2.5 rounded-full backdrop-blur-md border border-[#D7E0EA] transition-colors ${
-              isFav ? 'bg-[#1B5BFF] text-white hover:bg-opacity-95' : 'bg-white/90 text-[#0A1B4A] hover:bg-white'
+              isFav ? 'bg-[#EA580C] text-white hover:bg-opacity-95' : 'bg-white/90 text-[#7C2D12] hover:bg-white'
             }`}
             title={t.saved}
             id="details-btn-fav"
@@ -226,7 +226,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
           </button>
           <button
             onClick={onClose}
-            className="p-2.5 rounded-full backdrop-blur-md bg-black/50 hover:bg-black/80 text-[#1B5BFF] border border-[#D7E0EA] transition-colors"
+            className="p-2.5 rounded-full backdrop-blur-md bg-black/50 hover:bg-black/80 text-[#EA580C] border border-[#D7E0EA] transition-colors"
             id="details-btn-close"
           >
             <X className="w-5 h-5" />
@@ -261,7 +261,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
             {/* Verification & Location */}
             <div className="flex-1 min-w-0 md:mb-2">
               <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider bg-[#EEF2F6] text-[#1B5BFF] border border-[#D7E0EA]">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider bg-[#EEF2F6] text-[#EA580C] border border-[#D7E0EA]">
                   {textEn(business.subcategory)}
                 </span>
                 {business.isVerified && (
@@ -278,7 +278,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                   {(t[business.city.replace(/\s+/g, '').toLowerCase() as keyof typeof t] as string) || business.city}
                 </span>
               </div>
-              <h1 className="text-2xl md:text-3xl font-extrabold text-[#0A1B4A] tracking-tight" id="details-biz-title">
+              <h1 className="text-2xl md:text-3xl font-extrabold text-[#7C2D12] tracking-tight" id="details-biz-title">
                 {business.name}
               </h1>
               <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
@@ -289,7 +289,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
 
             {/* Quick rating bubble */}
             <div className="flex flex-col items-center bg-[#EEF2F6] border border-[#D7E0EA] p-2.5 rounded-2xl w-24">
-              <span className="text-xl font-black text-[#1B5BFF] flex items-center gap-1">
+              <span className="text-xl font-black text-[#EA580C] flex items-center gap-1">
                 {business.rating} <Star className="w-4 h-4 fill-current" />
               </span>
               <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider block mt-1">
@@ -322,7 +322,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
             
             {/* Description Card */}
             <div className="p-5 rounded-2xl bg-white border border-[#D7E0EA]">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-[#1B5BFF] mb-3">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-[#EA580C] mb-3">
                 {language === 'en' ? 'About Our Business' : 'نبذة وتفاصيل العمل'}
               </h3>
               <p className="text-sm leading-relaxed text-gray-300 whitespace-pre-line">
@@ -330,26 +330,26 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
               </p>
 
               {/* Working Hours with Open/Closed badge */}
-              <div className="mt-5 pt-4 border-t border-[#D7E0EA]/60 flex items-center gap-3 text-xs text-[#0A1B4A]/90" id="details-working-hours">
-                <Clock className="w-4 h-4 text-[#1B5BFF] shrink-0" />
+              <div className="mt-5 pt-4 border-t border-[#D7E0EA]/60 flex items-center gap-3 text-xs text-[#7C2D12]/90" id="details-working-hours">
+                <Clock className="w-4 h-4 text-[#EA580C] shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <strong className="text-[#0A1B4A]">{t.workingHours}:</strong>
+                    <strong className="text-[#7C2D12]">{t.workingHours}:</strong>
                     {isOpen !== null && (
                       <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider ${isOpen ? 'badge-open' : 'badge-closed'}`}>
                         {isOpen ? '🟢 Open Now' : '🔴 Closed Now'}
                       </span>
                     )}
                   </div>
-                  <span className="block mt-0.5 text-[#0A1B4A]/80">{textEn(business.workingHours)}</span>
+                  <span className="block mt-0.5 text-[#7C2D12]/80">{textEn(business.workingHours)}</span>
                 </div>
               </div>
             </div>
 
             {/* ── Rate This Business (interactive 5-star + POST /api/reviews) ── */}
-            <div className="p-5 rounded-2xl bg-white border border-[#1B5BFF]/25 space-y-4" id="details-rate-business">
+            <div className="p-5 rounded-2xl bg-white border border-[#EA580C]/25 space-y-4" id="details-rate-business">
               <div className="flex items-center justify-between gap-2">
-                <h3 className="text-sm font-extrabold tracking-wider text-[#1B5BFF]">
+                <h3 className="text-sm font-extrabold tracking-wider text-[#EA580C]">
                   {language === 'en' ? '⭐ Rate This Business' : '⭐ قيّم هذا النشاط'}
                 </h3>
                 <span className="text-[10px] text-gray-500">
@@ -390,13 +390,13 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                         >
                           <Star
                             className={`w-8 h-8 transition-colors ${
-                              active ? 'text-[#1B5BFF] fill-[#1B5BFF]' : 'text-gray-700 hover:text-gray-500'
+                              active ? 'text-[#EA580C] fill-[#EA580C]' : 'text-gray-700 hover:text-gray-500'
                             }`}
                           />
                         </button>
                       );
                     })}
-                    <span className="ml-2 text-sm font-extrabold text-[#1B5BFF]">
+                    <span className="ml-2 text-sm font-extrabold text-[#EA580C]">
                       {hoverRating || rating}/5
                     </span>
                   </div>
@@ -413,14 +413,14 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                     onChange={(e) => setComment(e.target.value)}
                     disabled={!currentUser || isSubmittingReview}
                     placeholder={language === 'en' ? 'Share your experience with this business…' : 'شارك تجربتك مع هذا النشاط…'}
-                    className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#1B5BFF] text-xs outline-none text-[#0A1B4A] transition-all disabled:opacity-50 resize-none"
+                    className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#EA580C] text-xs outline-none text-[#7C2D12] transition-all disabled:opacity-50 resize-none"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={!currentUser || isSubmittingReview}
-                  className="w-full py-3 rounded-xl bg-[#1B5BFF] hover:bg-opacity-95 text-white font-extrabold text-xs transition-all shadow-md disabled:opacity-40 flex items-center justify-center gap-2"
+                  className="w-full py-3 rounded-xl bg-[#EA580C] hover:bg-opacity-95 text-white font-extrabold text-xs transition-all shadow-md disabled:opacity-40 flex items-center justify-center gap-2"
                   id="details-btn-submit-rating"
                 >
                   <Send className="w-4 h-4" />
@@ -434,7 +434,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
             {/* Gallery Images Strip */}
             {business.gallery && business.gallery.length > 0 && (
               <div className="p-5 rounded-2xl bg-white border border-[#D7E0EA]">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-[#1B5BFF] mb-3">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-[#EA580C] mb-3">
                   {language === 'en' ? 'Photos & Service Shots' : 'صور المقر والخدمات'}
                 </h3>
                 <div className="grid grid-cols-2 gap-2" id="gallery-grid">
@@ -461,7 +461,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
             {/* Reviews Section */}
             <div className="p-5 rounded-2xl bg-white border border-[#D7E0EA] space-y-4">
               <div className="flex items-center justify-between pb-2 border-b border-[#D7E0EA]">
-                <h3 className="text-sm font-bold tracking-wider text-[#1B5BFF]">
+                <h3 className="text-sm font-bold tracking-wider text-[#EA580C]">
                   {t.reviews}
                 </h3>
                 <span className="text-xs text-gray-400">
@@ -479,14 +479,14 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                   businessReviews.map((rev) => (
                     <div key={rev.id} className="p-3.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA]/40 space-y-2">
                       <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-xs font-bold text-[#0A1B4A]">{rev.userName}</span>
+                        <span className="text-xs font-bold text-[#7C2D12]">{rev.userName}</span>
                         <div className="flex gap-0.5">
                           {Array.from({ length: 5 }).map((_, i) => (
                             <Star
                               key={i}
                               className={`w-3 h-3 ${
                                 i < Math.floor(rev.rating)
-                                  ? 'text-[#1B5BFF] fill-[#1B5BFF]'
+                                  ? 'text-[#EA580C] fill-[#EA580C]'
                                   : 'text-gray-600'
                               }`}
                             />
@@ -498,7 +498,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
 
                       {rev.ownerReply ? (
                         <div className="mt-2 p-2.5 rounded-lg bg-[#EEF2F6] border border-[#D7E0EA]/60">
-                          <p className="text-[10px] font-bold text-[#1B5BFF] mb-1">
+                          <p className="text-[10px] font-bold text-[#EA580C] mb-1">
                             Owner reply{rev.ownerReplyBy ? ` · ${rev.ownerReplyBy}` : ''}
                           </p>
                           <p className="text-xs text-gray-300 leading-relaxed">{rev.ownerReply}</p>
@@ -519,7 +519,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                             type="button"
                             disabled={replyBusyId === rev.id}
                             onClick={() => void handleOwnerReply(rev.id)}
-                            className="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-[#1B5BFF]/15 text-[#1B5BFF] border border-[#1B5BFF]/30 hover:bg-[#1B5BFF]/25 disabled:opacity-50"
+                            className="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-[#EA580C]/15 text-[#EA580C] border border-[#EA580C]/30 hover:bg-[#EA580C]/25 disabled:opacity-50"
                           >
                             {replyBusyId === rev.id ? 'Saving…' : 'Post reply'}
                           </button>
@@ -590,14 +590,14 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
 
             {/* Instant Communication Action Buttons */}
             <div className="p-5 rounded-2xl bg-white border border-[#D7E0EA] space-y-3" id="details-actions">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-[#1B5BFF] mb-1">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-[#EA580C] mb-1">
                 {t.contactBusiness}
               </h3>
               
               {/* Call / WhatsApp / Map — solid brand colors (theme-safe contrast) */}
               <button
                 onClick={() => handleActionClick('phone')}
-                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#1B5BFF] hover:bg-[#0B3FCC] transition-all border border-[#0B3FCC] text-white group"
+                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#EA580C] hover:bg-[#C2410C] transition-all border border-[#C2410C] text-white group"
                 id="action-btn-call"
               >
                 <span className="flex items-center gap-3 text-sm font-bold text-black">
@@ -613,11 +613,11 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                 className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#128C7E] hover:bg-[#0e7a6e] transition-all border border-[#0e7a6e] text-white group"
                 id="action-btn-whatsapp"
               >
-                <span className="flex items-center gap-3 text-sm font-bold text-[#0A1B4A]">
+                <span className="flex items-center gap-3 text-sm font-bold text-[#7C2D12]">
                   <MessageSquare className="w-4 h-4 text-white" />
                   {t.openWhatsapp}
                 </span>
-                <ChevronRight className="w-4 h-4 text-white/80 group-hover:text-[#0A1B4A]" />
+                <ChevronRight className="w-4 h-4 text-white/80 group-hover:text-[#7C2D12]" />
               </button>
 
               {/* Map Location — opens Google Maps externally (BRD §5.4: communication outside the app) */}
@@ -626,11 +626,11 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                 className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#1A73E8] hover:bg-[#1557b0] transition-all border border-[#1557b0] text-white group"
                 id="action-btn-map"
               >
-                <span className="flex items-center gap-3 text-sm font-bold text-[#0A1B4A]">
+                <span className="flex items-center gap-3 text-sm font-bold text-[#7C2D12]">
                   <MapPin className="w-4 h-4 text-white" />
                   {t.openMap}
                 </span>
-                <ChevronRight className="w-4 h-4 text-white/80 group-hover:text-[#0A1B4A]" />
+                <ChevronRight className="w-4 h-4 text-white/80 group-hover:text-[#7C2D12]" />
               </button>
 
               {/* Website link */}
@@ -639,21 +639,21 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                   href={business.website}
                   target="_blank"
                   rel="noreferrer"
-                  className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#1B5BFF]/15 hover:bg-[#1B5BFF]/25 transition-all border border-[#1B5BFF]/40 group"
+                  className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#EA580C]/15 hover:bg-[#EA580C]/25 transition-all border border-[#EA580C]/40 group"
                   id="action-link-website"
                 >
-                  <span className="flex items-center gap-3 text-sm font-bold text-[#1B5BFF]">
-                    <Globe className="w-4 h-4 text-[#1B5BFF]" />
+                  <span className="flex items-center gap-3 text-sm font-bold text-[#EA580C]">
+                    <Globe className="w-4 h-4 text-[#EA580C]" />
                     {t.openWebsite}
                   </span>
-                  <ChevronRight className="w-4 h-4 text-[#1B5BFF]/70 group-hover:text-[#1B5BFF]" />
+                  <ChevronRight className="w-4 h-4 text-[#EA580C]/70 group-hover:text-[#EA580C]" />
                 </a>
               )}
             </div>
 
             {/* Real Google Map embed */}
             <div className="p-5 rounded-2xl bg-white border border-[#D7E0EA] space-y-3">
-              <h4 className="text-xs font-bold uppercase tracking-widest text-[#1B5BFF]">
+              <h4 className="text-xs font-bold uppercase tracking-widest text-[#EA580C]">
                 {language === 'en' ? 'Map Location View' : 'موقع خارطة الدليل'}
               </h4>
               <div className="relative aspect-video rounded-xl overflow-hidden border border-[#D7E0EA] bg-stone-900" id="details-mini-map">

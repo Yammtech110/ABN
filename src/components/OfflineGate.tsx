@@ -29,7 +29,7 @@ export const OfflineGate: React.FC<OfflineGateProps> = ({ children }) => {
         className="fixed inset-0 z-[200] flex flex-col items-center justify-center px-8 text-center"
         id="offline-gate"
         style={{
-          background: 'linear-gradient(165deg, #061433 0%, #0A1B4A 50%, #123A7A 100%)',
+          background: 'linear-gradient(165deg, #431407 0%, #7C2D12 50%, #9A3412 100%)',
           paddingTop: 'env(safe-area-inset-top)',
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}

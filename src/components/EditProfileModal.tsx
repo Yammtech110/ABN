@@ -230,9 +230,9 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
 
   const headerIcon = isListingOwner
     ? (currentUser?.role === 'service_provider'
-      ? <Zap className="w-4 h-4 text-blue-400" />
-      : <Briefcase className="w-4 h-4 text-[#1B5BFF]" />)
-    : <User className="w-4 h-4 text-[#1B5BFF]" />;
+      ? <Zap className="w-4 h-4 text-orange-400" />
+      : <Briefcase className="w-4 h-4 text-[#EA580C]" />)
+    : <User className="w-4 h-4 text-[#EA580C]" />;
 
   const headerSubtitle = isListingOwner
     ? (myBusiness
@@ -250,10 +250,10 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
           aria-label="Back"
           id="btn-edit-profile-back"
         >
-          <ArrowLeft className="w-4 h-4 text-[#1B5BFF]" />
+          <ArrowLeft className="w-4 h-4 text-[#EA580C]" />
         </button>
         <div>
-          <h2 className="text-sm font-extrabold text-[#0A1B4A] flex items-center gap-2">
+          <h2 className="text-sm font-extrabold text-[#7C2D12] flex items-center gap-2">
             {headerIcon}
             {t.editProfile}
           </h2>
@@ -286,7 +286,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
               type="text"
               value={bizName}
               onChange={(e) => setBizName(e.target.value)}
-              className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#1B5BFF] text-xs text-[#0A1B4A] outline-none"
+              className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#EA580C] text-xs text-[#7C2D12] outline-none"
               id="edit-profile-biz-name"
               required
             />
@@ -312,7 +312,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
                 type="text"
                 value={subcatEn}
                 onChange={(e) => setSubcatEn(e.target.value)}
-                className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#1B5BFF] text-xs text-[#0A1B4A] outline-none"
+                className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#EA580C] text-xs text-[#7C2D12] outline-none"
                 id="edit-profile-subcategory"
                 required
               />
@@ -325,7 +325,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
               rows={3}
               value={descEn}
               onChange={(e) => setDescEn(e.target.value)}
-              className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#1B5BFF] text-xs text-[#0A1B4A] outline-none resize-none"
+              className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#EA580C] text-xs text-[#7C2D12] outline-none resize-none"
               id="edit-profile-description"
               required
             />
@@ -338,7 +338,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
                 type="tel"
                 value={bizPhone}
                 onChange={(e) => setBizPhone(e.target.value)}
-                className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#1B5BFF] text-xs text-[#0A1B4A] outline-none"
+                className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#EA580C] text-xs text-[#7C2D12] outline-none"
                 id="edit-profile-phone"
                 required
               />
@@ -349,7 +349,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
                 type="tel"
                 value={whatsapp}
                 onChange={(e) => setWhatsapp(e.target.value)}
-                className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#1B5BFF] text-xs text-[#0A1B4A] outline-none"
+                className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#EA580C] text-xs text-[#7C2D12] outline-none"
                 id="edit-profile-whatsapp"
                 required
               />
@@ -359,7 +359,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
           <button
             type="submit"
             disabled={saving}
-            className="w-full py-3 rounded-xl bg-[#1B5BFF] hover:bg-opacity-95 text-white font-extrabold text-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full py-3 rounded-xl bg-[#EA580C] hover:bg-opacity-95 text-white font-extrabold text-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             id="btn-save-listing-profile"
           >
             <Save className="w-4 h-4" />
@@ -382,17 +382,17 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
           </div>
           <div>
             <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-wider">{t.name}</label>
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#1B5BFF] text-xs text-[#0A1B4A] outline-none" required />
+            <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#EA580C] text-xs text-[#7C2D12] outline-none" required />
           </div>
           <div>
             <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-wider">{t.phone}</label>
-            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#1B5BFF] text-xs text-[#0A1B4A] outline-none" />
+            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#EA580C] text-xs text-[#7C2D12] outline-none" />
           </div>
 
           <button
             type="submit"
             disabled={saving}
-            className="w-full py-3 rounded-xl bg-[#1B5BFF] hover:bg-opacity-95 text-white font-extrabold text-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full py-3 rounded-xl bg-[#EA580C] hover:bg-opacity-95 text-white font-extrabold text-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             id="btn-save-user-profile"
           >
             <Save className="w-4 h-4" />
@@ -411,11 +411,11 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
             className="w-full flex items-center justify-between gap-2 text-left"
             id="btn-toggle-change-password"
           >
-            <span className="flex items-center gap-2 text-xs font-extrabold text-[#0A1B4A]">
-              <KeyRound className="w-4 h-4 text-[#1B5BFF]" />
+            <span className="flex items-center gap-2 text-xs font-extrabold text-[#7C2D12]">
+              <KeyRound className="w-4 h-4 text-[#EA580C]" />
               {language === 'en' ? 'Change Password' : 'تغيير كلمة المرور'}
             </span>
-            <span className="text-[10px] font-bold text-[#1B5BFF]">
+            <span className="text-[10px] font-bold text-[#EA580C]">
               {showChangePassword ? (language === 'en' ? 'Hide' : 'إخفاء') : (language === 'en' ? 'Show' : 'إظهار')}
             </span>
           </button>
@@ -438,7 +438,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
                     type={showCurrentPw ? 'text' : 'password'}
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full p-3 pr-10 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#1B5BFF] text-xs text-[#0A1B4A] outline-none"
+                    className="w-full p-3 pr-10 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#EA580C] text-xs text-[#7C2D12] outline-none"
                     id="edit-profile-current-password"
                     autoComplete="current-password"
                   />
@@ -462,7 +462,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
                     type={showNewPw ? 'text' : 'password'}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full p-3 pr-10 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#1B5BFF] text-xs text-[#0A1B4A] outline-none"
+                    className="w-full p-3 pr-10 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#EA580C] text-xs text-[#7C2D12] outline-none"
                     id="edit-profile-new-password"
                     autoComplete="new-password"
                     minLength={10}
@@ -486,7 +486,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
                   type="password"
                   value={confirmNewPassword}
                   onChange={(e) => setConfirmNewPassword(e.target.value)}
-                  className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#1B5BFF] text-xs text-[#0A1B4A] outline-none"
+                  className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#EA580C] text-xs text-[#7C2D12] outline-none"
                   id="edit-profile-confirm-password"
                   autoComplete="new-password"
                   minLength={10}
@@ -496,7 +496,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
               <button
                 type="submit"
                 disabled={pwBusy}
-                className="w-full py-3 rounded-xl border border-[#1B5BFF]/50 bg-[#1B5BFF]/15 hover:bg-[#1B5BFF]/25 text-[#1B5BFF] font-extrabold text-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full py-3 rounded-xl border border-[#EA580C]/50 bg-[#EA580C]/15 hover:bg-[#EA580C]/25 text-[#EA580C] font-extrabold text-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                 id="btn-submit-change-password"
               >
                 {pwBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeyRound className="w-4 h-4" />}

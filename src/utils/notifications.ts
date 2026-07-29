@@ -72,7 +72,7 @@ export const notificationKindColor = (kind: NotificationKind): string => {
     case 'expiry': return 'bg-red-500';
     case 'report': return 'bg-orange-500';
     case 'login':
-    case 'welcome': return 'bg-blue-500';
+    case 'welcome': return 'bg-orange-500';
     default: return 'bg-[#FFA048]';
   }
 };

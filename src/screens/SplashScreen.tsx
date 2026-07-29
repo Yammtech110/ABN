@@ -36,14 +36,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ fading = false }) =>
       paddingBottom: 'env(safe-area-inset-bottom)',
       transitionDuration: `${SPLASH_FADE_MS}ms`,
       background:
-        'radial-gradient(120% 80% at 50% 20%, #123A7A 0%, #0A1B4A 48%, #061526 100%)',
+        'radial-gradient(120% 80% at 50% 20%, #9A3412 0%, #7C2D12 48%, #431407 100%)',
     }}
   >
     {/* Soft emerald glow behind brand */}
     <motion.div
       className="pointer-events-none absolute w-[70vw] h-[70vw] max-w-[420px] max-h-[420px] rounded-full"
       style={{
-        background: 'radial-gradient(circle, rgba(27, 91, 255,0.28) 0%, transparent 68%)',
+        background: 'radial-gradient(circle, rgba(234, 88, 12,0.28) 0%, transparent 68%)',
       }}
       initial={{ opacity: 0, scale: 0.6 }}
       animate={{ opacity: 1, scale: 1.15 }}
@@ -54,7 +54,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ fading = false }) =>
     {[0, 1, 2].map((i) => (
       <motion.div
         key={`ring-${i}`}
-        className="pointer-events-none absolute rounded-full border border-[#1B5BFF]/25"
+        className="pointer-events-none absolute rounded-full border border-[#EA580C]/25"
         style={{ width: 140 + i * 70, height: 140 + i * 70 }}
         initial={{ opacity: 0, scale: 0.55 }}
         animate={{ opacity: [0, 0.55, 0], scale: [0.55, 1.15, 1.45] }}
@@ -73,7 +73,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ fading = false }) =>
       {NODES.map((n, i) => (
         <motion.span
           key={`node-${i}`}
-          className="absolute w-2 h-2 rounded-full bg-[#1B5BFF] shadow-[0_0_12px_rgba(27, 91, 255,0.8)]"
+          className="absolute w-2 h-2 rounded-full bg-[#EA580C] shadow-[0_0_12px_rgba(234, 88, 12,0.8)]"
           style={{ left: `${n.x}%`, top: `${n.y}%` }}
           initial={{ opacity: 0, scale: 0 }}
           animate={{ opacity: [0, 1, 0.45, 1], scale: [0, 1.2, 0.9, 1] }}
@@ -88,13 +88,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ fading = false }) =>
         initial={{ opacity: 0, scale: 0.72, y: 18 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.75, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-        className="mb-5 drop-shadow-[0_0_32px_rgba(27, 91, 255,0.35)]"
+        className="mb-5 drop-shadow-[0_0_32px_rgba(234, 88, 12,0.35)]"
       >
-        <AbnLogo size="splash" tone="dark" className="drop-shadow-[0_0_32px_rgba(27, 91, 255,0.35)]" />
+        <AbnLogo size="splash" tone="dark" className="drop-shadow-[0_0_32px_rgba(234, 88, 12,0.35)]" />
       </motion.div>
 
       <motion.p
-        className="text-[11px] font-bold tracking-[0.28em] uppercase text-[#1B5BFF] mb-2"
+        className="text-[11px] font-bold tracking-[0.28em] uppercase text-[#EA580C] mb-2"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.55, delay: 0.55 }}
@@ -111,7 +111,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ fading = false }) =>
         <span className="block text-[34px] sm:text-[40px] font-black tracking-tight text-white">
           AHLEBAIT
         </span>
-        <span className="block text-[34px] sm:text-[40px] font-black tracking-tight text-[#1B5BFF]">
+        <span className="block text-[34px] sm:text-[40px] font-black tracking-tight text-[#EA580C]">
           NETWORK
         </span>
       </motion.h1>
@@ -133,7 +133,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ fading = false }) =>
         transition={{ delay: 1.1 }}
       >
         <motion.div
-          className="h-full rounded-full bg-gradient-to-r from-[#1B5BFF] to-[#8EB6FF]"
+          className="h-full rounded-full bg-gradient-to-r from-[#EA580C] to-[#FDBA74]"
           initial={{ x: '-100%' }}
           animate={{ x: '100%' }}
           transition={{ duration: 1.4, delay: 1.15, ease: [0.22, 1, 0.36, 1], repeat: Infinity }}

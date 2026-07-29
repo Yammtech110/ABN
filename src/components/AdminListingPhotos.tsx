@@ -87,7 +87,7 @@ export const AdminListingPhotos: React.FC<AdminListingPhotosProps> = ({ business
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
         <div className="absolute bottom-2 left-2 flex items-end gap-2">
-          <div className="w-12 h-12 rounded-lg overflow-hidden border-2 border-[#1B5BFF]/60 bg-white shrink-0">
+          <div className="w-12 h-12 rounded-lg overflow-hidden border-2 border-[#EA580C]/60 bg-white shrink-0">
             <img
               src={logoSrc}
               alt={`${business.name} logo`}
@@ -107,7 +107,7 @@ export const AdminListingPhotos: React.FC<AdminListingPhotosProps> = ({ business
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
-        className="flex items-center gap-1.5 text-[9px] font-bold text-[#1B5BFF] hover:underline"
+        className="flex items-center gap-1.5 text-[9px] font-bold text-[#EA580C] hover:underline"
       >
         <ImageIcon className="w-3.5 h-3.5" />
         {expanded
