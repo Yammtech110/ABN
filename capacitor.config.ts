@@ -37,13 +37,13 @@ const config: CapacitorConfig = {
         iosScheme: 'capacitor',
       },
   android: {
-    backgroundColor: '#0B2545',
+    backgroundColor: '#0A0705',
     allowMixedContent: !isProductionApp,
   },
   plugins: {
     SplashScreen: {
       launchShowDuration: 2000,
-      backgroundColor: '#0B2545',
+      backgroundColor: '#0A0705',
       androidSplashResourceName: 'splash',
       showSpinner: false,
     },
