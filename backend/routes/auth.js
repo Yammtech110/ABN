@@ -32,6 +32,19 @@ const SELF_REGISTER_ROLES = ['customer', 'business', 'service_provider'];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_FIELD_LEN = 200;
 
+/** US/NANP: +1 + 10 digits; area & exchange cannot start with 0/1. Returns +1XXXXXXXXXX or null. */
+const normalizeUsPhone = (value) => {
+  const digits = String(value || '').replace(/\D/g, '');
+  let n = digits;
+  if (n.length === 10) n = `1${n}`;
+  if (n.length === 12 && n.startsWith('11')) n = n.slice(1);
+  if (n.length !== 11 || !n.startsWith('1')) return null;
+  const area = n.slice(1, 4);
+  const exchange = n.slice(4, 7);
+  if (!/^[2-9]\d{2}$/.test(area) || !/^[2-9]\d{2}$/.test(exchange)) return null;
+  return `+${n}`;
+};
+
 const mapUser = (u) => ({
   id:                u.id,
   email:             u.email,
@@ -76,16 +89,21 @@ router.post('/register', async (req, res, next) => {
 
     const trimmedEmail = email.trim();
     const trimmedName = name.trim();
-    const trimmedPhone = phone.trim();
+    const normalizedPhone = normalizeUsPhone(phone);
 
-    if (!trimmedEmail || !trimmedName || !trimmedPhone) {
+    if (!trimmedEmail || !trimmedName || !String(phone || '').trim()) {
       return res.status(400).json({ error: 'name, email and phone cannot be empty.' });
+    }
+    if (!normalizedPhone) {
+      return res.status(400).json({
+        error: 'Enter a valid US phone number in the format +1 (XXX) XXX-XXXX.',
+      });
     }
     if (!EMAIL_RE.test(trimmedEmail) || trimmedEmail.length > MAX_FIELD_LEN) {
       return res.status(400).json({ error: 'A valid email address is required.' });
     }
-    if (trimmedName.length > MAX_FIELD_LEN || trimmedPhone.length > MAX_FIELD_LEN) {
-      return res.status(400).json({ error: 'name and phone must be at most 200 characters.' });
+    if (trimmedName.length > MAX_FIELD_LEN) {
+      return res.status(400).json({ error: 'name must be at most 200 characters.' });
     }
     if (!SELF_REGISTER_ROLES.includes(role)) {
       return res.status(400).json({ error: `Invalid role. Must be one of: ${SELF_REGISTER_ROLES.join(', ')}` });
@@ -110,7 +128,7 @@ router.post('/register', async (req, res, next) => {
     const record = await createUser({
       id,
       email: key,
-      phone: trimmedPhone,
+      phone: normalizedPhone,
       name: trimmedName,
       role,
       passwordHash,

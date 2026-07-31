@@ -18,6 +18,11 @@ import {
 } from 'lucide-react';
 import { SUPPORT_MAILTO } from '../data/legalContent';
 import { userFacingError } from '../utils/userFacingError';
+import {
+  formatUSPhoneInput,
+  isValidUSPhone,
+  toE164USPhone,
+} from '../utils/businessRegistrationValidation';
 
 type AuthMode = 'signin' | 'register' | 'verify' | 'forgot' | 'reset-code' | 'reset-choice';
 
@@ -123,6 +128,10 @@ export const AuthScreen: React.FC = () => {
       setError('All fields are required.');
       return;
     }
+    if (!isValidUSPhone(trimmedPhone)) {
+      setError(t.phoneInvalid || 'Enter a valid US phone: +1 (XXX) XXX-XXXX.');
+      return;
+    }
     if (password.length < 6) {
       setError('Password must be at least 6 characters.');
       return;
@@ -138,7 +147,7 @@ export const AuthScreen: React.FC = () => {
       name: trimmedName,
       email: trimmedEmail,
       password,
-      phone: trimmedPhone,
+      phone: toE164USPhone(trimmedPhone),
     });
     setIsLoading(false);
     if (!result.success) {
@@ -549,14 +558,20 @@ export const AuthScreen: React.FC = () => {
                           </FieldIcon>
                           <input
                             type="tel"
+                            inputMode="tel"
                             value={phone}
-                            onChange={(e) => setPhone(e.target.value)}
+                            onChange={(e) => {
+                              setPhone(formatUSPhoneInput(e.target.value));
+                              setError('');
+                            }}
                             required
-                            placeholder="+1 555 000 0000"
+                            placeholder="+1 (XXX) XXX-XXXX"
                             className={fieldClass}
                             autoComplete="tel"
+                            maxLength={18}
                           />
                         </div>
+                        <p className="mt-1.5 text-[10px] text-[#8E8E8E]">{t.phoneHint}</p>
                       </div>
                       <div>
                         <label className={labelClass}>Password *</label>

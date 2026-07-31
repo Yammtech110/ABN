@@ -51,13 +51,25 @@ export const normalizeUSPhone = (value: string): string => {
   const digits = digitsOnly(value);
   if (digits.length === 10) return `1${digits}`;
   if (digits.length === 11 && digits.startsWith('1')) return digits;
+  // User typed country code twice like 1 + 1XXXXXXXXXX
+  if (digits.length === 12 && digits.startsWith('11')) return digits.slice(1);
   return digits;
 };
 
+/** Valid US/NANP mobile or landline: +1 + 10 digits (area/exchange not starting with 0/1). */
 export const isValidUSPhone = (value: string): boolean => {
   const digits = normalizeUSPhone(value);
-  return digits.length === 11 && digits.startsWith('1');
+  if (digits.length !== 11 || !digits.startsWith('1')) return false;
+  const area = digits.slice(1, 4);
+  const exchange = digits.slice(4, 7);
+  if (!/^[2-9]\d{2}$/.test(area)) return false;
+  if (!/^[2-9]\d{2}$/.test(exchange)) return false;
+  return true;
 };
+
+/** Display / storage form: +1XXXXXXXXXX */
+export const toE164USPhone = (value: string): string => `+${normalizeUSPhone(value)}`;
+
 
 export const formatOtpInput = (value: string): string => digitsOnly(value).slice(0, 6);
 
@@ -94,15 +106,14 @@ export const validateDirectoryRegistration = (
   if (!input.phone.trim()) {
     return 'Phone number is required.';
   }
-  if (phoneDigits.length !== 11 || !phoneDigits.startsWith('1')) {
+  if (!isValidUSPhone(input.phone)) {
     return messages.phoneInvalid;
   }
 
   if (!input.whatsapp.trim()) {
     return 'WhatsApp number is required.';
   }
-  const whatsappDigits = normalizeUSPhone(input.whatsapp);
-  if (whatsappDigits.length !== 11 || !whatsappDigits.startsWith('1')) {
+  if (!isValidUSPhone(input.whatsapp)) {
     return messages.whatsappInvalid;
   }
 

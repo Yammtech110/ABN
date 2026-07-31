@@ -13,6 +13,7 @@ import {
 } from '../data/mockData';
 import { resolveCategoryId } from '../utils/categoryMatch';
 import { listingMediaUrl, resolveListingCoverUrl, resolveListingLogoUrl, resolveJobImageUrl } from '../utils/listingImages';
+import { isValidUSPhone, toE164USPhone } from '../utils/businessRegistrationValidation';
 import { networkErrorMessage, userFacingError } from '../utils/userFacingError';
 
 // ── Safe storage helpers ────────────────────────────────────────────────────
@@ -1002,6 +1003,12 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (!trimmedPhone) return { success: false, error: 'Please enter your phone number.' };
       return { success: false, error: 'Please enter a password (at least 6 characters).' };
     }
+    if (!isValidUSPhone(trimmedPhone)) {
+      return {
+        success: false,
+        error: 'Enter a valid US phone number in the format +1 (XXX) XXX-XXXX.',
+      };
+    }
 
     try {
       const res = await apiFetch('/api/auth/register', {
@@ -1010,7 +1017,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         body: JSON.stringify({
           name: trimmedName,
           email: trimmedEmail,
-          phone: trimmedPhone,
+          phone: toE164USPhone(trimmedPhone),
           role: 'customer',
           password: payload.password,
         }),
