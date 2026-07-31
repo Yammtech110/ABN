@@ -501,7 +501,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
 
         <form onSubmit={handleSearchSubmit} id="home-search-form" className="relative z-10">
           <div
-            className="relative flex items-center bg-[#171310] rounded-2xl border border-[#2B231D] px-1.5 py-1.5"
+            className="relative flex items-center bg-[#171310] rounded-2xl border border-[#F08C32] px-1.5 py-1.5 focus-within:border-[#FF9E47]"
             id="home-search-box"
           >
             {isSearching
@@ -513,7 +513,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               value={inputSearch}
               onChange={(e) => { setInputSearch(e.target.value); if (!e.target.value.trim()) setApiResults(null); }}
               placeholder="Search businesses, professionals or services..."
-              className="w-full pl-10 pr-[7.8rem] py-3 bg-transparent text-[13px] text-white placeholder:text-[#8E8E8E] outline-none"
+              className="w-full pl-10 pr-[7.8rem] py-3 bg-transparent text-[13px] text-white placeholder:text-[#8E8E8E] outline-none focus:outline-none focus-visible:outline-none"
               id="home-search-input"
             />
             <button
@@ -523,7 +523,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                 setSearchQueryText(query);
                 onSwitchTab('search');
               }}
-              className="absolute right-1.5 px-2.5 py-2 rounded-xl bg-[#FF9E47] text-black font-bold text-[11px] flex items-center gap-1"
+              className="absolute right-1.5 px-2.5 py-2 rounded-xl bg-[#FF9E47] text-black font-bold text-[11px] flex items-center gap-1 focus-visible:outline-none"
               id="home-location-badge-btn"
             >
               <MapPin className="w-3 h-3" />

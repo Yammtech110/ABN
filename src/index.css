@@ -1302,6 +1302,12 @@ select:focus-visible {
   outline: 2px solid #FF9E47;
   outline-offset: 2px;
 }
+/* Home search uses rounded border on the box — no square focus ring */
+#home-search-input:focus-visible,
+#home-location-badge-btn:focus-visible {
+  outline: none;
+  outline-offset: 0;
+}
 html.light button:focus-visible,
 html.light input:focus-visible,
 html.light textarea:focus-visible,
