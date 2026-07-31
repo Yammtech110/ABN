@@ -53,20 +53,12 @@ const HERO_ORANGE = '#F58220';
 
 /** Orange/white handshake mark matching the hero mockup. */
 const AbnHeroMark: React.FC<{ className?: string }> = ({ className = '' }) => (
-  <div className={`flex flex-col items-center ${className}`.trim()}>
-    <img
-      src="/abn-handshake-mark.png"
-      alt=""
-      className="w-12 h-12 object-contain object-center"
-      draggable={false}
-    />
-    <span
-      className="text-[11px] font-extrabold leading-none mt-1 tracking-wide"
-      style={{ color: HERO_ORANGE }}
-    >
-      ABN
-    </span>
-  </div>
+  <img
+    src="/abn-handshake-mark.png"
+    alt=""
+    className={`w-12 h-12 object-contain object-center ${className}`.trim()}
+    draggable={false}
+  />
 );
 
 /** Dotted map + network lines — right side of hero (mockup match). */
@@ -478,9 +470,9 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         </div>
 
         <p className="relative z-10 text-[15px] text-white font-medium mb-6 max-w-[240px] leading-[1.45]">
-          Connecting Businesses.<br />
-          Building Community.<br />
-          Creating Opportunities.
+          Connecting <span className="font-bold">Businesses</span>.<br />
+          Building <span className="font-bold">Community</span>.<br />
+          Creating <span className="font-bold">Opportunities</span>.
         </p>
 
         <div className="relative z-10 grid grid-cols-3 gap-0 mb-5">
