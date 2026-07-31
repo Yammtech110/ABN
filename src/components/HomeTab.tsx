@@ -38,6 +38,7 @@ import {
   Star,
   Heart,
   Briefcase,
+  Users,
   Store,
   Handshake,
   Grid3X3,
@@ -48,6 +49,81 @@ import {
 import { Business, BusinessStatus } from '../types';
 
 const NAVY = '#110E0B';
+const HERO_ORANGE = '#F58220';
+
+/** Orange/white handshake mark matching the hero mockup. */
+const AbnHeroMark: React.FC<{ className?: string }> = ({ className = '' }) => (
+  <div className={`flex flex-col items-center ${className}`.trim()}>
+    <img
+      src="/abn-handshake-mark.png"
+      alt=""
+      className="w-12 h-12 object-contain object-center"
+      draggable={false}
+    />
+    <span
+      className="text-[11px] font-extrabold leading-none mt-1 tracking-wide"
+      style={{ color: HERO_ORANGE }}
+    >
+      ABN
+    </span>
+  </div>
+);
+
+/** Dotted map + network lines — right side of hero (mockup match). */
+const HeroNetworkMap: React.FC = () => {
+  const softDots: [number, number][] = [
+    [210, 28], [222, 36], [234, 30], [246, 42], [258, 34], [270, 46], [282, 38], [294, 50],
+    [306, 42], [318, 56], [330, 48], [342, 62], [354, 54], [366, 68],
+    [216, 58], [228, 66], [240, 60], [252, 74], [264, 66], [276, 80], [288, 72], [300, 86],
+    [312, 78], [324, 92], [336, 84], [348, 98], [360, 90],
+    [222, 96], [234, 104], [246, 98], [258, 112], [270, 104], [282, 118], [294, 110],
+    [306, 124], [318, 116], [330, 130], [342, 122], [354, 136],
+    [228, 138], [240, 146], [252, 140], [264, 154], [276, 146], [288, 160], [300, 152],
+    [312, 166], [324, 158], [336, 172], [348, 164],
+    [234, 178], [246, 186], [258, 180], [270, 194], [282, 186], [294, 200], [306, 192],
+    [318, 206], [330, 198],
+  ];
+  const nodes: [number, number][] = [
+    [230, 48], [270, 36], [310, 55], [350, 45],
+    [245, 90], [285, 78], [325, 100], [360, 120],
+    [255, 140], [295, 130], [335, 155],
+    [265, 185], [305, 175], [340, 200],
+  ];
+  return (
+    <svg
+      className="pointer-events-none absolute inset-0 w-full h-full"
+      viewBox="0 0 390 320"
+      fill="none"
+      aria-hidden="true"
+      id="home-hero-network"
+      preserveAspectRatio="xMidYMid slice"
+    >
+      <defs>
+        <radialGradient id="heroNetGlow" cx="78%" cy="40%" r="50%">
+          <stop offset="0%" stopColor={HERO_ORANGE} stopOpacity="0.22" />
+          <stop offset="100%" stopColor="#000000" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <rect width="390" height="320" fill="url(#heroNetGlow)" />
+      {softDots.map(([x, y], i) => (
+        <circle key={`d-${i}`} cx={x} cy={y} r="1.35" fill={HERO_ORANGE} opacity={0.28 + (i % 5) * 0.07} />
+      ))}
+      <path d="M230 48 L270 36 L310 55 L350 45" stroke={HERO_ORANGE} strokeWidth="1.25" opacity="0.75" />
+      <path d="M245 90 L285 78 L325 100 L360 120" stroke={HERO_ORANGE} strokeWidth="1.15" opacity="0.65" />
+      <path d="M255 140 L295 130 L335 155" stroke="#FF9E47" strokeWidth="1.1" opacity="0.7" />
+      <path d="M265 185 L305 175 L340 200" stroke={HERO_ORANGE} strokeWidth="1.1" opacity="0.6" />
+      <path d="M270 36 L285 78 L295 130 L305 175" stroke="#FF9E47" strokeWidth="1" opacity="0.55" />
+      <path d="M310 55 L325 100 L335 155 L340 200" stroke={HERO_ORANGE} strokeWidth="1" opacity="0.5" />
+      <path d="M230 48 L245 90 L255 140 L265 185" stroke={HERO_ORANGE} strokeWidth="1" opacity="0.5" />
+      {nodes.map(([x, y], i) => (
+        <g key={`n-${i}`}>
+          <circle cx={x} cy={y} r="7" fill={HERO_ORANGE} opacity="0.2" />
+          <circle cx={x} cy={y} r="3.2" fill="#FF9E47" />
+        </g>
+      ))}
+    </svg>
+  );
+};
 
 const JOB_CATEGORY_COLORS: Record<JobCategory, string> = {
   'IT':               'bg-orange-100 text-orange-700 border-orange-200',
@@ -360,37 +436,80 @@ export const HomeTab: React.FC<HomeTabProps> = ({
   return (
     <div className="pb-6 bg-[#0D0906]" id="home-tab-container">
 
-      {/* ── Hero: pixel-exact design image (no custom redraw) ─ */}
+      {/* ── Hero: exact match to orange brand mockup ─────────── */}
       <section
-        className="relative overflow-hidden bg-black pt-[max(0.35rem,env(safe-area-inset-top))]"
+        className="relative overflow-hidden px-4 pt-[max(0.85rem,env(safe-area-inset-top))] pb-4"
         id="home-hero"
+        style={{ background: '#000000' }}
       >
-        <img
-          src="/abn-hero-banner.png"
-          alt="ABN — Connecting Businesses. Building Community. Creating Opportunities."
-          className="block w-full h-auto select-none"
-          draggable={false}
-          id="home-hero-banner"
-        />
-        {/* Covers the baked-in refresh glyph so only one icon shows, still tappable */}
-        <button
-          type="button"
-          onClick={() => void handleRefreshApp()}
-          disabled={isRefreshing}
-          className="absolute top-[max(0.45rem,env(safe-area-inset-top))] right-2.5 z-20 p-2 rounded-full bg-black text-white/85 disabled:opacity-60"
-          aria-label="Refresh"
-          id="btn-home-refresh"
-        >
-          <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} strokeWidth={2} />
-        </button>
-      </section>
+        <HeroNetworkMap />
 
-      <div className="space-y-5 px-4 pt-3 relative z-10 bg-black">
+        <div className="relative z-10 flex items-start justify-between gap-2 mb-5">
+          <div className="flex items-center gap-3 min-w-0">
+            <AbnHeroMark className="flex-shrink-0 w-[52px]" />
+            <div className="min-w-0 pt-0.5">
+              <div
+                className="text-[28px] font-black leading-none tracking-tight"
+                style={{ color: HERO_ORANGE }}
+              >
+                ABN
+              </div>
+              <div className="text-[11px] font-bold text-white tracking-[0.12em] uppercase mt-1 leading-none">
+                AHLEBAIT NETWORK
+              </div>
+              <div
+                className="text-[8px] font-semibold tracking-[0.14em] uppercase mt-1.5 leading-none"
+                style={{ color: HERO_ORANGE }}
+              >
+                CONNECT • COLLABORATE • GROW
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => void handleRefreshApp()}
+            disabled={isRefreshing}
+            className="p-2 rounded-full border border-white/35 text-white/90 hover:bg-white/10 disabled:opacity-60 flex-shrink-0 mt-0.5"
+            aria-label="Refresh"
+            id="btn-home-refresh"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} strokeWidth={2} />
+          </button>
+        </div>
 
-        {/* Search — matches app mockup under hero */}
-        <form onSubmit={handleSearchSubmit} id="home-search-form">
+        <p className="relative z-10 text-[15px] text-white font-medium mb-6 max-w-[240px] leading-[1.45]">
+          Connecting Businesses.<br />
+          Building Community.<br />
+          Creating Opportunities.
+        </p>
+
+        <div className="relative z-10 grid grid-cols-3 gap-0 mb-5">
+          <div className="flex items-center gap-2 px-1 border-r border-[#3A3A3A]">
+            <Building2 className="w-4 h-4 flex-shrink-0" style={{ color: HERO_ORANGE }} strokeWidth={1.75} />
+            <div className="min-w-0">
+              <div className="text-[15px] font-bold text-white leading-none">6+</div>
+              <div className="text-[10px] text-[#8E8E8E] mt-0.5">Businesses</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 px-2 border-r border-[#3A3A3A]">
+            <MapPin className="w-4 h-4 flex-shrink-0" style={{ color: HERO_ORANGE }} strokeWidth={1.75} />
+            <div className="min-w-0">
+              <div className="text-[15px] font-bold text-white leading-none">5+</div>
+              <div className="text-[10px] text-[#8E8E8E] mt-0.5">Cities</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 px-2">
+            <Users className="w-4 h-4 flex-shrink-0" style={{ color: HERO_ORANGE }} strokeWidth={1.75} />
+            <div className="min-w-0">
+              <div className="text-[15px] font-bold text-white leading-none">12,000+</div>
+              <div className="text-[10px] text-[#8E8E8E] mt-0.5">Members</div>
+            </div>
+          </div>
+        </div>
+
+        <form onSubmit={handleSearchSubmit} id="home-search-form" className="relative z-10">
           <div
-            className="relative flex items-center bg-[#171310] rounded-2xl border border-[#F08C32]/55 px-1.5 py-1.5"
+            className="relative flex items-center bg-[#171310] rounded-2xl border border-[#2B231D] px-1.5 py-1.5"
             id="home-search-box"
           >
             {isSearching
@@ -423,6 +542,9 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             </button>
           </div>
         </form>
+      </section>
+
+      <div className="space-y-5 px-4 pt-4 relative z-10 bg-[#0D0906]">
 
         {/* City chips — mockup style (no zero cities) */}
         <div id="home-city-filter">
