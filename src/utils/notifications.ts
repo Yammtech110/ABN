@@ -25,11 +25,23 @@ export const notificationMatchesUser = (
   return receiver === normalizeRole(user.role);
 };
 
+export const isSensitiveAuthNotification = (notification: AppNotification): boolean => {
+  const t = `${notification.title} ${notification.message}`.toLowerCase();
+  return (
+    t.includes('verification code') ||
+    t.includes('6-digit') ||
+    t.includes('password reset code') ||
+    t.includes('verify your email')
+  );
+};
+
 export const filterNotificationsForUser = (
   notifications: AppNotification[],
   user: UserProfile | null | undefined,
 ): AppNotification[] =>
-  notifications.filter((n) => notificationMatchesUser(n, user));
+  notifications
+    .filter((n) => notificationMatchesUser(n, user))
+    .filter((n) => !isSensitiveAuthNotification(n));
 
 export const countUnreadNotifications = (
   notifications: AppNotification[],

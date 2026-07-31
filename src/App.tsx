@@ -21,7 +21,7 @@ import { NotificationsScreen } from './components/NotificationsScreen';
 import { Business } from './types';
 import { LegalDocId } from './data/legalContent';
 import { getUserListing, canPostJobs } from './utils/listingAccess';
-import { countUnreadNotifications } from './utils/notifications';
+import { isSensitiveAuthNotification } from './utils/notifications';
 import { useOpenNotificationsOnPush, usePushNotifications } from './hooks/usePushNotifications';
 import { OfflineGate } from './components/OfflineGate';
 import {
@@ -32,7 +32,7 @@ import {
   Shield,
   ArrowLeft,
   Loader2,
-  MessageSquare,
+  Bell,
   Heart,
 } from 'lucide-react';
 
@@ -122,7 +122,7 @@ function TabContent({
       )}
       {activeTab === 'portal-management' && (
         <TabView tabKey="portal-management">
-          <div className="min-h-full bg-[#1E1915] px-4 pt-4 pb-8">
+          <div className="min-h-full bg-[#0D0906] px-4 pt-4 pb-8">
             <BusinessPortalTab
               onBack={() => setActiveTab('account')}
               manageMode
@@ -231,6 +231,14 @@ function BottomNav({
             <span className="text-[9px] tracking-tight">{t.search}</span>
           </button>
           <button
+            onClick={() => setActiveTab('saved')}
+            className={tabClass(activeTab === 'saved')}
+            id="tab-btn-saved"
+          >
+            <Heart className={`w-5 h-5 mb-0.5 ${activeTab === 'saved' ? 'fill-[#F08C32]' : ''}`} />
+            <span className="text-[9px] tracking-tight">{t.saved || 'Saved'}</span>
+          </button>
+          <button
             onClick={() => setActiveTab('job-board')}
             className={tabClass(isJobsActive)}
             id="tab-btn-jobs"
@@ -243,13 +251,13 @@ function BottomNav({
             className={`relative ${tabClass(isNotificationsActive)}`}
             id="tab-btn-notifications"
           >
-            <MessageSquare className="w-5 h-5 mb-0.5" />
+            <Bell className={`w-5 h-5 mb-0.5 ${isNotificationsActive ? 'fill-[#F08C32]' : ''}`} />
             {unreadCount > 0 && (
               <span className="absolute top-1 right-[18%] min-w-[14px] h-[14px] px-0.5 rounded-full bg-[#FF9E47] text-black text-[8px] font-black flex items-center justify-center">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
-            <span className="text-[9px] tracking-tight">Messages</span>
+            <span className="text-[9px] tracking-tight">Notification</span>
           </button>
         </>
       )}
@@ -322,9 +330,9 @@ function WebTopNav({
             setActiveTab('home');
           })}
           {navBtn('search', t.search, <Search className="w-4 h-4" />)}
+          {navBtn('saved', t.saved || 'Saved', <Heart className="w-4 h-4" />)}
           {navBtn('job-board', 'Jobs', <Briefcase className="w-4 h-4" />)}
-          {navBtn('notifications', 'Messages', <MessageSquare className="w-4 h-4" />)}
-          {navBtn('saved', t.saved, <Heart className="w-4 h-4" />)}
+          {navBtn('notifications', 'Notification', <Bell className="w-4 h-4" />)}
         </>
       )}
       {isAdmin && navBtn('admin', t.adminPanel || 'Admin', <Shield className="w-4 h-4" />)}
@@ -337,7 +345,9 @@ function DirectoryAppContent() {
   const { language, currentUser, businesses, authReady, isAuthenticated, apiToken, notifications } = useDirectory();
   const t = TRANSLATIONS[language];
   const nativeApp = isNativeApp();
-  const unreadCount = countUnreadNotifications(notifications, currentUser);
+  const unreadCount = isAuthenticated
+    ? notifications.filter((n) => !n.isRead && !isSensitiveAuthNotification(n)).length
+    : 0;
 
   const [activeTab, setActiveTab] = useState<string>('home');
   const [legalDocId, setLegalDocId] = useState<LegalDocId | null>(null);

@@ -242,7 +242,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
 
   return (
     <div className="space-y-4 animate-fade-in" id="account-edit-profile-section">
-      <div className="flex items-center gap-3 pb-2 border-b border-[#D7E0EA]/60">
+      <div className="flex items-center gap-3 pb-2 border-b border-[#2B231D]">
         <button
           type="button"
           onClick={onClose}
@@ -257,12 +257,12 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
             {headerIcon}
             {t.editProfile}
           </h2>
-          <p className="text-[10px] text-gray-500">{headerSubtitle}</p>
+          <p className="text-[10px] text-[#8E8E8E]">{headerSubtitle}</p>
         </div>
       </div>
 
       {isListingOwner ? (
-        <form onSubmit={handleSaveListing} className="space-y-4 p-5 rounded-2xl bg-white border border-[#D7E0EA]">
+        <form onSubmit={handleSaveListing} className="space-y-4 p-5 rounded-2xl bg-[#171310] border border-[#2B231D]">
           {error && (
             <p className="text-xs text-red-400 bg-red-950/30 border border-red-900/50 rounded-xl p-2.5">{error}</p>
           )}
@@ -279,7 +279,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
           />
 
           <div>
-            <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-wider">
+            <label className="block text-[10px] font-bold text-[#8E8E8E] mb-1.5 uppercase tracking-wider">
               {currentUser?.role === 'service_provider' ? (language === 'en' ? 'Service Name*' : 'اسم الخدمة*') : `${t.businessName}*`}
             </label>
             <input
@@ -307,7 +307,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
               </select>
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-wider">{t.subcategories}*</label>
+              <label className="block text-[10px] font-bold text-[#8E8E8E] mb-1.5 uppercase tracking-wider">{t.subcategories}*</label>
               <input
                 type="text"
                 value={subcatEn}
@@ -320,7 +320,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
           </div>
 
           <div>
-            <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-wider">{t.description}*</label>
+            <label className="block text-[10px] font-bold text-[#8E8E8E] mb-1.5 uppercase tracking-wider">{t.description}*</label>
             <textarea
               rows={3}
               value={descEn}
@@ -333,7 +333,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-wider">{t.phone}*</label>
+              <label className="block text-[10px] font-bold text-[#8E8E8E] mb-1.5 uppercase tracking-wider">{t.phone}*</label>
               <input
                 type="tel"
                 value={bizPhone}
@@ -344,7 +344,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-wider">{t.whatsapp}*</label>
+              <label className="block text-[10px] font-bold text-[#8E8E8E] mb-1.5 uppercase tracking-wider">{t.whatsapp}*</label>
               <input
                 type="tel"
                 value={whatsapp}
@@ -368,7 +368,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
         </form>
       ) : (
         <>
-        <form onSubmit={handleSaveAccount} className="space-y-4 p-5 rounded-2xl bg-white border border-[#D7E0EA]">
+        <form onSubmit={handleSaveAccount} className="space-y-4 p-5 rounded-2xl bg-[#171310] border border-[#2B231D]">
           {error && (
             <p className="text-xs text-red-400 bg-red-950/30 border border-red-900/50 rounded-xl p-2.5">{error}</p>
           )}
@@ -377,15 +377,15 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
           )}
 
           <div>
-            <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-wider">{t.email}</label>
-            <input type="email" value={currentUser?.email || ''} readOnly className="w-full p-3 rounded-xl bg-[#1E1915] border border-[#2B231D] text-xs text-gray-500 outline-none" />
+            <label className="block text-[10px] font-bold text-[#8E8E8E] mb-1.5 uppercase tracking-wider">{t.email}</label>
+            <input type="email" value={currentUser?.email || ''} readOnly className="w-full p-3 rounded-xl bg-[#1E1915] border border-[#2B231D] text-xs text-[#8E8E8E] outline-none" />
           </div>
           <div>
-            <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-wider">{t.name}</label>
+            <label className="block text-[10px] font-bold text-[#8E8E8E] mb-1.5 uppercase tracking-wider">{t.name}</label>
             <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full p-3 rounded-xl bg-[#1E1915] border border-[#2B231D] focus:border-[#F08C32] text-xs text-[#FFFFFF] outline-none" required />
           </div>
           <div>
-            <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-wider">{t.phone}</label>
+            <label className="block text-[10px] font-bold text-[#8E8E8E] mb-1.5 uppercase tracking-wider">{t.phone}</label>
             <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full p-3 rounded-xl bg-[#1E1915] border border-[#2B231D] focus:border-[#F08C32] text-xs text-[#FFFFFF] outline-none" />
           </div>
 
@@ -400,7 +400,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
           </button>
         </form>
 
-        <div className="p-5 rounded-2xl bg-white border border-[#D7E0EA] space-y-3" id="edit-profile-change-password">
+        <div className="p-5 rounded-2xl bg-[#171310] border border-[#2B231D] space-y-3" id="edit-profile-change-password">
           <button
             type="button"
             onClick={() => {
@@ -421,7 +421,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
           </button>
 
           {showChangePassword && (
-            <form onSubmit={handleChangePassword} className="space-y-3 pt-1 border-t border-[#D7E0EA]">
+            <form onSubmit={handleChangePassword} className="space-y-3 pt-1 border-t border-[#2B231D]">
               {pwError && (
                 <p className="text-xs text-red-400 bg-red-950/30 border border-red-900/50 rounded-xl p-2.5">{pwError}</p>
               )}
@@ -430,7 +430,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
               )}
 
               <div>
-                <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-wider">
+                <label className="block text-[10px] font-bold text-[#8E8E8E] mb-1.5 uppercase tracking-wider">
                   {language === 'en' ? 'Current password' : 'كلمة المرور الحالية'}
                 </label>
                 <div className="relative">
@@ -445,7 +445,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
                   <button
                     type="button"
                     onClick={() => setShowCurrentPw((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8E8E8E]"
                     aria-label={showCurrentPw ? 'Hide password' : 'Show password'}
                   >
                     {showCurrentPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -454,7 +454,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-wider">
+                <label className="block text-[10px] font-bold text-[#8E8E8E] mb-1.5 uppercase tracking-wider">
                   {language === 'en' ? 'New password' : 'كلمة المرور الجديدة'}
                 </label>
                 <div className="relative">
@@ -470,7 +470,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
                   <button
                     type="button"
                     onClick={() => setShowNewPw((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8E8E8E]"
                     aria-label={showNewPw ? 'Hide password' : 'Show password'}
                   >
                     {showNewPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -479,7 +479,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-wider">
+                <label className="block text-[10px] font-bold text-[#8E8E8E] mb-1.5 uppercase tracking-wider">
                   {language === 'en' ? 'Confirm new password' : 'تأكيد كلمة المرور الجديدة'}
                 </label>
                 <input

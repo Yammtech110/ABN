@@ -521,7 +521,6 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       const data = await res.json();
       if (!res.ok) {
         setNotificationsError(data.error || 'Failed to load notifications.');
-        setNotifications([]);
         return;
       }
       if (Array.isArray(data.notifications)) setNotifications(data.notifications);

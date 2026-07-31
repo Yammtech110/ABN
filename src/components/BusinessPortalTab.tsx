@@ -976,7 +976,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
   ) : null;
 
   const backHeader = onBack ? (
-    <div className="flex items-center gap-3 pb-3 border-b border-[#D7E0EA]">
+    <div className="flex items-center gap-3 pb-3 border-b border-[#2B231D]">
       <button
         onClick={onBack}
         className="p-2 rounded-full bg-[#1E1915] hover:bg-[#201B15] border border-[#2B231D] transition-colors"
@@ -985,7 +985,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
         <ArrowLeft className="w-4 h-4 text-[#F08C32]" />
       </button>
       <div>
-        <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">
+        <span className="text-[10px] text-[#8E8E8E] font-bold uppercase tracking-wider">
           {kind === 'service'
             ? (language === 'en' ? 'Manage Service' : 'إدارة الخدمة')
             : (language === 'en' ? 'Manage Business' : 'إدارة النشاط التجاري')}
@@ -1077,11 +1077,11 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
       {!myBusiness || isManageForm ? (
         !registrationType && !isManageForm ? (
           <div className="space-y-4 animate-fade-in-up" id="portal-registration-selection">
-            <div className="pb-1 border-b border-[#D7E0EA]">
+            <div className="pb-1 border-b border-[#2B231D]">
               <h2 className="text-xl font-extrabold text-[#FFFFFF]">
                 Choose Registration Type
               </h2>
-              <p className="text-[10px] text-gray-500 font-medium">
+              <p className="text-[10px] text-[#8E8E8E] font-medium">
                 Select how you want to join the community directory.
               </p>
             </div>
@@ -1210,11 +1210,11 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
             </div>
           )}
           {!isManageForm && (
-            <p className="text-[10px] text-gray-500 px-1">
+            <p className="text-[10px] text-[#8E8E8E] px-1">
               Your progress is saved automatically as a draft if you leave this form.
             </p>
           )}
-          <div className="flex items-center gap-3 pb-1 border-b border-[#D7E0EA]">
+          <div className="flex items-center gap-3 pb-1 border-b border-[#2B231D]">
             {!isManageForm && (
             <button 
               onClick={() => {
@@ -1235,7 +1235,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                   ? (kind === 'service' ? t.manageService : t.manageBusiness)
                   : (registrationType === 'business' ? t.registerBusiness : t.registerService)}
               </h2>
-              <p className="text-[10px] text-gray-500 font-medium">
+              <p className="text-[10px] text-[#8E8E8E] font-medium">
                 {isManageForm
                   ? (language === 'en'
                     ? 'Update contact & location below. Name and photos need admin approval to change.'
@@ -1362,7 +1362,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
             </div>
 
             {isManageForm && (
-              <div className="p-4 rounded-2xl bg-orange-50/80 border border-amber-900/40 space-y-3" id="listing-change-request-panel">
+              <div className="p-4 rounded-2xl bg-[#FF9E47]/10 border border-[#F08C32]/30 space-y-3" id="listing-change-request-panel">
                 <div className="flex items-start gap-2">
                   <Lock className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
                   <div className="min-w-0 flex-1">
@@ -1378,7 +1378,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                 </div>
 
                 {pendingChangeRequest?.status === 'pending' && (
-                  <p className="text-[10px] font-bold text-[#F08C32] bg-orange-50 rounded-xl px-3 py-2 border border-[#2B231D]">
+                  <p className="text-[10px] font-bold text-[#F08C32] bg-[#1E1915] rounded-xl px-3 py-2 border border-[#2B231D]">
                     {language === 'en'
                       ? `Pending admin review${pendingChangeRequest.proposedName ? ` · proposed name: ${pendingChangeRequest.proposedName}` : ''}`
                       : `بانتظار مراجعة المشرف${pendingChangeRequest.proposedName ? ` · الاسم المقترح: ${pendingChangeRequest.proposedName}` : ''}`}
@@ -1410,7 +1410,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                     </button>
 
                     {showChangeRequest && (
-                      <div className="space-y-3 pt-1 border-t border-[#D7E0EA]" id="change-request-form">
+                      <div className="space-y-3 pt-1 border-t border-[#2B231D]" id="change-request-form">
                         <div>
                           <label className="block text-[10px] text-gray-400 mb-1">
                             {language === 'en' ? 'Proposed name (optional)' : 'الاسم المقترح (اختياري)'}
@@ -1666,7 +1666,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
         <div className="space-y-5" id="portal-owner-dashboard">
           
           {/* Header row */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-[#D7E0EA]">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-[#2B231D]">
             <div>
               <span className="text-[10px] text-[#F08C32] font-bold uppercase tracking-wider block">
                 {t.businessPortal} Dashboard
@@ -1697,8 +1697,8 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                 disabled={myBusiness.status === 'suspended'}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold border flex items-center gap-1.5 transition-colors ${
                   myBusiness.status === 'suspended'
-                    ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed'
-                    : 'bg-[#EEF2F6] border-[#D7E0EA] text-gray-300 hover:text-[#F08C32] hover:border-[#F08C32]/40'
+                    ? 'bg-[#1E1915] border-[#2B231D] text-[#8E8E8E] cursor-not-allowed'
+                    : 'bg-[#171310] border-[#2B231D] text-[#CFCFCF] hover:text-[#F08C32] hover:border-[#F08C32]/40'
                 }`}
                 title={myBusiness.status === 'suspended' ? 'Dashboard Locked due to Expired Subscription' : 'Edit profile'}
                 id="btn-dash-edit"
@@ -1800,7 +1800,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                       <Lock className="w-4 h-4 text-red-400" />
                       {t.memberSuspended}
                     </p>
-                    <p className="text-[10px] text-gray-500">
+                    <p className="text-[10px] text-[#8E8E8E]">
                       {language === 'en'
                         ? `Under community regulations, your listing has disappeared from customer search until the monthly update of $${planAmount}/month is settled.`
                         : 'نزولاً عند شروط الدليل، تم إخفاء عملك مؤقتاً من القائمة العامة وسيتم تفعيله تلقائياً للزبائن فور إتمام السداد.'}
@@ -1812,10 +1812,10 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
 
             {/* Analytics — shown when real tracking is wired up */}
             <div className="p-4 rounded-3xl bg-[#171310] border border-[#2B231D] space-y-3" id="dash-metrics">
-              <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest block">
+              <span className="text-[10px] text-[#8E8E8E] font-bold uppercase tracking-widest block">
                 {language === 'en' ? 'Listing Analytics' : 'إحصائيات الإدراج'}
               </span>
-              <p className="text-[11px] text-gray-500 leading-relaxed">
+              <p className="text-[11px] text-[#8E8E8E] leading-relaxed">
                 {language === 'en'
                   ? 'Page views and referral stats will appear here once analytics tracking is enabled.'
                   : 'ستظهر مشاهدات الصفحة وإحصائيات الإحالة هنا عند تفعيل التتبع.'}
@@ -1827,7 +1827,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
           {/* DYNAMIC PORTAL SUBSECTION SWITCHER: EDIT DETAILS FORM */}
           {activePortalTab === 'edit' && (
             <div className="p-5 rounded-3xl bg-[#171310] border border-[#2B231D] space-y-4 animate-scale-up" id="subview-edit-profile">
-              <div className="flex items-center gap-3 pb-2 border-b border-[#D7E0EA]/60">
+              <div className="flex items-center gap-3 pb-2 border-b border-[#2B231D]/60">
                 <button
                   onClick={() => setActivePortalTab('dash')}
                   className="p-1.5 rounded-full bg-[#1E1915] hover:bg-[#201B15] border border-[#2B231D] transition-colors"
@@ -1859,7 +1859,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                     />
                     <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-amber-500/80" />
                   </div>
-                  <p className="mt-1 text-[9px] text-gray-500">
+                  <p className="mt-1 text-[9px] text-[#8E8E8E]">
                     {language === 'en'
                       ? 'Use Manage listing → Request name / photo change for admin approval.'
                       : 'استخدم إدارة الإدراج ← طلب تغيير الاسم/الصورة لموافقة المشرف.'}
@@ -1960,7 +1960,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
           {/* DYNAMIC PORTAL SUBSECTION SWITCHER: SUBSCRIBE / RENEW */}
           {activePortalTab === 'pay' && (
             <div className="p-5 rounded-3xl bg-[#171310] border border-[#2B231D] space-y-4 animate-scale-up" id="subview-renew-payment">
-              <div className="flex items-center gap-3 pb-2 border-b border-[#D7E0EA]/60">
+              <div className="flex items-center gap-3 pb-2 border-b border-[#2B231D]/60">
                 <button
                   onClick={() => setActivePortalTab('dash')}
                   className="p-1.5 rounded-full bg-[#1E1915] hover:bg-[#201B15] border border-[#2B231D] transition-colors"
@@ -1975,7 +1975,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
               </div>
 
               {/* Plan summary card */}
-              <div className="p-4 rounded-2xl bg-gradient-to-br from-[#EEF2F6] to-white border border-[#F08C32]/20 space-y-3">
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-[#1E1915] to-[#171310] border border-[#F08C32]/30 space-y-3">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-2xl bg-[#FF9E47]/10 flex items-center justify-center border border-[#F08C32]/30">
                     {kind === 'service' ? <Zap className="w-5 h-5 text-orange-400" /> : <Briefcase className="w-5 h-5 text-[#F08C32]" />}
@@ -1997,7 +1997,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                 <a href="/legal/subscription.html" target="_blank" rel="noopener noreferrer" className="text-[10px] text-[#F08C32] font-bold hover:underline">
                   Read Subscription Terms
                 </a>
-                <a href="/legal/privacy.html" target="_blank" rel="noopener noreferrer" className="block text-[10px] text-gray-500 hover:text-[#F08C32]">
+                <a href="/legal/privacy.html" target="_blank" rel="noopener noreferrer" className="block text-[10px] text-[#8E8E8E] hover:text-[#F08C32]">
                   Privacy Policy
                 </a>
               </div>
@@ -2048,7 +2048,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                 id="btn-restore-purchases"
                 onClick={handleRestorePurchases}
                 disabled={isRestoringPurchases}
-                className="w-full py-2.5 rounded-xl border border-[#2B231D] text-gray-500 hover:text-gray-300 hover:border-[#D7E0EA] text-[10px] font-semibold transition-colors flex items-center justify-center gap-1.5"
+                className="w-full py-2.5 rounded-xl border border-[#2B231D] text-[#8E8E8E] hover:text-gray-300 hover:border-[#2B231D] text-[10px] font-semibold transition-colors flex items-center justify-center gap-1.5"
               >
                 {isRestoringPurchases ? (
                   <><RefreshCw className="w-3 h-3 animate-spin" /> {language === 'en' ? 'Restoring...' : 'جاري الاستعادة...'}</>
@@ -2069,17 +2069,17 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
             <div className="overflow-x-auto" id="payments-history-table">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="border-b border-[#D7E0EA] text-gray-500 text-[10px] uppercase font-semibold">
+                  <tr className="border-b border-[#2B231D] text-[#8E8E8E] text-[10px] uppercase font-semibold">
                     <th className="py-2">{t.refNo}</th>
                     <th className="py-2">{t.date}</th>
                     <th className="py-2">{t.amount}</th>
                     <th className="py-2">{language === 'en' ? 'Invoice / Action' : 'الفاتورة / إجراء'}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#D7E0EA]/45 text-gray-300">
+                <tbody className="divide-y divide-[#2B231D] text-[#CFCFCF]">
                   {businessPayments.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="py-4 text-center text-gray-500 font-medium">
+                      <td colSpan={4} className="py-4 text-center text-[#8E8E8E] font-medium">
                         {language === 'en' ? 'No membership charges recorded yet.' : 'لا يوجد سجل دفع مسجل لعضويتك بعد.'}
                       </td>
                     </tr>
@@ -2114,13 +2114,13 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                 {/* Close Button */}
                 <button
                   onClick={() => setSelectedReceipt(null)}
-                  className="absolute top-4 right-4 p-1.5 rounded-full text-gray-500 hover:text-[#FFFFFF]"
+                  className="absolute top-4 right-4 p-1.5 rounded-full text-[#8E8E8E] hover:text-[#FFFFFF]"
                 >
                   ✕
                 </button>
 
                 {/* Receipt Header Style */}
-                <div className="text-center space-y-2 border-b border-[#D7E0EA]/60 pb-4 mb-4">
+                <div className="text-center space-y-2 border-b border-[#2B231D]/60 pb-4 mb-4">
                   <div className="w-11 h-11 rounded-2xl bg-[#FF9E47]/10 text-[#F08C32] flex items-center justify-center mx-auto border border-[#3A2E21]/60">
                     <CheckCircle className="w-6 h-6" />
                   </div>
@@ -2134,7 +2134,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
 
                 {/* Invoice Core content explaining how amount is detected & where it goes */}
                 <div className="space-y-3.5 text-xs">
-                  <div className="flex justify-between items-center text-[10px] text-gray-500 pb-1.5 border-b border-[#D7E0EA]/30">
+                  <div className="flex justify-between items-center text-[10px] text-[#8E8E8E] pb-1.5 border-b border-[#2B231D]/30">
                     <span>{language === 'en' ? 'REF NUMBER' : 'رقم المرجع'}</span>
                     <span className="font-mono font-bold text-[#FFFFFF]">{selectedReceipt.refNo}</span>
                   </div>
