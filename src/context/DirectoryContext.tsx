@@ -991,7 +991,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (!trimmedName) return { success: false, error: 'Please enter your full name.' };
       if (!trimmedEmail) return { success: false, error: 'Please enter your email address.' };
       if (!trimmedPhone) return { success: false, error: 'Please enter your phone number.' };
-      return { success: false, error: 'Please enter a password (at least 10 characters).' };
+      return { success: false, error: 'Please enter a password (at least 6 characters).' };
     }
 
     try {

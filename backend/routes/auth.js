@@ -90,8 +90,8 @@ router.post('/register', async (req, res, next) => {
     if (!SELF_REGISTER_ROLES.includes(role)) {
       return res.status(400).json({ error: `Invalid role. Must be one of: ${SELF_REGISTER_ROLES.join(', ')}` });
     }
-    if (password.length < 10 || password.length > MAX_FIELD_LEN) {
-      return res.status(400).json({ error: 'Password must be between 10 and 200 characters.' });
+    if (password.length < 6 || password.length > MAX_FIELD_LEN) {
+      return res.status(400).json({ error: 'Password must be between 6 and 200 characters.' });
     }
 
     const key = trimmedEmail.toLowerCase();
@@ -390,8 +390,8 @@ router.post('/reset-password', async (req, res, next) => {
       if (!newPassword || typeof newPassword !== 'string') {
         return res.status(400).json({ error: 'newPassword is required when changing password.' });
       }
-      if (newPassword.length < 10 || newPassword.length > MAX_FIELD_LEN) {
-        return res.status(400).json({ error: 'Password must be between 10 and 200 characters.' });
+      if (newPassword.length < 6 || newPassword.length > MAX_FIELD_LEN) {
+        return res.status(400).json({ error: 'Password must be between 6 and 200 characters.' });
       }
     }
 
@@ -578,8 +578,8 @@ router.post('/change-password', authenticate, async (req, res, next) => {
     if (typeof currentPassword !== 'string' || typeof newPassword !== 'string') {
       return res.status(400).json({ error: 'Passwords must be strings.' });
     }
-    if (newPassword.length < 10 || newPassword.length > MAX_FIELD_LEN) {
-      return res.status(400).json({ error: 'New password must be 10–200 characters.' });
+    if (newPassword.length < 6 || newPassword.length > MAX_FIELD_LEN) {
+      return res.status(400).json({ error: 'New password must be 6–200 characters.' });
     }
     if (currentPassword === newPassword) {
       return res.status(400).json({ error: 'New password must be different from the current password.' });

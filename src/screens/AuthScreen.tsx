@@ -123,8 +123,8 @@ export const AuthScreen: React.FC = () => {
       setError('All fields are required.');
       return;
     }
-    if (password.length < 10) {
-      setError('Password must be at least 10 characters.');
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.');
       return;
     }
     if (password !== confirmPassword) {
@@ -248,8 +248,8 @@ export const AuthScreen: React.FC = () => {
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.length < 10) {
-      setError('Password must be at least 10 characters.');
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.');
       return;
     }
     if (password !== confirmPassword) {
@@ -566,8 +566,8 @@ export const AuthScreen: React.FC = () => {
                             value={password}
                             onChange={(e) => { setPassword(e.target.value); setError(''); }}
                             required
-                            minLength={10}
-                            placeholder="At least 10 characters"
+                            minLength={6}
+                            placeholder="At least 6 characters"
                             className={fieldClass}
                             autoComplete="new-password"
                           />
@@ -591,7 +591,7 @@ export const AuthScreen: React.FC = () => {
                             value={confirmPassword}
                             onChange={(e) => { setConfirmPassword(e.target.value); setError(''); }}
                             required
-                            minLength={10}
+                            minLength={6}
                             placeholder="Re-enter password"
                             className={fieldClass}
                             autoComplete="new-password"
@@ -805,8 +805,8 @@ export const AuthScreen: React.FC = () => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
-                            minLength={10}
-                            placeholder="At least 10 characters"
+                            minLength={6}
+                            placeholder="At least 6 characters"
                             className={fieldClass}
                             autoComplete="new-password"
                           />
@@ -823,7 +823,7 @@ export const AuthScreen: React.FC = () => {
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             required
-                            minLength={10}
+                            minLength={6}
                             placeholder="Re-enter password"
                             className={fieldClass}
                             autoComplete="new-password"
