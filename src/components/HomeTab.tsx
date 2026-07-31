@@ -51,10 +51,10 @@ import { Business, BusinessStatus } from '../types';
 
 const NAVY = '#110E0B';
 
-/** Network map graphic for navy hero (final mockup). */
+/** Network map graphic for orange hero. */
 const HeroNetworkMap: React.FC = () => (
   <svg
-    className="pointer-events-none absolute inset-0 w-full h-full opacity-40"
+    className="pointer-events-none absolute inset-0 w-full h-full opacity-50"
     viewBox="0 0 390 280"
     fill="none"
     aria-hidden="true"
@@ -63,27 +63,27 @@ const HeroNetworkMap: React.FC = () => (
   >
     <defs>
       <radialGradient id="netGlow" cx="70%" cy="35%" r="50%">
-        <stop offset="0%" stopColor="#FF9E47" stopOpacity="0.45" />
-        <stop offset="100%" stopColor="#0D0906" stopOpacity="0" />
+        <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.22" />
+        <stop offset="100%" stopColor="#F08C32" stopOpacity="0" />
       </radialGradient>
     </defs>
     <rect width="390" height="280" fill="url(#netGlow)" />
-    {/* Connection lines */}
-    <path d="M40 80 L120 60 L200 95 L280 50 L350 90" stroke="#FDBA74" strokeWidth="1" opacity="0.5" />
-    <path d="M60 160 L140 130 L220 170 L300 120 L360 155" stroke="#FDBA74" strokeWidth="1" opacity="0.35" strokeDasharray="4 6" />
-    <path d="M90 220 L170 190 L250 230 L330 200" stroke="#5B8CFF" strokeWidth="1" opacity="0.4" />
-    <path d="M120 60 L140 130 L170 190" stroke="#FDBA74" strokeWidth="0.8" opacity="0.35" />
-    <path d="M200 95 L220 170 L250 230" stroke="#FDBA74" strokeWidth="0.8" opacity="0.3" />
-    <path d="M280 50 L300 120 L330 200" stroke="#FDBA74" strokeWidth="0.8" opacity="0.35" />
-    {/* Nodes */}
+    {/* Connection lines — white */}
+    <path d="M40 80 L120 60 L200 95 L280 50 L350 90" stroke="#FFFFFF" strokeWidth="1" opacity="0.55" />
+    <path d="M60 160 L140 130 L220 170 L300 120 L360 155" stroke="#FFFFFF" strokeWidth="1" opacity="0.4" strokeDasharray="4 6" />
+    <path d="M90 220 L170 190 L250 230 L330 200" stroke="#FFFFFF" strokeWidth="1" opacity="0.45" />
+    <path d="M120 60 L140 130 L170 190" stroke="#FFFFFF" strokeWidth="0.8" opacity="0.4" />
+    <path d="M200 95 L220 170 L250 230" stroke="#FFFFFF" strokeWidth="0.8" opacity="0.35" />
+    <path d="M280 50 L300 120 L330 200" stroke="#FFFFFF" strokeWidth="0.8" opacity="0.4" />
+    {/* Nodes — white */}
     {[
       [40, 80], [120, 60], [200, 95], [280, 50], [350, 90],
       [60, 160], [140, 130], [220, 170], [300, 120], [360, 155],
       [90, 220], [170, 190], [250, 230], [330, 200], [180, 110],
     ].map(([x, y], i) => (
       <g key={i}>
-        <circle cx={x} cy={y} r="3.5" fill={i % 3 === 0 ? '#FFFFFF' : '#FF9E47'} />
-        <circle cx={x} cy={y} r="7" stroke="#FDBA74" strokeWidth="1" opacity="0.35" />
+        <circle cx={x} cy={y} r="3.5" fill="#FFFFFF" opacity={i % 3 === 0 ? 1 : 0.85} />
+        <circle cx={x} cy={y} r="7" stroke="#FFFFFF" strokeWidth="1" opacity="0.35" />
       </g>
     ))}
   </svg>
@@ -409,7 +409,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
       <section
         className="relative overflow-hidden px-4 pt-[max(0.85rem,env(safe-area-inset-top))] pb-5"
         id="home-hero"
-        style={{ background: 'linear-gradient(165deg, #110E0B 0%, #0D0906 45%, #322820 100%)' }}
+        style={{ background: 'linear-gradient(165deg, #FF9E47 0%, #F08C32 48%, #D9771D 100%)' }}
       >
         <HeroNetworkMap />
 
@@ -425,7 +425,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               <p className="text-[9px] font-bold tracking-[0.18em] uppercase text-white mt-0.5">
                 Ahlebait Network
               </p>
-              <p className="text-[8px] font-semibold tracking-[0.16em] uppercase text-[#FDBA74] mt-0.5">
+              <p className="text-[8px] font-semibold tracking-[0.16em] uppercase text-white mt-0.5">
                 Connect · Collaborate · Grow
               </p>
             </div>
@@ -434,7 +434,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             type="button"
             onClick={() => void handleRefreshApp()}
             disabled={isRefreshing}
-            className="p-2.5 rounded-full border border-white/35 text-white hover:bg-[#171310]/10 disabled:opacity-60 flex-shrink-0"
+            className="p-2.5 rounded-full border border-white/50 text-white hover:bg-white/15 disabled:opacity-60 flex-shrink-0"
             aria-label="Refresh"
             id="btn-home-refresh"
           >
@@ -446,17 +446,17 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           Connecting Businesses. Building Community. Creating Opportunities.
         </p>
 
-        <div className="relative flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] font-semibold text-white/95">
+        <div className="relative flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] font-semibold text-white">
           <span className="inline-flex items-center gap-1.5">
-            <Building2 className="w-3.5 h-3.5 text-[#FDBA74]" />
+            <Building2 className="w-3.5 h-3.5 text-white" />
             {Math.max(liveListings.length, 1).toLocaleString()}+ Businesses
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <MapPin className="w-3.5 h-3.5 text-[#FDBA74]" />
+            <MapPin className="w-3.5 h-3.5 text-white" />
             {Math.max(cityCount, 1)}+ Cities
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <Users className="w-3.5 h-3.5 text-[#FDBA74]" />
+            <Users className="w-3.5 h-3.5 text-white" />
             12,000+ Members
           </span>
         </div>
