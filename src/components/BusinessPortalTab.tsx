@@ -624,7 +624,8 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
           description: regDesc,
           imageUrl: defaultLogo,
           coverUrl: defaultCover,
-          gallery,
+          // Extra shots only — logo/cover already sent; keeps payload under API limits
+          gallery: gallery.filter((url) => url && url !== defaultLogo && url !== defaultCover).slice(0, 3),
           address: regAddress,
           area: regZipCode,
           city: regCity,

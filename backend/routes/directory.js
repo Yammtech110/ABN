@@ -30,6 +30,28 @@ const TRIAL_DAYS = 60;
 
 const mapProfile = (row) => ({ ...row });
 
+const supabaseErrorText = (error) =>
+  String(error?.message || error?.details || error?.hint || error?.code || '');
+
+const isMissingGalleryColumn = (error) => {
+  const text = supabaseErrorText(error);
+  const code = String(error?.code || '');
+  return (
+    code === 'PGRST204' ||
+    /gallery_urls/i.test(text) ||
+    (/Could not find/i.test(text) && /column/i.test(text)) ||
+    /schema cache/i.test(text)
+  );
+};
+
+const isPayloadTooLarge = (error) => {
+  const text = supabaseErrorText(error).toLowerCase();
+  return (
+    /too large|payload|request entity|value too long|string_data_right_truncation|530|413/i.test(text) ||
+    String(error?.code || '') === '54000'
+  );
+};
+
 const isPublicListing = (profile) =>
   Boolean(
     profile &&
@@ -301,15 +323,24 @@ router.post('/', authenticate, requireRole('customer', 'business', 'service_prov
     if (!isSupabaseStorage()) {
       directoryProfiles.push(savedProfile);
     } else {
-      let rowPayload = mapProfileToDb(savedProfile, { email: req.user.email });
+      // Prefer logo+cover; gallery is optional (column may be missing / payload may be huge)
+      const galleryExtras = normalizeIncomingGallery(gallery)
+        .filter((url) => url && url !== savedProfile.imageUrl && url !== savedProfile.coverUrl)
+        .slice(0, 3);
+      savedProfile.gallery = galleryExtras;
+
+      let rowPayload = mapProfileToDb(savedProfile, {
+        email: req.user.email,
+        includeGallery: galleryExtras.length > 0,
+      });
       let { data, error } = await supabaseAdmin
         .from('profiles_directory')
         .insert(rowPayload)
         .select('*')
         .single();
 
-      // Older DBs may lack gallery_urls — still save logo/cover
-      if (error && /gallery_urls/i.test(String(error.message || error.details || ''))) {
+      if (error && (isMissingGalleryColumn(error) || isPayloadTooLarge(error)) && rowPayload.gallery_urls) {
+        console.warn('[directory] insert retry without gallery_urls:', supabaseErrorText(error));
         delete rowPayload.gallery_urls;
         savedProfile.gallery = [];
         ({ data, error } = await supabaseAdmin
@@ -319,7 +350,13 @@ router.post('/', authenticate, requireRole('customer', 'business', 'service_prov
           .single());
       }
 
-      if (error) return res.status(500).json({ error: 'Failed to save listing. Please try again.' });
+      if (error) {
+        console.error('[directory] insert failed:', supabaseErrorText(error), error);
+        return res.status(500).json({
+          error: 'Failed to save listing. Please try again.',
+          detail: process.env.NODE_ENV === 'production' ? undefined : supabaseErrorText(error),
+        });
+      }
       savedProfile = mapProfile(mapProfileFromDb(data));
     }
 
@@ -425,14 +462,36 @@ router.put('/:id', authenticate, async (req, res, next) => {
         });
       }
     } else {
-      const { data, error } = await supabaseAdmin
+      // Never accidentally write gallery_urls on routine updates (approve/suspend/etc.)
+      // unless admin explicitly sent a gallery payload.
+      const dbPatch = mapProfileToDb(updated, {
+        includeGallery: gallery !== undefined && isAdmin,
+      });
+      let { data, error } = await supabaseAdmin
         .from('profiles_directory')
-        .update(mapProfileToDb(updated))
+        .update(dbPatch)
         .eq('id', req.params.id)
         .select('*')
         .single();
 
-      if (error) return res.status(500).json({ error: 'Failed to save listing. Please try again.' });
+      if (error && (isMissingGalleryColumn(error) || isPayloadTooLarge(error)) && dbPatch.gallery_urls) {
+        console.warn('[directory] update retry without gallery_urls:', supabaseErrorText(error));
+        delete dbPatch.gallery_urls;
+        ({ data, error } = await supabaseAdmin
+          .from('profiles_directory')
+          .update(dbPatch)
+          .eq('id', req.params.id)
+          .select('*')
+          .single());
+      }
+
+      if (error) {
+        console.error('[directory] update failed:', supabaseErrorText(error), error);
+        return res.status(500).json({
+          error: 'Failed to save listing. Please try again.',
+          detail: process.env.NODE_ENV === 'production' ? undefined : supabaseErrorText(error),
+        });
+      }
       updated = mapProfile(mapProfileFromDb(data));
 
       if (logoChanged || businessName !== undefined) {

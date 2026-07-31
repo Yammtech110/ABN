@@ -36,7 +36,7 @@ const mapProfileFromDb = (row) => ({
 const listingTypeToDbRole = (listingType) =>
   listingType === 'service' ? 'service_provider' : 'business_owner';
 
-const mapProfileToDb = (api, { email } = {}) => {
+const mapProfileToDb = (api, { email, includeGallery = false } = {}) => {
   const row = {};
   if (email !== undefined) row.email = email;
   if (api.role !== undefined) {
@@ -51,7 +51,8 @@ const mapProfileToDb = (api, { email } = {}) => {
   if (api.subscriptionTier !== undefined) row.subscription_tier = api.subscriptionTier;
   if (api.imageUrl !== undefined) row.image_url = api.imageUrl;
   if (api.coverUrl !== undefined) row.cover_url = api.coverUrl;
-  if (api.gallery !== undefined) {
+  // Only write gallery_urls when explicitly requested (column may be missing on older DBs)
+  if (includeGallery && api.gallery !== undefined) {
     row.gallery_urls = Array.isArray(api.gallery)
       ? api.gallery.filter((u) => typeof u === 'string' && u.trim()).slice(0, 5)
       : [];
