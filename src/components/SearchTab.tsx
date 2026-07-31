@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useDirectory } from '../context/DirectoryContext';
 import { TRANSLATIONS } from '../data/translations';
 import { Search, MapPin, ArrowLeft, CheckCircle, Star, ChevronDown } from 'lucide-react';
@@ -34,7 +35,7 @@ type SelectOption = { value: string; label: string };
 const listingState = (biz: Business): string =>
   String(biz.state || stateCodeForCity(biz.city) || '').toUpperCase();
 
-/** Searchable dropdown for long state/city lists. */
+/** Searchable dropdown for long state/city lists (portaled so it never overlaps under UI). */
 const SearchableSelect: React.FC<{
   id: string;
   value: string;
@@ -52,7 +53,10 @@ const SearchableSelect: React.FC<{
 }) => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [menuBox, setMenuBox] = useState<{ top: number; left: number; width: number } | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const selectedLabel = options.find((o) => o.value === value)?.label || placeholder;
@@ -67,85 +71,139 @@ const SearchableSelect: React.FC<{
     );
   }, [options, query]);
 
+  const placeMenu = useCallback(() => {
+    const btn = btnRef.current;
+    if (!btn) return;
+    const r = btn.getBoundingClientRect();
+    const width = Math.max(r.width, 180);
+    const left = Math.min(r.left, window.innerWidth - width - 8);
+    setMenuBox({
+      top: r.bottom + 6,
+      left: Math.max(8, left),
+      width,
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!open) {
+      setMenuBox(null);
+      return;
+    }
+    placeMenu();
+    const onReposition = () => placeMenu();
+    window.addEventListener('resize', onReposition);
+    window.addEventListener('scroll', onReposition, true);
+    return () => {
+      window.removeEventListener('resize', onReposition);
+      window.removeEventListener('scroll', onReposition, true);
+    };
+  }, [open, placeMenu]);
+
   useEffect(() => {
     if (!open) return;
     const onDoc = (e: MouseEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) {
-        setOpen(false);
-        setQuery('');
-      }
+      const t = e.target as Node;
+      if (rootRef.current?.contains(t) || menuRef.current?.contains(t)) return;
+      setOpen(false);
+      setQuery('');
     };
     document.addEventListener('mousedown', onDoc);
     return () => document.removeEventListener('mousedown', onDoc);
   }, [open]);
 
   useEffect(() => {
-    if (open) {
-      setTimeout(() => inputRef.current?.focus(), 0);
-    }
+    if (open) setTimeout(() => inputRef.current?.focus(), 0);
   }, [open]);
+
+  const menu =
+    open && menuBox
+      ? createPortal(
+          <div
+            ref={menuRef}
+            id={`${id}-menu`}
+            className="fixed rounded-xl border border-[#3A3029] overflow-hidden"
+            style={{
+              top: menuBox.top,
+              left: menuBox.left,
+              width: menuBox.width,
+              zIndex: 9999,
+              background: '#0D0906',
+              boxShadow: '0 18px 48px rgba(0,0,0,0.75)',
+            }}
+          >
+            <div className="p-2 border-b border-[#2B231D]" style={{ background: '#0D0906' }}>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-[#8E8E8E]" />
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={searchPlaceholder}
+                  className="w-full pl-8 pr-2 py-2 rounded-lg border border-[#2B231D] text-xs text-white placeholder:text-[#8E8E8E] outline-none focus:border-[#F08C32]"
+                  style={{ background: '#171310' }}
+                />
+              </div>
+            </div>
+            <ul
+              className="max-h-52 overflow-y-auto py-1"
+              role="listbox"
+              style={{ background: '#0D0906' }}
+            >
+              {filtered.length === 0 ? (
+                <li className="px-3 py-2.5 text-[11px] text-[#8E8E8E]">No matches</li>
+              ) : (
+                filtered.map((opt) => {
+                  const active = opt.value === value;
+                  return (
+                    <li key={opt.value}>
+                      <button
+                        type="button"
+                        role="option"
+                        aria-selected={active}
+                        className={`w-full text-left px-3 py-2.5 text-xs ${
+                          active
+                            ? 'text-[#F08C32] font-bold'
+                            : 'text-[#FFFFFF]'
+                        }`}
+                        style={{
+                          background: active ? 'rgba(255,158,71,0.18)' : '#0D0906',
+                        }}
+                        onClick={() => {
+                          onChange(opt.value);
+                          setOpen(false);
+                          setQuery('');
+                        }}
+                      >
+                        {opt.label}
+                      </button>
+                    </li>
+                  );
+                })
+              )}
+            </ul>
+          </div>,
+          document.body,
+        )
+      : null;
 
   return (
     <div className="relative" ref={rootRef} id={id}>
       <button
+        ref={btnRef}
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={`w-full flex items-center justify-between gap-1 px-3 py-2.5 rounded-xl bg-[#171310] border text-xs text-left outline-none ${
+        className={`w-full flex items-center justify-between gap-1 px-3 py-2.5 rounded-xl border text-xs text-left outline-none ${
           open ? 'border-[#F08C32]' : 'border-[#2B231D]'
         }`}
+        style={{ background: '#171310' }}
         aria-haspopup="listbox"
         aria-expanded={open}
       >
         <span className="truncate text-[#FFFFFF]">{selectedLabel}</span>
         <ChevronDown className={`w-3.5 h-3.5 text-[#8E8E8E] flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
-      {open && (
-        <div className="absolute z-40 left-0 right-0 mt-1 rounded-xl border border-[#2B231D] bg-[#171310] shadow-[0_12px_40px_rgba(0,0,0,0.55)] overflow-hidden">
-          <div className="p-2 border-b border-[#2B231D]">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-[#8E8E8E]" />
-              <input
-                ref={inputRef}
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={searchPlaceholder}
-                className="w-full pl-8 pr-2 py-2 rounded-lg bg-[#1E1915] border border-[#2B231D] text-xs text-white placeholder:text-[#8E8E8E] outline-none focus:border-[#F08C32]"
-              />
-            </div>
-          </div>
-          <ul className="max-h-48 overflow-y-auto py-1" role="listbox">
-            {filtered.length === 0 ? (
-              <li className="px-3 py-2.5 text-[11px] text-[#8E8E8E]">No matches</li>
-            ) : (
-              filtered.map((opt) => {
-                const active = opt.value === value;
-                return (
-                  <li key={opt.value}>
-                    <button
-                      type="button"
-                      role="option"
-                      aria-selected={active}
-                      className={`w-full text-left px-3 py-2 text-xs ${
-                        active
-                          ? 'bg-[#FF9E47]/15 text-[#F08C32] font-bold'
-                          : 'text-[#FFFFFF] hover:bg-[#1E1915]'
-                      }`}
-                      onClick={() => {
-                        onChange(opt.value);
-                        setOpen(false);
-                        setQuery('');
-                      }}
-                    >
-                      {opt.label}
-                    </button>
-                  </li>
-                );
-              })
-            )}
-          </ul>
-        </div>
-      )}
+      {menu}
     </div>
   );
 };
