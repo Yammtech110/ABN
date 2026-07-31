@@ -355,9 +355,9 @@ export const AuthScreen: React.FC = () => {
               className="flex items-center justify-center"
             >
               <img
-                src="/abn-logo-login.png"
+                src="/abn-logo-login-clear.png"
                 alt="ABN — Ahlebait Network"
-                className="h-[168px] w-auto max-w-[min(88vw,300px)] object-contain object-center bg-transparent"
+                className="h-[200px] w-auto max-w-[min(92vw,340px)] object-contain object-center scale-110"
                 draggable={false}
               />
             </motion.div>
