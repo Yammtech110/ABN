@@ -4,6 +4,7 @@ import {
   businessLogoUrl,
   listingPlaceholderDataUrl,
 } from '../utils/listingImages';
+import { absoluteMediaUrl } from '../utils/loadListingMedia';
 
 type BusinessLike = {
   id: string;
@@ -29,15 +30,15 @@ export const BusinessThumbnail: React.FC<BusinessThumbnailProps> = ({
   alt,
   eager = false,
 }) => {
-  const logo = businessLogoUrl(business);
-  const cover = businessCoverUrl(business);
+  const logo = absoluteMediaUrl(businessLogoUrl(business));
+  const cover = absoluteMediaUrl(businessCoverUrl(business));
   const placeholder = listingPlaceholderDataUrl(business.name || business.id || 'BN');
   const [src, setSrc] = useState(logo || placeholder);
   const [stage, setStage] = useState(0);
 
   useEffect(() => {
     setStage(0);
-    setSrc(businessLogoUrl(business) || listingPlaceholderDataUrl(business.name || business.id || 'BN'));
+    setSrc(absoluteMediaUrl(businessLogoUrl(business)) || listingPlaceholderDataUrl(business.name || business.id || 'BN'));
   }, [business.id, business.name, business.logoUrl, business.coverUrl]);
 
   const handleError = () => {
@@ -48,7 +49,7 @@ export const BusinessThumbnail: React.FC<BusinessThumbnailProps> = ({
     }
     if (stage === 1) {
       setStage(2);
-      const retryLogo = businessLogoUrl(business);
+      const retryLogo = absoluteMediaUrl(businessLogoUrl(business));
       const retry = retryLogo.includes('?') ? `${retryLogo}&retry=1` : `${retryLogo}?retry=1`;
       setSrc(retry);
       return;

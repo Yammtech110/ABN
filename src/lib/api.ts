@@ -21,6 +21,12 @@ function resolveApiBaseUrl(): string {
     return normalizeBaseUrl(fromEnv);
   }
 
+  // Static site (abn-1) has no /api — fall back to proxy/API host when set at build time
+  const proxyTarget = import.meta.env.VITE_API_PROXY_TARGET as string | undefined;
+  if (proxyTarget?.trim() && (import.meta.env.PROD || Capacitor.isNativePlatform())) {
+    return normalizeBaseUrl(proxyTarget);
+  }
+
   if (!import.meta.env.PROD && !Capacitor.isNativePlatform()) {
     return '';
   }

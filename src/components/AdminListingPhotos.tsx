@@ -6,6 +6,8 @@ import {
   businessPhotoUrls,
   listingPlaceholderDataUrl,
 } from '../utils/listingImages';
+import { absoluteMediaUrl, fetchMediaObjectUrl } from '../utils/loadListingMedia';
+import { useDirectory } from '../context/DirectoryContext';
 import { Business } from '../types';
 
 type AdminListingPhotosProps = {
@@ -39,7 +41,6 @@ const PhotoTile: React.FC<PhotoTileProps> = ({ url, fallback, label, onExpand })
         alt={label}
         loading="eager"
         decoding="async"
-        referrerPolicy="no-referrer"
         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
         onError={() => setSrc(fallback)}
       />
@@ -54,22 +55,70 @@ const PhotoTile: React.FC<PhotoTileProps> = ({ url, fallback, label, onExpand })
 };
 
 export const AdminListingPhotos: React.FC<AdminListingPhotosProps> = ({ business, language }) => {
-  const [expanded, setExpanded] = useState(false);
+  const { apiToken } = useDirectory();
+  const [expanded, setExpanded] = useState(true);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [resolvedPhotos, setResolvedPhotos] = useState<string[]>([]);
 
   const fallbackLogo = listingPlaceholderDataUrl(business.name || business.id);
   const fallbackCover = listingPlaceholderDataUrl(business.name || business.id, { wide: true });
-  const logoUrl = businessLogoUrl(business);
-  const coverUrl = businessCoverUrl(business);
-  const [coverSrc, setCoverSrc] = useState(coverUrl || fallbackCover);
-  const [logoSrc, setLogoSrc] = useState(logoUrl || fallbackLogo);
+
+  const rawPhotos = useMemo(() => {
+    const urls = businessPhotoUrls(business).map(absoluteMediaUrl).filter(Boolean);
+    if (urls.length > 0) return urls;
+    const logo = absoluteMediaUrl(businessLogoUrl(business));
+    const cover = absoluteMediaUrl(businessCoverUrl(business));
+    return [...new Set([logo, cover].filter(Boolean))];
+  }, [business.id, business.name, business.logoUrl, business.coverUrl, business.gallery]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const objectUrls: string[] = [];
+
+    (async () => {
+      const loaded = await Promise.all(
+        rawPhotos.map(async (url) => {
+          const next = await fetchMediaObjectUrl(url, apiToken);
+          if (next.startsWith('blob:')) objectUrls.push(next);
+          return next || url;
+        }),
+      );
+      if (cancelled) {
+        objectUrls.forEach((u) => {
+          try {
+            URL.revokeObjectURL(u);
+          } catch {
+            /* ignore */
+          }
+        });
+        return;
+      }
+      setResolvedPhotos(loaded);
+    })();
+
+    return () => {
+      cancelled = true;
+      objectUrls.forEach((u) => {
+        try {
+          URL.revokeObjectURL(u);
+        } catch {
+          /* ignore */
+        }
+      });
+    };
+  }, [rawPhotos, apiToken, business.id]);
+
+  const photos = resolvedPhotos.length > 0 ? resolvedPhotos : rawPhotos;
+  const logoUrl = photos[0] || fallbackLogo;
+  const coverUrl = photos[1] || photos[0] || fallbackCover;
+  const [coverSrc, setCoverSrc] = useState(coverUrl);
+  const [logoSrc, setLogoSrc] = useState(logoUrl);
 
   useEffect(() => {
     setCoverSrc(coverUrl || fallbackCover);
     setLogoSrc(logoUrl || fallbackLogo);
   }, [coverUrl, logoUrl, fallbackCover, fallbackLogo]);
 
-  const photos = useMemo(() => businessPhotoUrls(business), [business]);
   const lightboxSrc =
     lightboxIndex !== null ? photos[lightboxIndex] || fallbackLogo : fallbackLogo;
 
@@ -81,7 +130,6 @@ export const AdminListingPhotos: React.FC<AdminListingPhotosProps> = ({ business
           alt={`${business.name} cover`}
           loading="eager"
           decoding="async"
-          referrerPolicy="no-referrer"
           className="w-full h-full object-cover"
           onError={() => setCoverSrc(fallbackCover)}
         />
@@ -93,7 +141,6 @@ export const AdminListingPhotos: React.FC<AdminListingPhotosProps> = ({ business
               alt={`${business.name} logo`}
               loading="eager"
               decoding="async"
-              referrerPolicy="no-referrer"
               className="w-full h-full object-cover"
               onError={() => setLogoSrc(fallbackLogo)}
             />
@@ -122,8 +169,8 @@ export const AdminListingPhotos: React.FC<AdminListingPhotosProps> = ({ business
       {expanded && (
         <div className="grid grid-cols-2 gap-2">
           {photos.map((url, i) => {
-            const isLogo = url === logoUrl;
-            const isCover = url === coverUrl && !isLogo;
+            const isLogo = i === 0;
+            const isCover = i === 1;
             const label = isLogo
               ? language === 'en'
                 ? 'Logo'
@@ -166,7 +213,6 @@ export const AdminListingPhotos: React.FC<AdminListingPhotosProps> = ({ business
           <img
             src={lightboxSrc}
             alt={business.name}
-            referrerPolicy="no-referrer"
             className="max-w-full max-h-[85vh] rounded-xl object-contain"
             onClick={(e) => e.stopPropagation()}
             onError={(e) => {
