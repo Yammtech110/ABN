@@ -273,9 +273,11 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // ── Persisted preferences ────────────────────────────────────────────────
   const language = 'en' as const;
   const [theme, setThemeState] = useState<'light' | 'dark'>(() => {
+    // Brand palette is warm charcoal + burnt orange — prefer dark canvas.
     const saved = safeGetItem('shia_dir_theme');
-    if (saved === 'light' || saved === 'dark') return saved;
-    // Warm charcoal + burnt orange is the brand look
+    if (saved === 'light') {
+      safeSetItem('shia_dir_theme', 'dark');
+    }
     return 'dark';
   });
 
