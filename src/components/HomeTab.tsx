@@ -431,19 +431,8 @@ export const HomeTab: React.FC<HomeTabProps> = ({
 
         <div className="relative flex items-start justify-between gap-3 mb-6">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-[52px] h-[52px] rounded-full bg-transparent flex items-center justify-center flex-shrink-0 overflow-hidden">
-              <AbnLogo size="sm" className="h-11 max-w-[44px] bg-transparent" />
-            </div>
             <div className="min-w-0">
-              <h1 className="leading-none">
-                <span className="text-[32px] font-black tracking-tight text-[#F08C32]">ABN</span>
-              </h1>
-              <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-white mt-0.5">
-                Ahlebait Network
-              </p>
-              <p className="text-[8px] font-semibold tracking-[0.18em] uppercase text-[#F08C32] mt-1">
-                Connect · Collaborate · Grow
-              </p>
+              <AbnLogo size="lg" className="h-14 max-w-[160px] bg-transparent" />
             </div>
           </div>
           <button

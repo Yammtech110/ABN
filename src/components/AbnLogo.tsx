@@ -19,7 +19,7 @@ interface AbnLogoProps {
   tone?: 'light' | 'dark';
 }
 
-/** Official ABN handshake logo (public/abn-logo.png), tinted to brand orange */
+/** Official ABN full logo (public/abn-logo-full.png) */
 export const AbnLogo: React.FC<AbnLogoProps> = ({
   size = 'md',
   className = '',
@@ -27,10 +27,9 @@ export const AbnLogo: React.FC<AbnLogoProps> = ({
   tone: _tone = 'light',
 }) => (
   <img
-    src="/abn-logo.png"
+    src="/abn-logo-full.png"
     alt="ABN — Ahlebait Network"
     className={`object-contain object-center ${SIZE_CLASSES[size]} ${className}`.trim()}
-    style={{ filter: 'hue-rotate(155deg) saturate(1.35) brightness(1.12)' }}
     draggable={false}
   />
 );
