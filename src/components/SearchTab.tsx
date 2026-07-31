@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useDirectory } from '../context/DirectoryContext';
 import { TRANSLATIONS } from '../data/translations';
-import { Search, MapPin, ArrowLeft, CheckCircle, Map, List, Star } from 'lucide-react';
+import { Search, MapPin, ArrowLeft, CheckCircle, Star } from 'lucide-react';
 import { Business } from '../types';
 import { textEn } from '../utils/englishOnly';
 import { isLiveDirectoryListing } from '../utils/listingAccess';
@@ -10,11 +10,6 @@ import { BusinessThumbnail } from './BusinessThumbnail';
 import { US_STATES } from '../data/usStates';
 import { allUsCities, citiesForState, stateCodeForCity } from '../data/usCitiesByState';
 import { isBusinessOpenNow } from '../utils/openNow';
-import {
-  buildBusinessMapQuery,
-  googleMapsEmbedUrl,
-  openBusinessInMaps,
-} from '../utils/maps';
 
 interface SearchTabProps {
   initialQuery?: string;
@@ -69,8 +64,6 @@ export const SearchTab: React.FC<SearchTabProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [openFilter, setOpenFilter] = useState<OpenFilter>('all');
   const [minRating, setMinRating] = useState(0);
-  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
-  const [mapFocusId, setMapFocusId] = useState<string | null>(null);
 
   const CITIES = useMemo(() => {
     const fromListings = businesses
@@ -180,20 +173,6 @@ export const SearchTab: React.FC<SearchTabProps> = ({
     categories,
   ]);
 
-  const mapQuery = useMemo(() => {
-    if (mapFocusId) {
-      const focused = filteredBusinesses.find((b) => b.id === mapFocusId);
-      if (focused) return buildBusinessMapQuery(focused);
-    }
-    if (selectedCity !== 'All') return selectedCity;
-    if (selectedState !== 'All') {
-      const name = US_STATES.find((s) => s.code === selectedState)?.name;
-      return name || selectedState;
-    }
-    if (filteredBusinesses[0]) return buildBusinessMapQuery(filteredBusinesses[0]);
-    return 'United States';
-  }, [mapFocusId, filteredBusinesses, selectedCity, selectedState]);
-
   const hasActiveFilters =
     searchQuery ||
     selectedState !== 'All' ||
@@ -215,24 +194,6 @@ export const SearchTab: React.FC<SearchTabProps> = ({
         <h2 className="text-xl font-extrabold text-[#FFFFFF] flex-1" id="search-header-title">
           {language === 'en' ? 'Find a business' : 'ابحث عن نشاط تجاري'}
         </h2>
-        <div className="flex rounded-xl border border-[#2B231D] overflow-hidden" id="search-view-toggle">
-          <button
-            type="button"
-            onClick={() => setViewMode('list')}
-            className={`px-2.5 py-1.5 ${viewMode === 'list' ? 'bg-[#FF9E47] text-white' : 'bg-[#1E1915] text-gray-400'}`}
-            aria-label="List view"
-          >
-            <List className="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setViewMode('map')}
-            className={`px-2.5 py-1.5 ${viewMode === 'map' ? 'bg-[#FF9E47] text-white' : 'bg-[#1E1915] text-gray-400'}`}
-            aria-label="Map view"
-          >
-            <Map className="w-4 h-4" />
-          </button>
-        </div>
       </div>
 
       <div className="relative animate-fade-in-up" style={{ animationDelay: '0.05s' }} id="search-input-wrapper">
@@ -257,7 +218,6 @@ export const SearchTab: React.FC<SearchTabProps> = ({
           onChange={(e) => {
             setSelectedState(e.target.value);
             setSelectedCity('All');
-            setMapFocusId(null);
           }}
           className="w-full px-3 py-2.5 rounded-xl bg-[#171310] border border-[#2B231D] text-xs text-[#FFFFFF] outline-none focus:border-[#F08C32]"
           id="search-state-select"
@@ -273,7 +233,6 @@ export const SearchTab: React.FC<SearchTabProps> = ({
           value={selectedCity}
           onChange={(e) => {
             setSelectedCity(e.target.value);
-            setMapFocusId(null);
           }}
           className="w-full px-3 py-2.5 rounded-xl bg-[#171310] border border-[#2B231D] text-xs text-[#FFFFFF] outline-none focus:border-[#F08C32]"
           id="search-city-select"
@@ -354,24 +313,6 @@ export const SearchTab: React.FC<SearchTabProps> = ({
         )}
       </div>
 
-      {viewMode === 'map' && (
-        <div className="space-y-3 animate-fade-in-up" id="search-map-panel">
-          <div className="rounded-2xl overflow-hidden border border-[#2B231D] bg-[#1E1915] aspect-[4/3] relative">
-            <iframe
-              title="ABN listings map"
-              src={googleMapsEmbedUrl(mapQuery)}
-              className="absolute inset-0 w-full h-full border-0"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            />
-          </div>
-          <p className="text-[10px] text-gray-500 px-1">
-            Map centered on {selectedCity !== 'All' ? selectedCity : selectedState !== 'All' ? selectedState : 'your results'}.
-            Tap a listing below to focus the map or open details.
-          </p>
-        </div>
-      )}
-
       {isSearching ? (
         <SearchSkeleton />
       ) : (
@@ -383,19 +324,11 @@ export const SearchTab: React.FC<SearchTabProps> = ({
           ) : (
             filteredBusinesses.map((biz) => {
               const isOpen = isBusinessOpenNow(biz.workingHours.en);
-              const focused = mapFocusId === biz.id;
               return (
                 <div
                   key={biz.id}
-                  onClick={() => {
-                    if (viewMode === 'map') {
-                      setMapFocusId(biz.id);
-                    }
-                    onSelectBusiness(biz);
-                  }}
-                  className={`flex items-center gap-3.5 p-3 rounded-2xl bg-[#171310] border transition-all cursor-pointer animate-fade-in-up card-hover ${
-                    focused ? 'border-[#F08C32]' : 'border-[#2B231D] hover:border-[#F08C32]/40'
-                  }`}
+                  onClick={() => onSelectBusiness(biz)}
+                  className="flex items-center gap-3.5 p-3 rounded-2xl bg-[#171310] border border-[#2B231D] hover:border-[#F08C32]/40 transition-all cursor-pointer animate-fade-in-up card-hover"
                   id={`search-item-${biz.id}`}
                 >
                   <div className="w-14 h-14 rounded-xl overflow-hidden bg-stone-900 border border-[#2B231D] flex-shrink-0">
@@ -415,18 +348,6 @@ export const SearchTab: React.FC<SearchTabProps> = ({
                         {listingState(biz) ? `, ${listingState(biz)}` : ''}
                       </span>
                     </div>
-                    {viewMode === 'map' && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openBusinessInMaps(buildBusinessMapQuery(biz));
-                        }}
-                        className="mt-1.5 text-[9px] font-bold text-[#F08C32] hover:underline"
-                      >
-                        Open in Maps
-                      </button>
-                    )}
                   </div>
                   <div className="text-right flex flex-col items-end gap-1 flex-shrink-0">
                     {biz.isVerified && (
