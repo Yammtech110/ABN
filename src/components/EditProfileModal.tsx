@@ -246,14 +246,14 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
         <button
           type="button"
           onClick={onClose}
-          className="p-2 rounded-full bg-[#EEF2F6] hover:bg-slate-100 border border-[#D7E0EA] transition-colors"
+          className="p-2 rounded-full bg-[#1E1915] hover:bg-[#201B15] border border-[#2B231D] transition-colors"
           aria-label="Back"
           id="btn-edit-profile-back"
         >
           <ArrowLeft className="w-4 h-4 text-[#F08C32]" />
         </button>
         <div>
-          <h2 className="text-sm font-extrabold text-[#7C2D12] flex items-center gap-2">
+          <h2 className="text-sm font-extrabold text-[#FFFFFF] flex items-center gap-2">
             {headerIcon}
             {t.editProfile}
           </h2>
@@ -286,7 +286,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
               type="text"
               value={bizName}
               onChange={(e) => setBizName(e.target.value)}
-              className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#F08C32] text-xs text-[#7C2D12] outline-none"
+              className="w-full p-3 rounded-xl bg-[#1E1915] border border-[#2B231D] focus:border-[#F08C32] text-xs text-[#FFFFFF] outline-none"
               id="edit-profile-biz-name"
               required
             />
@@ -312,7 +312,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
                 type="text"
                 value={subcatEn}
                 onChange={(e) => setSubcatEn(e.target.value)}
-                className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#F08C32] text-xs text-[#7C2D12] outline-none"
+                className="w-full p-3 rounded-xl bg-[#1E1915] border border-[#2B231D] focus:border-[#F08C32] text-xs text-[#FFFFFF] outline-none"
                 id="edit-profile-subcategory"
                 required
               />
@@ -325,7 +325,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
               rows={3}
               value={descEn}
               onChange={(e) => setDescEn(e.target.value)}
-              className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#F08C32] text-xs text-[#7C2D12] outline-none resize-none"
+              className="w-full p-3 rounded-xl bg-[#1E1915] border border-[#2B231D] focus:border-[#F08C32] text-xs text-[#FFFFFF] outline-none resize-none"
               id="edit-profile-description"
               required
             />
@@ -338,7 +338,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
                 type="tel"
                 value={bizPhone}
                 onChange={(e) => setBizPhone(e.target.value)}
-                className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#F08C32] text-xs text-[#7C2D12] outline-none"
+                className="w-full p-3 rounded-xl bg-[#1E1915] border border-[#2B231D] focus:border-[#F08C32] text-xs text-[#FFFFFF] outline-none"
                 id="edit-profile-phone"
                 required
               />
@@ -349,7 +349,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
                 type="tel"
                 value={whatsapp}
                 onChange={(e) => setWhatsapp(e.target.value)}
-                className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#F08C32] text-xs text-[#7C2D12] outline-none"
+                className="w-full p-3 rounded-xl bg-[#1E1915] border border-[#2B231D] focus:border-[#F08C32] text-xs text-[#FFFFFF] outline-none"
                 id="edit-profile-whatsapp"
                 required
               />
@@ -378,15 +378,15 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
 
           <div>
             <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-wider">{t.email}</label>
-            <input type="email" value={currentUser?.email || ''} readOnly className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-gray-500 outline-none" />
+            <input type="email" value={currentUser?.email || ''} readOnly className="w-full p-3 rounded-xl bg-[#1E1915] border border-[#2B231D] text-xs text-gray-500 outline-none" />
           </div>
           <div>
             <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-wider">{t.name}</label>
-            <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#F08C32] text-xs text-[#7C2D12] outline-none" required />
+            <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full p-3 rounded-xl bg-[#1E1915] border border-[#2B231D] focus:border-[#F08C32] text-xs text-[#FFFFFF] outline-none" required />
           </div>
           <div>
             <label className="block text-[10px] font-bold text-gray-400 mb-1.5 uppercase tracking-wider">{t.phone}</label>
-            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#F08C32] text-xs text-[#7C2D12] outline-none" />
+            <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full p-3 rounded-xl bg-[#1E1915] border border-[#2B231D] focus:border-[#F08C32] text-xs text-[#FFFFFF] outline-none" />
           </div>
 
           <button
@@ -411,7 +411,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
             className="w-full flex items-center justify-between gap-2 text-left"
             id="btn-toggle-change-password"
           >
-            <span className="flex items-center gap-2 text-xs font-extrabold text-[#7C2D12]">
+            <span className="flex items-center gap-2 text-xs font-extrabold text-[#FFFFFF]">
               <KeyRound className="w-4 h-4 text-[#F08C32]" />
               {language === 'en' ? 'Change Password' : 'تغيير كلمة المرور'}
             </span>
@@ -438,7 +438,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
                     type={showCurrentPw ? 'text' : 'password'}
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full p-3 pr-10 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#F08C32] text-xs text-[#7C2D12] outline-none"
+                    className="w-full p-3 pr-10 rounded-xl bg-[#1E1915] border border-[#2B231D] focus:border-[#F08C32] text-xs text-[#FFFFFF] outline-none"
                     id="edit-profile-current-password"
                     autoComplete="current-password"
                   />
@@ -462,7 +462,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
                     type={showNewPw ? 'text' : 'password'}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full p-3 pr-10 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#F08C32] text-xs text-[#7C2D12] outline-none"
+                    className="w-full p-3 pr-10 rounded-xl bg-[#1E1915] border border-[#2B231D] focus:border-[#F08C32] text-xs text-[#FFFFFF] outline-none"
                     id="edit-profile-new-password"
                     autoComplete="new-password"
                     minLength={10}
@@ -486,7 +486,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
                   type="password"
                   value={confirmNewPassword}
                   onChange={(e) => setConfirmNewPassword(e.target.value)}
-                  className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#F08C32] text-xs text-[#7C2D12] outline-none"
+                  className="w-full p-3 rounded-xl bg-[#1E1915] border border-[#2B231D] focus:border-[#F08C32] text-xs text-[#FFFFFF] outline-none"
                   id="edit-profile-confirm-password"
                   autoComplete="new-password"
                   minLength={10}

@@ -537,8 +537,8 @@ router.put('/:id/hiring', authenticate, requireRole('customer', 'business', 'ser
     if (profile.email !== req.user.email && req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden.' });
     }
-    if (profile.listingType !== 'business' && req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Hiring is only available for registered business listings.' });
+    if (profile.listingType !== 'business' && profile.listingType !== 'service' && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Hiring is only available for registered business or service listings.' });
     }
     if (!profile.isVerified && req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Your listing must be approved before enabling hiring.' });

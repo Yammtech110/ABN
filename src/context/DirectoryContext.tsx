@@ -400,8 +400,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
       setJobs(Array.from(byId.values()));
     } catch {
-      setJobs([]);
-      console.warn('[ABN Directory] Could not load jobs from API.');
+      console.warn('[ABN Directory] Could not load jobs from API — keeping previous jobs.');
     }
   }, [apiToken]);
 
@@ -433,6 +432,10 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           rawDirData = dirData;
           listings = dirData.map((row) => mapDirectoryProfile(row, categories));
         }
+      } else {
+        console.warn('[ABN Directory] Directory fetch failed — keeping previous listings.');
+        await refreshJobs(token);
+        return;
       }
 
       // Keep the signed-in user's pending profile visible even when not public yet
@@ -458,10 +461,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
       await refreshJobs(token);
     } catch {
-      setBusinesses([]);
-      setJobs([]);
-      setHiringActiveState({});
-      console.warn('[ABN Directory] Backend not reachable — showing empty directory.');
+      console.warn('[ABN Directory] Backend not reachable — keeping previous directory data.');
     }
   };
 
@@ -747,19 +747,26 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       ? Boolean(currentUser && apiToken)
       : Boolean(currentUser);
 
-  // Refresh directory when authenticated — re-fetch when role changes (e.g. admin login)
+  // Hydrate directory for guests + signed-in users once auth is ready
   const lastHydratedKeyRef = useRef<string | null>(null);
   useEffect(() => {
     if (!authReady) return;
     refreshCategories();
-    if (!isAuthenticated || !currentUser) return;
-    const hydrateKey = `${currentUser.id}:${currentUser.role}:${apiToken ? 'auth' : 'guest'}`;
+    const hydrateKey = isAuthenticated && currentUser
+      ? `${currentUser.id}:${currentUser.role}:${apiToken ? 'auth' : 'guest'}`
+      : 'guest';
     if (lastHydratedKeyRef.current === hydrateKey) return;
     lastHydratedKeyRef.current = hydrateKey;
-    refreshDirectory(currentUser);
-    refreshPayments(apiToken, currentUser.role);
-    refreshFavorites(apiToken);
-    refreshNotifications(apiToken);
+
+    if (isAuthenticated && currentUser) {
+      refreshDirectory(currentUser);
+      refreshPayments(apiToken, currentUser.role);
+      refreshFavorites(apiToken);
+      refreshNotifications(apiToken);
+    } else {
+      void refreshDirectory(null);
+      void refreshJobs(null);
+    }
   }, [authReady, isAuthenticated, currentUser?.id, currentUser?.role]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -1755,25 +1762,37 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const setHiringActive = async (businessId: string, active: boolean): Promise<void> => {
+    const prevHiring = hiringActive[businessId];
+    const prevJobs = jobs;
     setHiringActiveState((p) => ({ ...p, [businessId]: active }));
     setJobs((p) => p.map((j) => (j.businessId === businessId ? { ...j, isActive: active } : j)));
 
-    if (apiToken) {
-      try {
-        const res = await apiFetch(`/api/directory/${businessId}/hiring`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${apiToken}`,
-          },
-          body: JSON.stringify({ isActive: active }),
-        });
-        if (res.ok) {
-          await refreshDirectory();
-        }
-      } catch {
-        console.warn('[ABN Directory] Could not sync hiring toggle to server.');
+    if (!apiToken) {
+      setHiringActiveState((p) => ({ ...p, [businessId]: prevHiring }));
+      setJobs(prevJobs);
+      return;
+    }
+
+    try {
+      const res = await apiFetch(`/api/directory/${businessId}/hiring`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiToken}`,
+        },
+        body: JSON.stringify({ isActive: active }),
+      });
+      if (res.ok) {
+        await refreshDirectory();
+        return;
       }
+      setHiringActiveState((p) => ({ ...p, [businessId]: prevHiring }));
+      setJobs(prevJobs);
+      console.warn('[ABN Directory] Hiring toggle rejected by server.');
+    } catch {
+      setHiringActiveState((p) => ({ ...p, [businessId]: prevHiring }));
+      setJobs(prevJobs);
+      console.warn('[ABN Directory] Could not sync hiring toggle to server.');
     }
   };
 

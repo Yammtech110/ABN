@@ -953,9 +953,9 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
       aria-modal="true"
       aria-labelledby="approval-notice-title"
     >
-      <div className="relative w-full max-w-sm rounded-3xl bg-white border border-[#D7E0EA] p-6 text-center shadow-xl">
+      <div className="relative w-full max-w-sm rounded-3xl bg-[#171310] border border-[#2B231D] p-6 text-center shadow-xl">
         <Clock className="w-10 h-10 text-[#F08C32] mx-auto mb-3" />
-        <h3 id="approval-notice-title" className="text-sm font-black text-[#7C2D12] mb-2">
+        <h3 id="approval-notice-title" className="text-sm font-black text-[#FFFFFF] mb-2">
           Approval Time is 24 hours
         </h3>
         <p className="text-[11px] text-gray-400 leading-relaxed mb-5">
@@ -979,7 +979,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
     <div className="flex items-center gap-3 pb-3 border-b border-[#D7E0EA]">
       <button
         onClick={onBack}
-        className="p-2 rounded-full bg-[#EEF2F6] hover:bg-slate-100 border border-[#D7E0EA] transition-colors"
+        className="p-2 rounded-full bg-[#1E1915] hover:bg-[#201B15] border border-[#2B231D] transition-colors"
         aria-label="Back"
       >
         <ArrowLeft className="w-4 h-4 text-[#F08C32]" />
@@ -991,7 +991,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
             : (language === 'en' ? 'Manage Business' : 'إدارة النشاط التجاري')}
         </span>
         {myBusiness && (
-          <h2 className="text-base font-extrabold text-[#7C2D12] leading-tight flex items-center gap-2">
+          <h2 className="text-base font-extrabold text-[#FFFFFF] leading-tight flex items-center gap-2">
             {kind === 'service'
               ? <Zap className="w-4 h-4 text-orange-400" />
               : <Briefcase className="w-4 h-4 text-[#F08C32]" />}
@@ -1008,7 +1008,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
         {approvalNoticeModal}
       <div className="space-y-6" id="portal-manage-empty">
         {backHeader}
-        <div className="text-center py-12 px-6 rounded-3xl bg-white border border-[#D7E0EA]">
+        <div className="text-center py-12 px-6 rounded-3xl bg-[#171310] border border-[#2B231D]">
           <Briefcase className="w-10 h-10 text-gray-600 mx-auto mb-3" />
           <p className="text-xs text-gray-400">
             {language === 'en'
@@ -1027,9 +1027,9 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
         {approvalNoticeModal}
       <div className="space-y-6" id="portal-manage-pending">
         {backHeader}
-        <div className="text-center py-12 px-6 rounded-3xl bg-white border border-amber-700/30">
+        <div className="text-center py-12 px-6 rounded-3xl bg-[#171310] border border-amber-700/30">
           <Clock className="w-10 h-10 text-amber-400 mx-auto mb-3" />
-          <h3 className="text-sm font-black text-[#7C2D12] mb-2">
+          <h3 className="text-sm font-black text-[#FFFFFF] mb-2">
             {kind === 'service' ? t.manageService : t.manageBusiness}
           </h3>
           <p className="text-xs text-amber-200/80 max-w-sm mx-auto">{t.listingPending}</p>
@@ -1044,7 +1044,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
       <>
         {approvalNoticeModal}
       <div className="space-y-6" id="portal-registration-blocked">
-        <div className="text-center py-12 px-6 rounded-3xl bg-white border border-[#D7E0EA]">
+        <div className="text-center py-12 px-6 rounded-3xl bg-[#171310] border border-[#2B231D]">
           <AlertTriangle className="w-10 h-10 text-[#F08C32] mx-auto mb-3" />
           <p className="text-xs text-gray-300 max-w-sm mx-auto">
             {!canManageListing(myBusiness) ? t.listingPending : t.listingExists}
@@ -1078,7 +1078,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
         !registrationType && !isManageForm ? (
           <div className="space-y-4 animate-fade-in-up" id="portal-registration-selection">
             <div className="pb-1 border-b border-[#D7E0EA]">
-              <h2 className="text-xl font-extrabold text-[#7C2D12]">
+              <h2 className="text-xl font-extrabold text-[#FFFFFF]">
                 Choose Registration Type
               </h2>
               <p className="text-[10px] text-gray-500 font-medium">
@@ -1140,7 +1140,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                   }
                   setRegistrationType('business');
                 }}
-                className="p-5 rounded-3xl bg-white border border-[#D7E0EA] hover:border-[#F08C32] transition-all flex flex-col text-left space-y-2 group shadow-sm active:scale-95"
+                className="p-5 rounded-3xl bg-[#171310] border border-[#2B231D] hover:border-[#F08C32] transition-all flex flex-col text-left space-y-2 group shadow-sm active:scale-95"
               >
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center gap-3 mb-2">
@@ -1148,7 +1148,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                       <Briefcase className="w-5 h-5 text-[#F08C32]" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-black text-[#7C2D12]">{language === 'en' ? 'Register as a Business' : 'سجل كصاحب عمل'}</h3>
+                      <h3 className="text-sm font-black text-[#FFFFFF]">{language === 'en' ? 'Register as a Business' : 'سجل كصاحب عمل'}</h3>
                       <span className="text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-md mt-1 inline-block border border-green-500/20">🎁 FREE 2 Months, then $50/mo</span>
                     </div>
                   </div>
@@ -1182,7 +1182,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                   }
                   setRegistrationType('service');
                 }}
-                className="p-5 rounded-3xl bg-white border border-[#D7E0EA] hover:border-orange-500 transition-all flex flex-col text-left space-y-2 group shadow-sm active:scale-95"
+                className="p-5 rounded-3xl bg-[#171310] border border-[#2B231D] hover:border-orange-500 transition-all flex flex-col text-left space-y-2 group shadow-sm active:scale-95"
               >
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center gap-3 mb-2">
@@ -1190,7 +1190,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                       <UserCheck className="w-5 h-5 text-orange-400" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-black text-[#7C2D12]">{language === 'en' ? 'Register as a Service Provider' : 'سجل كمقدم خدمة'}</h3>
+                      <h3 className="text-sm font-black text-[#FFFFFF]">{language === 'en' ? 'Register as a Service Provider' : 'سجل كمقدم خدمة'}</h3>
                       <span className="text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-md mt-1 inline-block border border-green-500/20">🎁 FREE 2 Months, then $30/mo</span>
                     </div>
                   </div>
@@ -1224,13 +1224,13 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                 setRegPhotoError('');
                 setRegSuccess('');
               }}
-              className="p-1.5 rounded-full bg-[#EEF2F6] hover:bg-slate-100 transition-colors border border-[#D7E0EA]"
+              className="p-1.5 rounded-full bg-[#1E1915] hover:bg-[#201B15] transition-colors border border-[#2B231D]"
             >
               <ArrowRight className="w-4 h-4 text-gray-400 rotate-180" />
             </button>
             )}
             <div>
-              <h2 className="text-xl font-extrabold text-[#7C2D12]">
+              <h2 className="text-xl font-extrabold text-[#FFFFFF]">
                 {isManageForm
                   ? (kind === 'service' ? t.manageService : t.manageBusiness)
                   : (registrationType === 'business' ? t.registerBusiness : t.registerService)}
@@ -1247,7 +1247,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
             </div>
           </div>
 
-          <form onSubmit={isManageForm ? handleManageSubmit : handleRegisterSubmit} className="space-y-4 p-5 rounded-3xl bg-white border border-[#D7E0EA]" id={registrationType === 'service' ? 'service-reg-form' : 'biz-reg-form'}>
+          <form onSubmit={isManageForm ? handleManageSubmit : handleRegisterSubmit} className="space-y-4 p-5 rounded-3xl bg-[#171310] border border-[#2B231D]" id={registrationType === 'service' ? 'service-reg-form' : 'biz-reg-form'}>
             {regSuccess && <p className="p-3 bg-green-950/45 border border-green-900 text-green-300 text-xs rounded-xl">{regSuccess}</p>}
             {regError && <p className="p-3 bg-red-950/45 border border-red-900 text-red-300 text-xs rounded-xl">{regError}</p>}
 
@@ -1331,7 +1331,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                         ? (language === 'en' ? 'e.g. Al-Kawthar Grocery' : 'مثال: بقالة الكوثر')
                         : (language === 'en' ? 'e.g. Hassan Al-Rashid' : 'مثال: حسن الراشد')
                     }
-                    className={`w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] outline-none focus:border-[#F08C32] ${
+                    className={`w-full p-2.5 rounded-xl bg-[#1E1915] border border-[#2B231D] text-xs text-[#FFFFFF] outline-none focus:border-[#F08C32] ${
                       isManageForm ? 'opacity-80 cursor-not-allowed pr-9' : ''
                     }`}
                     required
@@ -1378,7 +1378,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                 </div>
 
                 {pendingChangeRequest?.status === 'pending' && (
-                  <p className="text-[10px] font-bold text-[#F08C32] bg-orange-50 rounded-xl px-3 py-2 border border-[#D7E0EA]">
+                  <p className="text-[10px] font-bold text-[#F08C32] bg-orange-50 rounded-xl px-3 py-2 border border-[#2B231D]">
                     {language === 'en'
                       ? `Pending admin review${pendingChangeRequest.proposedName ? ` · proposed name: ${pendingChangeRequest.proposedName}` : ''}`
                       : `بانتظار مراجعة المشرف${pendingChangeRequest.proposedName ? ` · الاسم المقترح: ${pendingChangeRequest.proposedName}` : ''}`}
@@ -1419,7 +1419,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                             type="text"
                             value={changeReqName}
                             onChange={(e) => setChangeReqName(e.target.value)}
-                            className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] outline-none focus:border-[#F08C32]"
+                            className="w-full p-2.5 rounded-xl bg-[#1E1915] border border-[#2B231D] text-xs text-[#FFFFFF] outline-none focus:border-[#F08C32]"
                           />
                         </div>
                         <ImageUploadGrid
@@ -1447,7 +1447,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                             value={changeReqNote}
                             onChange={(e) => setChangeReqNote(e.target.value)}
                             rows={2}
-                            className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] outline-none focus:border-[#F08C32]"
+                            className="w-full p-2.5 rounded-xl bg-[#1E1915] border border-[#2B231D] text-xs text-[#FFFFFF] outline-none focus:border-[#F08C32]"
                             placeholder={language === 'en' ? 'Why are you changing this?' : 'لماذا تريد التغيير؟'}
                           />
                         </div>
@@ -1480,7 +1480,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                     : (language === 'en' ? 'Describe your professional services, skills, and service area…' : 'صف خدماتك المهنية ومجال عملك…')
                 }
                 onChange={(e) => setRegDesc(e.target.value)}
-                className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] placeholder-gray-600 outline-none focus:border-[#F08C32]/40 transition-colors resize-none"
+                className="w-full p-2.5 rounded-xl bg-[#1E1915] border border-[#2B231D] text-xs text-[#FFFFFF] placeholder-gray-600 outline-none focus:border-[#F08C32]/40 transition-colors resize-none"
                 required
               />
             </div>
@@ -1545,7 +1545,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                   value={regZipCode}
                   onChange={(e) => setRegZipCode(formatZipInput(e.target.value))}
                   placeholder="77001"
-                  className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] placeholder-gray-600 outline-none focus:border-[#F08C32]"
+                  className="w-full p-2.5 rounded-xl bg-[#1E1915] border border-[#2B231D] text-xs text-[#FFFFFF] placeholder-gray-600 outline-none focus:border-[#F08C32]"
                   required
                 />
               </div>
@@ -1557,7 +1557,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                 type="text"
                 value={regAddress}
                 onChange={(e) => setRegAddress(e.target.value)}
-                className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] outline-none focus:border-[#F08C32]"
+                className="w-full p-2.5 rounded-xl bg-[#1E1915] border border-[#2B231D] text-xs text-[#FFFFFF] outline-none focus:border-[#F08C32]"
                 required
               />
             </div>
@@ -1571,7 +1571,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                 value={regHours}
                 onChange={(e) => setRegHours(e.target.value)}
                 placeholder={language === 'en' ? 'e.g. Mon–Sat 9:00 AM – 9:00 PM' : 'مثال: الإثنين–السبت 9:00 ص – 9:00 م'}
-                className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] placeholder-gray-600 outline-none focus:border-[#F08C32]"
+                className="w-full p-2.5 rounded-xl bg-[#1E1915] border border-[#2B231D] text-xs text-[#FFFFFF] placeholder-gray-600 outline-none focus:border-[#F08C32]"
                 required
               />
             </div>
@@ -1585,7 +1585,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                     value={regPhone}
                     placeholder={t.phoneHint}
                     onChange={(e) => setRegPhone(formatUSPhoneInput(e.target.value))}
-                    className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] placeholder-gray-600 outline-none focus:border-[#F08C32]"
+                    className="w-full p-2.5 rounded-xl bg-[#1E1915] border border-[#2B231D] text-xs text-[#FFFFFF] placeholder-gray-600 outline-none focus:border-[#F08C32]"
                     required
                   />
                 </div>
@@ -1596,7 +1596,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                     placeholder={t.phoneHint}
                     value={regWhatsapp}
                     onChange={(e) => setRegWhatsapp(formatUSPhoneInput(e.target.value))}
-                    className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] placeholder-gray-600 outline-none focus:border-[#F08C32]"
+                    className="w-full p-2.5 rounded-xl bg-[#1E1915] border border-[#2B231D] text-xs text-[#FFFFFF] placeholder-gray-600 outline-none focus:border-[#F08C32]"
                     required
                   />
                 </div>
@@ -1610,7 +1610,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                   value={regPhone}
                   placeholder={t.phoneHint}
                   onChange={(e) => setRegPhone(formatUSPhoneInput(e.target.value))}
-                  className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] placeholder-gray-600 outline-none focus:border-[#F08C32]"
+                  className="w-full p-2.5 rounded-xl bg-[#1E1915] border border-[#2B231D] text-xs text-[#FFFFFF] placeholder-gray-600 outline-none focus:border-[#F08C32]"
                   required
                 />
                 <p className="mt-1 text-[9px] text-gray-600">{t.phoneHint}</p>
@@ -1622,7 +1622,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                   placeholder={t.phoneHint}
                   value={regWhatsapp}
                   onChange={(e) => setRegWhatsapp(formatUSPhoneInput(e.target.value))}
-                  className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] placeholder-gray-600 outline-none focus:border-[#F08C32]"
+                  className="w-full p-2.5 rounded-xl bg-[#1E1915] border border-[#2B231D] text-xs text-[#FFFFFF] placeholder-gray-600 outline-none focus:border-[#F08C32]"
                   required
                 />
                 <p className="mt-1 text-[9px] text-gray-600">{t.phoneHint}</p>
@@ -1671,7 +1671,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
               <span className="text-[10px] text-[#F08C32] font-bold uppercase tracking-wider block">
                 {t.businessPortal} Dashboard
               </span>
-              <h2 className="text-xl font-bold text-[#7C2D12] flex items-center gap-2">
+              <h2 className="text-xl font-bold text-[#FFFFFF] flex items-center gap-2">
                 {myBusiness.name}
                 {myBusiness.isVerified && (
                   <span className="px-1.5 py-0.5 rounded bg-green-500/10 text-green-400 text-[8px] font-bold tracking-wider border border-green-500/25 uppercase flex items-center gap-0.5">
@@ -1811,7 +1811,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
             </div>
 
             {/* Analytics — shown when real tracking is wired up */}
-            <div className="p-4 rounded-3xl bg-white border border-[#D7E0EA] space-y-3" id="dash-metrics">
+            <div className="p-4 rounded-3xl bg-[#171310] border border-[#2B231D] space-y-3" id="dash-metrics">
               <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest block">
                 {language === 'en' ? 'Listing Analytics' : 'إحصائيات الإدراج'}
               </span>
@@ -1826,11 +1826,11 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
 
           {/* DYNAMIC PORTAL SUBSECTION SWITCHER: EDIT DETAILS FORM */}
           {activePortalTab === 'edit' && (
-            <div className="p-5 rounded-3xl bg-white border border-[#D7E0EA] space-y-4 animate-scale-up" id="subview-edit-profile">
+            <div className="p-5 rounded-3xl bg-[#171310] border border-[#2B231D] space-y-4 animate-scale-up" id="subview-edit-profile">
               <div className="flex items-center gap-3 pb-2 border-b border-[#D7E0EA]/60">
                 <button
                   onClick={() => setActivePortalTab('dash')}
-                  className="p-1.5 rounded-full bg-[#EEF2F6] hover:bg-slate-100 border border-[#D7E0EA] transition-colors"
+                  className="p-1.5 rounded-full bg-[#1E1915] hover:bg-[#201B15] border border-[#2B231D] transition-colors"
                   id="btn-edit-cancel"
                   aria-label="Back to dashboard"
                 >
@@ -1845,7 +1845,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
 
               <form onSubmit={handleProfileUpdate} className="space-y-4" id="form-edit-biz">
                 <div>
-                  <label className="block text-xs text-gray-450 mb-1">
+                  <label className="block text-xs text-[#8E8E8E] mb-1">
                     {t.businessName}
                     <span className="ml-1 text-[9px] text-amber-500 font-bold uppercase">(locked)</span>
                   </label>
@@ -1854,7 +1854,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                       type="text"
                       value={editName}
                       readOnly
-                      className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12] opacity-80 cursor-not-allowed pr-9"
+                      className="w-full p-2.5 rounded-xl bg-[#1E1915] border border-[#2B231D] text-xs text-[#FFFFFF] opacity-80 cursor-not-allowed pr-9"
                       required
                     />
                     <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-amber-500/80" />
@@ -1867,34 +1867,34 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs text-gray-450 mb-1">{t.description}</label>
+                  <label className="block text-xs text-[#8E8E8E] mb-1">{t.description}</label>
                   <textarea
                     value={editDesc}
                     rows={3}
                     onChange={(e) => setEditDesc(e.target.value)}
-                    className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12]"
+                    className="w-full p-2.5 rounded-xl bg-[#1E1915] border border-[#2B231D] text-xs text-[#FFFFFF]"
                     required
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs text-gray-450 mb-1">{t.phone}</label>
+                    <label className="block text-xs text-[#8E8E8E] mb-1">{t.phone}</label>
                     <input
                       type="text"
                       value={editPhone}
                       onChange={(e) => setEditPhone(e.target.value)}
-                      className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12]"
+                      className="w-full p-2.5 rounded-xl bg-[#1E1915] border border-[#2B231D] text-xs text-[#FFFFFF]"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-450 mb-1">{t.whatsapp}*</label>
+                    <label className="block text-xs text-[#8E8E8E] mb-1">{t.whatsapp}*</label>
                     <input
                       type="text"
                       value={editWhatsapp}
                       onChange={(e) => setEditWhatsapp(e.target.value)}
-                      className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12]"
+                      className="w-full p-2.5 rounded-xl bg-[#1E1915] border border-[#2B231D] text-xs text-[#FFFFFF]"
                       required
                     />
                   </div>
@@ -1936,12 +1936,12 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                 />
 
                 <div>
-                  <label className="block text-xs text-gray-450 mb-1">{t.workingHours}</label>
+                  <label className="block text-xs text-[#8E8E8E] mb-1">{t.workingHours}</label>
                   <input
                     type="text"
                     value={editHours}
                     onChange={(e) => setEditHours(e.target.value)}
-                    className="w-full p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12]"
+                    className="w-full p-2.5 rounded-xl bg-[#1E1915] border border-[#2B231D] text-xs text-[#FFFFFF]"
                     required
                   />
                 </div>
@@ -1959,11 +1959,11 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
 
           {/* DYNAMIC PORTAL SUBSECTION SWITCHER: SUBSCRIBE / RENEW */}
           {activePortalTab === 'pay' && (
-            <div className="p-5 rounded-3xl bg-white border border-[#D7E0EA] space-y-4 animate-scale-up" id="subview-renew-payment">
+            <div className="p-5 rounded-3xl bg-[#171310] border border-[#2B231D] space-y-4 animate-scale-up" id="subview-renew-payment">
               <div className="flex items-center gap-3 pb-2 border-b border-[#D7E0EA]/60">
                 <button
                   onClick={() => setActivePortalTab('dash')}
-                  className="p-1.5 rounded-full bg-[#EEF2F6] hover:bg-slate-100 border border-[#D7E0EA] transition-colors"
+                  className="p-1.5 rounded-full bg-[#1E1915] hover:bg-[#201B15] border border-[#2B231D] transition-colors"
                   id="btn-pay-cancel"
                   aria-label="Back to dashboard"
                 >
@@ -1981,7 +1981,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                     {kind === 'service' ? <Zap className="w-5 h-5 text-orange-400" /> : <Briefcase className="w-5 h-5 text-[#F08C32]" />}
                   </div>
                   <div>
-                    <h4 className="text-xs font-black text-[#7C2D12]">
+                    <h4 className="text-xs font-black text-[#FFFFFF]">
                       {kind === 'service'
                         ? (language === 'en' ? 'Service Provider Plan' : 'خطة مزود الخدمة')
                         : (language === 'en' ? 'Business Directory Plan' : 'خطة دليل الأعمال')}
@@ -2003,8 +2003,8 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
               </div>
 
               {/* HOW PAYMENT WORKS — clarity box */}
-              <div className="p-4 rounded-2xl bg-[#EEF2F6] border border-[#D7E0EA] space-y-2 text-[11px] text-gray-400 leading-relaxed">
-                <div className="flex items-center gap-2 text-xs font-black text-[#7C2D12] mb-2">
+              <div className="p-4 rounded-2xl bg-[#1E1915] border border-[#2B231D] space-y-2 text-[11px] text-gray-400 leading-relaxed">
+                <div className="flex items-center gap-2 text-xs font-black text-[#FFFFFF] mb-2">
                   <Smartphone className="w-4 h-4 text-[#F08C32]" />
                   <span>{language === 'en' ? 'How Payments Work' : 'كيف تعمل المدفوعات'}</span>
                 </div>
@@ -2048,7 +2048,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                 id="btn-restore-purchases"
                 onClick={handleRestorePurchases}
                 disabled={isRestoringPurchases}
-                className="w-full py-2.5 rounded-xl border border-[#D7E0EA] text-gray-500 hover:text-gray-300 hover:border-[#D7E0EA] text-[10px] font-semibold transition-colors flex items-center justify-center gap-1.5"
+                className="w-full py-2.5 rounded-xl border border-[#2B231D] text-gray-500 hover:text-gray-300 hover:border-[#D7E0EA] text-[10px] font-semibold transition-colors flex items-center justify-center gap-1.5"
               >
                 {isRestoringPurchases ? (
                   <><RefreshCw className="w-3 h-3 animate-spin" /> {language === 'en' ? 'Restoring...' : 'جاري الاستعادة...'}</>
@@ -2060,7 +2060,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
           )}
 
           {/* PAYMENT HISTORY LISTING LOG */}
-          <div className="p-5 rounded-3xl bg-white border border-[#D7E0EA] space-y-3" id="dash-payments-history">
+          <div className="p-5 rounded-3xl bg-[#171310] border border-[#2B231D] space-y-3" id="dash-payments-history">
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#F08C32] flex items-center gap-1.5">
               <History className="w-4 h-4" />
               {t.paymentHistory}
@@ -2088,12 +2088,12 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                       <tr key={p.id}>
                         <td className="py-2.5 font-mono text-[9px] text-[#F08C32] pr-2">{p.refNo}</td>
                         <td className="py-2.5 text-[10px]">{p.date}</td>
-                        <td className="py-2.5 font-bold text-[#7C2D12]">${p.amount}.00</td>
+                        <td className="py-2.5 font-bold text-[#FFFFFF]">${p.amount}.00</td>
                         <td className="py-2.5">
                           <button
                             type="button"
                             onClick={() => setSelectedReceipt(p)}
-                            className="text-[9px] font-extrabold uppercase bg-[#EEF2F6] border border-[#D7E0EA] hover:bg-[#FF9E47] hover:text-[#7C2D12] text-[#F08C32] px-2 py-0.5 rounded transition-all active:scale-95"
+                            className="text-[9px] font-extrabold uppercase bg-[#1E1915] border border-[#2B231D] hover:bg-[#FF9E47] hover:text-[#FFFFFF] text-[#F08C32] px-2 py-0.5 rounded transition-all active:scale-95"
                           >
                             {language === 'en' ? 'View' : 'عرض'}
                           </button>
@@ -2109,12 +2109,12 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
           {/* RECEIPT MODAL */}
           {selectedReceipt && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm" id="receipt-modal-overlay">
-              <div className="relative w-full max-w-sm rounded-3xl bg-[#EEF2F6] border border-[#D7E0EA] p-6 text-[#7C2D12] shadow-2xl flex flex-col font-sans">
+              <div className="relative w-full max-w-sm rounded-3xl bg-[#1E1915] border border-[#2B231D] p-6 text-[#FFFFFF] shadow-2xl flex flex-col font-sans">
                 
                 {/* Close Button */}
                 <button
                   onClick={() => setSelectedReceipt(null)}
-                  className="absolute top-4 right-4 p-1.5 rounded-full text-gray-500 hover:text-[#7C2D12]"
+                  className="absolute top-4 right-4 p-1.5 rounded-full text-gray-500 hover:text-[#FFFFFF]"
                 >
                   ✕
                 </button>
@@ -2124,7 +2124,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                   <div className="w-11 h-11 rounded-2xl bg-[#FF9E47]/10 text-[#F08C32] flex items-center justify-center mx-auto border border-[#3A2E21]/60">
                     <CheckCircle className="w-6 h-6" />
                   </div>
-                  <h3 className="text-sm font-black uppercase text-[#7C2D12] tracking-wider">
+                  <h3 className="text-sm font-black uppercase text-[#FFFFFF] tracking-wider">
                     {language === 'en' ? 'Transaction Invoice' : 'فاتورة الاشتراك الشهري'}
                   </h3>
                   <span className="px-2 py-0.5 rounded-full text-[8px] font-extrabold tracking-widest text-green-400 bg-green-500/10 border border-green-500/20 uppercase inline-block">
@@ -2136,22 +2136,22 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                 <div className="space-y-3.5 text-xs">
                   <div className="flex justify-between items-center text-[10px] text-gray-500 pb-1.5 border-b border-[#D7E0EA]/30">
                     <span>{language === 'en' ? 'REF NUMBER' : 'رقم المرجع'}</span>
-                    <span className="font-mono font-bold text-[#7C2D12]">{selectedReceipt.refNo}</span>
+                    <span className="font-mono font-bold text-[#FFFFFF]">{selectedReceipt.refNo}</span>
                   </div>
 
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400">{language === 'en' ? 'Billed Merchant' : 'اسم النشاط'}</span>
-                    <span className="font-bold text-[#7C2D12]">{myBusiness.name}</span>
+                    <span className="font-bold text-[#FFFFFF]">{myBusiness.name}</span>
                   </div>
 
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400">{language === 'en' ? 'Payer Account' : 'حساب الدفع'}</span>
-                    <span className="text-[#7C2D12] truncate max-w-[150px]">{currentUser.email}</span>
+                    <span className="text-[#FFFFFF] truncate max-w-[150px]">{currentUser.email}</span>
                   </div>
 
                   <div className="flex justify-between items-center">
                     <span className="text-gray-400">{language === 'en' ? 'Payment Date' : 'تاريخ الدفع'}</span>
-                    <span className="text-[#7C2D12]">{selectedReceipt.date}</span>
+                    <span className="text-[#FFFFFF]">{selectedReceipt.date}</span>
                   </div>
 
                   <div className="flex justify-between items-center">
@@ -2164,7 +2164,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                     <span className="text-green-400 font-bold bg-[#142316]/30 px-2 py-0.5 rounded text-[10px]">30 Days Active Listing</span>
                   </div>
 
-                  <div className="p-3.5 rounded-2xl bg-white border border-[#D7E0EA] space-y-2 mt-4 text-[10px] text-gray-400 leading-relaxed font-sans">
+                  <div className="p-3.5 rounded-2xl bg-[#171310] border border-[#2B231D] space-y-2 mt-4 text-[10px] text-gray-400 leading-relaxed font-sans">
                     <span className="font-bold text-[#F08C32] block text-[11px] uppercase tracking-wider">
                       {language === 'en' ? 'Payment recorded on server' : 'تم تسجيل الدفع على الخادم'}
                     </span>

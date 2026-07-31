@@ -136,7 +136,7 @@ export function userFacingError(
     return 'Hiring is turned off. Enable hiring from your Account / Portal first.';
   }
   if (lower.includes('only registered business')) {
-    return 'Only approved business listings can post or manage jobs (not service listings).';
+    return 'Only approved business or service listings can post or manage jobs.';
   }
   if (lower.includes('register as a business')) {
     return 'Register a business listing first, then you can post jobs.';

@@ -52,7 +52,7 @@ export const LegalDocScreen: React.FC<LegalDocScreenProps> = ({ docId, onBack })
             className={`py-4 ${i < doc.sections.length - 1 ? 'border-b border-[#E2E8F0]' : ''}`}
           >
             <h2 className="text-[13px] font-extrabold text-[#FFFFFF] mb-2">{s.heading}</h2>
-            <p className="text-[12px] leading-relaxed text-slate-700">{s.body}</p>
+            <p className="text-[12px] leading-relaxed text-[#CFCFCF]">{s.body}</p>
           </section>
         ))}
       </article>

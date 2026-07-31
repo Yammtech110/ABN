@@ -165,7 +165,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
                 isAdmin
                   ? 'account-role-badge-admin bg-[#FF9E47]/15 text-[#F08C32] border-[#F08C32]/30'
                   : kind === 'service'
-                    ? 'account-role-badge-service bg-orange-50 text-orange-700 border-orange-200'
+                    ? 'account-role-badge-service bg-orange-900/40 text-orange-300 border-orange-700/40'
                     : 'account-role-badge-user bg-[#1E1915] text-gray-400 border-[#2B231D]'
               }`}>
                 {roleBadgeLabel()}
@@ -180,7 +180,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
         </div>
 
         {isAdmin && isNativeApp() && (
-          <div className="p-3.5 rounded-2xl bg-orange-50/75 border border-orange-200/50" id="admin-web-only-note">
+          <div className="p-3.5 rounded-2xl bg-[#FF9E47]/10 border border-[#F08C32]/30" id="admin-web-only-note">
             <p className="text-[10px] text-[#CFCFCF] leading-relaxed">
               Admin tools are available on the web app only. Changes you make there sync to Android and iOS automatically.
             </p>

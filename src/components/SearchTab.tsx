@@ -287,7 +287,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
           onClick={() => setOpenNowOnly((v) => !v)}
           className={`px-3 py-2.5 rounded-xl text-xs font-bold border transition-all ${
             openNowOnly
-              ? 'bg-orange-50 text-[#F08C32] border-emerald-300'
+              ? 'bg-[#FF9E47]/15 text-[#F08C32] border-[#F08C32]/50'
               : 'bg-[#171310] text-gray-400 border-[#2B231D]'
           }`}
           id="search-open-now-toggle"

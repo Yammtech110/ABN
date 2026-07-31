@@ -18,7 +18,7 @@ const JOB_OWNER_ROLES = ['customer', 'business', 'service_provider', 'admin'];
 
 const VALID_CATEGORIES = ['IT', 'Graphic Designing', 'Developer', 'Chef', 'Maid', 'Others'];
 
-const JOB_ELIGIBLE_LISTING_TYPES = new Set(['business']);
+const JOB_ELIGIBLE_LISTING_TYPES = new Set(['business', 'service']);
 
 /** Only verified business directory profiles may post or manage jobs */
 const assertJobPostingAllowed = (profile, userRole) => {
@@ -34,7 +34,7 @@ const assertJobPostingAllowed = (profile, userRole) => {
   if (!JOB_ELIGIBLE_LISTING_TYPES.has(profile.listingType)) {
     return {
       status: 403,
-      error: 'Only registered business listings can post jobs.',
+      error: 'FIRST REGISTER AS BUSSINESS/SERVICE PROVIDER THEN YOU POST A JOB',
     };
   }
 
@@ -176,7 +176,7 @@ router.get('/mine', authenticate, requireRole(...JOB_OWNER_ROLES), async (req, r
       return res.status(404).json({ error: 'You do not have a directory profile yet.' });
     }
     if (!JOB_ELIGIBLE_LISTING_TYPES.has(profile.listingType)) {
-      return res.status(403).json({ error: 'Only registered business listings can view job postings here.' });
+      return res.status(403).json({ error: 'Only registered business or service listings can view job postings here.' });
     }
 
     const allJobs = await fetchAllJobs();
@@ -316,7 +316,7 @@ router.put('/:id', authenticate, requireRole(...JOB_OWNER_ROLES), async (req, re
         return res.status(403).json({ error: 'You can only edit your own job postings.' });
       }
       if (!JOB_ELIGIBLE_LISTING_TYPES.has(profile.listingType)) {
-        return res.status(403).json({ error: 'Only registered business listings can manage jobs.' });
+        return res.status(403).json({ error: 'Only registered business or service listings can manage jobs.' });
       }
     }
 
@@ -416,7 +416,7 @@ router.delete('/:id', authenticate, requireRole(...JOB_OWNER_ROLES), async (req,
         return res.status(403).json({ error: 'You can only delete your own job postings.' });
       }
       if (!JOB_ELIGIBLE_LISTING_TYPES.has(profile.listingType)) {
-        return res.status(403).json({ error: 'Only registered business listings can manage jobs.' });
+        return res.status(403).json({ error: 'Only registered business or service listings can manage jobs.' });
       }
     }
 

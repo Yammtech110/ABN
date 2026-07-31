@@ -128,7 +128,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ onBack
             return (
               <li
                 key={n.id}
-                className={`px-4 py-3.5 ${n.isRead ? 'bg-[#171310]' : 'bg-orange-50/50'}`}
+                className={`px-4 py-3.5 ${n.isRead ? 'bg-[#171310]' : 'bg-[#FF9E47]/10'}`}
               >
                 <div className="flex items-center justify-between gap-2 text-[9px] mb-1.5">
                   <div className="flex items-center gap-1.5 min-w-0">
@@ -144,7 +144,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ onBack
                   </span>
                 </div>
                 <h2 className="text-[12px] font-extrabold leading-snug text-[#FFFFFF]">{n.title}</h2>
-                <p className="text-[11px] mt-1 leading-relaxed text-slate-700">{n.message}</p>
+                <p className="text-[11px] mt-1 leading-relaxed text-[#CFCFCF]">{n.message}</p>
               </li>
             );
           })}

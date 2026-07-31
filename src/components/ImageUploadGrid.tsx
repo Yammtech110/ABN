@@ -183,7 +183,7 @@ export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
                 key={`empty-${index}`}
                 className={`${tileAspect} rounded-xl bg-[#1E1915]/40 border border-[#2D2319]/40 flex items-center justify-center opacity-40`}
               >
-                <ImageIcon className="w-4 h-4 text-gray-700" />
+                <ImageIcon className="w-4 h-4 text-[#8E8E8E]" />
               </div>
             );
           }

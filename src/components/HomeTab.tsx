@@ -118,12 +118,12 @@ const HeroNetworkMap: React.FC = () => {
 };
 
 const JOB_CATEGORY_COLORS: Record<JobCategory, string> = {
-  'IT':               'bg-orange-100 text-orange-700 border-orange-200',
-  'Graphic Designing':'bg-purple-100 text-purple-700 border-purple-200',
-  'Developer':        'bg-orange-100 text-emerald-700 border-orange-200',
-  'Chef':             'bg-amber-100 text-amber-700 border-amber-200',
-  'Maid':             'bg-pink-100 text-pink-700 border-pink-200',
-  'Others':           'bg-[#1E1915] text-slate-700 border-slate-300',
+  'IT':               'bg-orange-900/40 text-orange-300 border-orange-700/40',
+  'Graphic Designing':'bg-purple-900/40 text-purple-300 border-purple-700/40',
+  'Developer':        'bg-green-900/40 text-green-300 border-green-700/40',
+  'Chef':             'bg-amber-900/40 text-amber-300 border-amber-700/40',
+  'Maid':             'bg-pink-900/40 text-pink-300 border-pink-700/40',
+  'Others':           'bg-gray-800/60 text-gray-300 border-gray-600/40',
 };
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -402,7 +402,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${JOB_CATEGORY_COLORS[selectedJob.category]}`}>
               {selectedJob.category}
             </span>
-            <span className="text-[10px] font-extrabold text-[#F08C32] bg-orange-50 border border-orange-200 px-2.5 py-1 rounded-full">
+            <span className="text-[10px] font-extrabold text-[#F08C32] bg-[#FF9E47]/15 border border-[#F08C32]/40 px-2.5 py-1 rounded-full">
               ${selectedJob.salaryMin.toLocaleString()} – ${selectedJob.salaryMax.toLocaleString()}/mo
             </span>
           </div>
@@ -581,7 +581,11 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                 >
                   <button
                     type="button"
-                    onClick={(e) => { e.stopPropagation(); void toggleFavorite(biz.id); }}
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      const result = await toggleFavorite(biz.id);
+                      if (!result.success && result.error) window.alert(result.error);
+                    }}
                     className="absolute top-2.5 right-2.5 p-1.5 z-10"
                     aria-label={saved ? 'Remove favorite' : 'Save'}
                   >
