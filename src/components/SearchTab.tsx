@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useDirectory } from '../context/DirectoryContext';
 import { TRANSLATIONS } from '../data/translations';
-import { Search, MapPin, ArrowLeft, CheckCircle, Star } from 'lucide-react';
+import { Search, MapPin, ArrowLeft, CheckCircle, Star, ChevronDown } from 'lucide-react';
 import { Business } from '../types';
 import { textEn } from '../utils/englishOnly';
 import { isLiveDirectoryListing } from '../utils/listingAccess';
@@ -29,8 +29,126 @@ const MIN_RATINGS = [
 
 type OpenFilter = 'all' | 'open' | 'closed';
 
+type SelectOption = { value: string; label: string };
+
 const listingState = (biz: Business): string =>
   String(biz.state || stateCodeForCity(biz.city) || '').toUpperCase();
+
+/** Searchable dropdown for long state/city lists. */
+const SearchableSelect: React.FC<{
+  id: string;
+  value: string;
+  options: SelectOption[];
+  placeholder?: string;
+  searchPlaceholder?: string;
+  onChange: (value: string) => void;
+}> = ({
+  id,
+  value,
+  options,
+  placeholder = 'Select',
+  searchPlaceholder = 'Search...',
+  onChange,
+}) => {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const rootRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const selectedLabel = options.find((o) => o.value === value)?.label || placeholder;
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return options;
+    return options.filter(
+      (o) =>
+        o.label.toLowerCase().includes(q) ||
+        o.value.toLowerCase().includes(q),
+    );
+  }, [options, query]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (!rootRef.current?.contains(e.target as Node)) {
+        setOpen(false);
+        setQuery('');
+      }
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [open]);
+
+  useEffect(() => {
+    if (open) {
+      setTimeout(() => inputRef.current?.focus(), 0);
+    }
+  }, [open]);
+
+  return (
+    <div className="relative" ref={rootRef} id={id}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className={`w-full flex items-center justify-between gap-1 px-3 py-2.5 rounded-xl bg-[#171310] border text-xs text-left outline-none ${
+          open ? 'border-[#F08C32]' : 'border-[#2B231D]'
+        }`}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+      >
+        <span className="truncate text-[#FFFFFF]">{selectedLabel}</span>
+        <ChevronDown className={`w-3.5 h-3.5 text-[#8E8E8E] flex-shrink-0 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="absolute z-40 left-0 right-0 mt-1 rounded-xl border border-[#2B231D] bg-[#171310] shadow-[0_12px_40px_rgba(0,0,0,0.55)] overflow-hidden">
+          <div className="p-2 border-b border-[#2B231D]">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-[#8E8E8E]" />
+              <input
+                ref={inputRef}
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={searchPlaceholder}
+                className="w-full pl-8 pr-2 py-2 rounded-lg bg-[#1E1915] border border-[#2B231D] text-xs text-white placeholder:text-[#8E8E8E] outline-none focus:border-[#F08C32]"
+              />
+            </div>
+          </div>
+          <ul className="max-h-48 overflow-y-auto py-1" role="listbox">
+            {filtered.length === 0 ? (
+              <li className="px-3 py-2.5 text-[11px] text-[#8E8E8E]">No matches</li>
+            ) : (
+              filtered.map((opt) => {
+                const active = opt.value === value;
+                return (
+                  <li key={opt.value}>
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={active}
+                      className={`w-full text-left px-3 py-2 text-xs ${
+                        active
+                          ? 'bg-[#FF9E47]/15 text-[#F08C32] font-bold'
+                          : 'text-[#FFFFFF] hover:bg-[#1E1915]'
+                      }`}
+                      onClick={() => {
+                        onChange(opt.value);
+                        setOpen(false);
+                        setQuery('');
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  </li>
+                );
+              })
+            )}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const SearchSkeleton = () => (
   <div className="space-y-3.5">
@@ -84,6 +202,26 @@ export const SearchTab: React.FC<SearchTabProps> = ({
       ),
     ];
   }, [businesses, selectedState]);
+
+  const stateOptions = useMemo<SelectOption[]>(
+    () => [
+      { value: 'All', label: 'All states' },
+      ...US_STATES.map(({ code, name }) => ({
+        value: code,
+        label: `${name} (${code})`,
+      })),
+    ],
+    [],
+  );
+
+  const cityOptions = useMemo<SelectOption[]>(
+    () =>
+      CITIES.map((city) => ({
+        value: city,
+        label: city === 'All' ? 'All cities' : city,
+      })),
+    [CITIES],
+  );
 
   useEffect(() => {
     if (searchQuery === debouncedQuery) return;
@@ -211,45 +349,32 @@ export const SearchTab: React.FC<SearchTabProps> = ({
         )}
       </div>
 
-      {/* State + city + open now + rating */}
+      {/* State + city + open status + rating */}
       <div className="grid grid-cols-2 gap-2 animate-fade-in-up" style={{ animationDelay: '0.08s' }} id="search-advanced-filters">
-        <select
+        <SearchableSelect
+          id="search-state-select"
           value={selectedState}
-          onChange={(e) => {
-            setSelectedState(e.target.value);
+          options={stateOptions}
+          searchPlaceholder="Search state..."
+          onChange={(value) => {
+            setSelectedState(value);
             setSelectedCity('All');
           }}
-          className="w-full px-3 py-2.5 rounded-xl bg-[#171310] border border-[#2B231D] text-xs text-[#FFFFFF] outline-none focus:border-[#F08C32]"
-          id="search-state-select"
-        >
-          <option value="All">All states</option>
-          {US_STATES.map(({ code, name }) => (
-            <option key={code} value={code}>
-              {name} ({code})
-            </option>
-          ))}
-        </select>
-        <select
-          value={selectedCity}
-          onChange={(e) => {
-            setSelectedCity(e.target.value);
-          }}
-          className="w-full px-3 py-2.5 rounded-xl bg-[#171310] border border-[#2B231D] text-xs text-[#FFFFFF] outline-none focus:border-[#F08C32]"
+        />
+        <SearchableSelect
           id="search-city-select"
-        >
-          {CITIES.map((city) => (
-            <option key={city} value={city}>
-              {city === 'All' ? 'All cities' : city}
-            </option>
-          ))}
-        </select>
+          value={selectedCity}
+          options={cityOptions}
+          searchPlaceholder="Search city..."
+          onChange={setSelectedCity}
+        />
         <select
           value={openFilter}
           onChange={(e) => setOpenFilter(e.target.value as OpenFilter)}
           className="w-full px-3 py-2.5 rounded-xl bg-[#171310] border border-[#2B231D] text-xs text-[#FFFFFF] outline-none focus:border-[#F08C32]"
           id="search-open-status-select"
         >
-          <option value="all">Open / Closed</option>
+          <option value="all">All</option>
           <option value="open">Open now</option>
           <option value="closed">Closed now</option>
         </select>
