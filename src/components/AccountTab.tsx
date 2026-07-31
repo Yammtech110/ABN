@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useDirectory } from '../context/DirectoryContext';
 import { TRANSLATIONS } from '../data/translations';
 import {
   User,
   Briefcase,
   Shield,
-  Bell,
   Lock,
   LogOut,
   ChevronRight,
@@ -18,11 +17,9 @@ import {
   ScrollText,
   BookOpen,
   CreditCard,
-  Heart,
 } from 'lucide-react';
 import { EditProfileModal } from './EditProfileModal';
 import { canManageListing, canPostJobs, getUserListing, listingKind } from '../utils/listingAccess';
-import { countUnreadNotifications, filterNotificationsForUser } from '../utils/notifications';
 import { isNativeApp } from '../lib/oauth';
 import { LegalDocId, SUPPORT_EMAIL, SUPPORT_MAILTO } from '../data/legalContent';
 
@@ -41,9 +38,6 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
     businesses,
     hiringActive,
     setHiringActive,
-    notifications,
-    refreshNotifications,
-    markNotificationsAsRead,
   } = useDirectory();
   const t = TRANSLATIONS[language];
 
@@ -58,18 +52,6 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
   const canUseJobs = canPostJobs(myListing);
   const hiringEnabled = myListing ? (hiringActive[myListing.id] ?? false) : false;
   const [hiringBusy, setHiringBusy] = useState(false);
-
-  const unreadCount = countUnreadNotifications(notifications, currentUser);
-
-  useEffect(() => {
-    refreshNotifications();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const handleOpenNotificationCenter = () => {
-    void refreshNotifications();
-    void markNotificationsAsRead();
-    onSwitchTab('notifications');
-  };
 
   const roleBadgeLabel = () => {
     if (!currentUser) return '';
@@ -262,36 +244,6 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
             </button>
           </>
         )}
-
-        <button
-          type="button"
-          onClick={() => onSwitchTab('saved')}
-          className="w-full flex items-center justify-between p-4 hover:bg-[#1E1915] transition-colors group"
-          id="row-saved"
-        >
-          <span className="flex items-center gap-3 text-xs text-white font-semibold">
-            <Heart className="w-4.5 h-4.5 text-[#F08C32]" />
-            {t.saved || 'Saved'}
-          </span>
-          <ChevronRight className="w-4 h-4 text-[#8E8E8E] group-hover:text-white" />
-        </button>
-
-        <button
-          onClick={handleOpenNotificationCenter}
-          className="w-full flex items-center justify-between p-4 hover:bg-[#1E1915] transition-colors group"
-          id="row-notif-trigger"
-        >
-          <span className="flex items-center gap-3 text-xs text-white font-semibold">
-            <Bell className="w-4.5 h-4.5 text-[#F08C32]" />
-            {t.notifications}
-            {unreadCount > 0 && (
-              <span className="p-0.5 px-1.5 rounded-full bg-[#FF9E47] text-black text-[8px] font-bold">
-                {unreadCount} NEW
-              </span>
-            )}
-          </span>
-          <ChevronRight className="w-4 h-4 text-[#8E8E8E] group-hover:text-white" />
-        </button>
 
         {(
           [
