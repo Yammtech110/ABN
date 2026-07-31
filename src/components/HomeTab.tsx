@@ -461,7 +461,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             type="button"
             onClick={() => void handleRefreshApp()}
             disabled={isRefreshing}
-            className="p-2 rounded-full border border-white/35 text-white/90 hover:bg-white/10 disabled:opacity-60 flex-shrink-0 mt-0.5"
+            className="p-2 rounded-full border border-white/35 text-white/90 hover:bg-white/10 disabled:opacity-60 flex-shrink-0 mt-5"
             aria-label="Refresh"
             id="btn-home-refresh"
           >
@@ -475,7 +475,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           Creating <span className="font-bold">Opportunities</span>.
         </p>
 
-        <div className="relative z-10 grid grid-cols-3 gap-0 mb-5">
+        <div className="relative z-10 grid grid-cols-2 gap-0 mb-5 max-w-[280px]">
           <div className="flex items-center gap-2 px-1 border-r border-[#3A3A3A]">
             <Building2 className="w-4 h-4 flex-shrink-0" style={{ color: HERO_ORANGE }} strokeWidth={1.75} />
             <div className="min-w-0">
@@ -483,18 +483,11 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               <div className="text-[10px] text-[#8E8E8E] mt-0.5">Businesses</div>
             </div>
           </div>
-          <div className="flex items-center gap-2 px-2 border-r border-[#3A3A3A]">
+          <div className="flex items-center gap-2 px-2">
             <MapPin className="w-4 h-4 flex-shrink-0" style={{ color: HERO_ORANGE }} strokeWidth={1.75} />
             <div className="min-w-0">
               <div className="text-[15px] font-bold text-white leading-none">5+</div>
               <div className="text-[10px] text-[#8E8E8E] mt-0.5">Cities</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 px-2">
-            <Users className="w-4 h-4 flex-shrink-0" style={{ color: HERO_ORANGE }} strokeWidth={1.75} />
-            <div className="min-w-0">
-              <div className="text-[15px] font-bold text-white leading-none">12,000+</div>
-              <div className="text-[10px] text-[#8E8E8E] mt-0.5">Members</div>
             </div>
           </div>
         </div>
