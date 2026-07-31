@@ -238,6 +238,16 @@ export const HomeTab: React.FC<HomeTabProps> = ({
     [businesses],
   );
 
+  const directoryStats = useMemo(() => {
+    const cities = new Set(
+      liveListings.map((b) => String(b.city || '').trim()).filter(Boolean),
+    );
+    return {
+      businessCount: liveListings.length,
+      cityCount: cities.size,
+    };
+  }, [liveListings]);
+
   const CITY_KEYS = useMemo(() => {
     const withListings = Array.from(
       new Set(liveListings.map((b) => b.city).filter(Boolean)),
@@ -491,14 +501,18 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           <div className="flex items-center gap-2 px-1 border-r border-[#3A3A3A]">
             <Building2 className="w-4 h-4 flex-shrink-0" style={{ color: HERO_ORANGE }} strokeWidth={1.75} />
             <div className="min-w-0">
-              <div className="text-[15px] font-bold text-white leading-none">6+</div>
+              <div className="text-[15px] font-bold text-white leading-none" id="home-stat-businesses">
+                {directoryStats.businessCount}
+              </div>
               <div className="text-[10px] text-[#8E8E8E] mt-0.5">Businesses</div>
             </div>
           </div>
           <div className="flex items-center gap-2 px-2">
             <MapPin className="w-4 h-4 flex-shrink-0" style={{ color: HERO_ORANGE }} strokeWidth={1.75} />
             <div className="min-w-0">
-              <div className="text-[15px] font-bold text-white leading-none">5+</div>
+              <div className="text-[15px] font-bold text-white leading-none" id="home-stat-cities">
+                {directoryStats.cityCount}
+              </div>
               <div className="text-[10px] text-[#8E8E8E] mt-0.5">Cities</div>
             </div>
           </div>
