@@ -709,10 +709,10 @@ export const AdminPanelTab: React.FC = () => {
 
   if (isNativeApp()) {
     return (
-      <div className="p-8 text-center rounded-3xl bg-white border border-[#D7E0EA] text-gray-400" id="admin-web-only-state">
+      <div className="p-8 text-center rounded-3xl bg-[#171310] border border-[#2B231D] text-[#8E8E8E]" id="admin-web-only-state">
         <ShieldAlert className="w-12 h-12 text-[#F08C32] mx-auto mb-3" />
         <h3 className="text-sm font-black text-[#F08C32] uppercase tracking-widest">{t.adminPanel}</h3>
-        <p className="text-xs text-gray-500 mt-2 max-w-sm mx-auto leading-relaxed">
+        <p className="text-xs text-[#8E8E8E] mt-2 max-w-sm mx-auto leading-relaxed">
           The admin panel is available only on the web app. Approvals and changes you make there appear automatically in the Android and iOS apps.
         </p>
       </div>
@@ -721,13 +721,13 @@ export const AdminPanelTab: React.FC = () => {
 
   if (!isAdmin) {
     return (
-      <div className="p-8 text-center rounded-3xl bg-white border border-red-950/40 text-gray-400" id="admin-forbidden-state">
+      <div className="p-8 text-center rounded-3xl bg-[#171310] border border-red-950/40 text-[#8E8E8E]" id="admin-forbidden-state">
         <ShieldAlert className="w-12 h-12 text-red-500 mx-auto mb-3" />
         <h3 className="text-sm font-black text-red-400 uppercase tracking-widest">{t.adminPanel} Restricted</h3>
-        <p className="text-xs text-gray-500 mt-2 max-w-sm mx-auto leading-relaxed">
+        <p className="text-xs text-[#8E8E8E] mt-2 max-w-sm mx-auto leading-relaxed">
           Administrative controls, business vetting approvals, and category management are restricted to platform administrators only.
         </p>
-        <p className="text-[10px] text-gray-600 font-mono mt-4">
+        <p className="text-[10px] text-[#8E8E8E] font-mono mt-4">
           👉 Sign in with an admin account (e.g. admin@shiadirectory.com) to access this panel.
         </p>
       </div>
@@ -844,32 +844,32 @@ export const AdminPanelTab: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6" id="admin-panel-container">
+    <div className="min-h-full space-y-5 bg-[#0D0906]" id="admin-panel-container">
       
       {/* Title */}
-      <div className="pb-1.5 border-b border-[#D7E0EA] flex justify-between items-center" id="admin-main-header">
+      <div className="pb-2 border-b border-[#2B231D] flex justify-between items-center" id="admin-main-header">
         <div>
-          <h2 className="text-xl font-extrabold text-[#7C2D12] flex items-center gap-2">
+          <h2 className="text-xl font-extrabold text-white flex items-center gap-2">
             <Sliders className="w-5 h-5 text-[#F08C32]" />
             {t.adminTitle}
           </h2>
-          <p className="text-[10px] text-gray-500 font-medium">Platform-wide control, dues audit, and directory indexing</p>
+          <p className="text-[10px] text-[#8E8E8E] font-medium">Platform-wide control, dues audit, and directory indexing</p>
         </div>
       </div>
 
       {adminToast && (
-        <div className="px-4 py-2.5 rounded-xl bg-orange-50 border border-orange-200 text-[#D9771D] text-xs font-semibold flex items-center gap-2 animate-scale-up">
+        <div className="px-4 py-2.5 rounded-xl bg-[#FF9E47]/10 border border-[#F08C32]/30 text-[#F08C32] text-xs font-semibold flex items-center gap-2 animate-scale-up">
           <CheckCircle className="w-4 h-4 shrink-0" />
           {adminToast}
         </div>
       )}
 
       {/* Internal Navigation tabs */}
-      <div className="grid grid-cols-6 gap-1 p-1 rounded-2xl bg-white border border-[#D7E0EA]" id="admin-segment-bar">
+      <div className="grid grid-cols-6 gap-1 p-1 rounded-2xl bg-[#171310] border border-[#2B231D]" id="admin-segment-bar">
         <button
           onClick={() => setAdminTab('biz')}
-          className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
-            adminTab === 'biz' ? 'bg-[#FF9E47] text-white shadow-md' : 'text-gray-400 hover:text-[#7C2D12]'
+          className={`py-2.5 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
+            adminTab === 'biz' ? 'bg-[#FF9E47] text-black shadow-[0_6px_16px_rgba(240,140,50,0.35)]' : 'text-[#8E8E8E] hover:text-[#F08C32] hover:bg-[#1E1915]'
           }`}
         >
           <Award className="w-4 h-4" />
@@ -884,7 +884,7 @@ export const AdminPanelTab: React.FC = () => {
         <button
           onClick={() => setAdminTab('pay')}
           className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
-            adminTab === 'pay' ? 'bg-[#FF9E47] text-white shadow-md' : 'text-gray-400 hover:text-[#7C2D12]'
+            adminTab === 'pay' ? 'bg-[#FF9E47] text-black shadow-[0_6px_16px_rgba(240,140,50,0.35)]' : 'text-[#8E8E8E] hover:text-[#F08C32] hover:bg-[#1E1915]'
           }`}
         >
           <DollarSign className="w-4 h-4" />
@@ -894,7 +894,7 @@ export const AdminPanelTab: React.FC = () => {
         <button
           onClick={() => setAdminTab('jobs')}
           className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
-            adminTab === 'jobs' ? 'bg-[#FF9E47] text-white shadow-md' : 'text-gray-400 hover:text-[#7C2D12]'
+            adminTab === 'jobs' ? 'bg-[#FF9E47] text-black shadow-[0_6px_16px_rgba(240,140,50,0.35)]' : 'text-[#8E8E8E] hover:text-[#F08C32] hover:bg-[#1E1915]'
           }`}
         >
           <Briefcase className="w-4 h-4" />
@@ -909,7 +909,7 @@ export const AdminPanelTab: React.FC = () => {
         <button
           onClick={() => setAdminTab('cat')}
           className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
-            adminTab === 'cat' ? 'bg-[#FF9E47] text-white shadow-md' : 'text-gray-400 hover:text-[#7C2D12]'
+            adminTab === 'cat' ? 'bg-[#FF9E47] text-black shadow-[0_6px_16px_rgba(240,140,50,0.35)]' : 'text-[#8E8E8E] hover:text-[#F08C32] hover:bg-[#1E1915]'
           }`}
         >
           <Grid className="w-4 h-4" />
@@ -919,7 +919,7 @@ export const AdminPanelTab: React.FC = () => {
         <button
           onClick={() => setAdminTab('users')}
           className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
-            adminTab === 'users' ? 'bg-[#FF9E47] text-white shadow-md' : 'text-gray-400 hover:text-[#7C2D12]'
+            adminTab === 'users' ? 'bg-[#FF9E47] text-black shadow-[0_6px_16px_rgba(240,140,50,0.35)]' : 'text-[#8E8E8E] hover:text-[#F08C32] hover:bg-[#1E1915]'
           }`}
         >
           <Users className="w-4 h-4" />
@@ -934,7 +934,7 @@ export const AdminPanelTab: React.FC = () => {
         <button
           onClick={() => setAdminTab('log')}
           className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
-            adminTab === 'log' ? 'bg-[#FF9E47] text-white shadow-md' : 'text-gray-400 hover:text-[#7C2D12]'
+            adminTab === 'log' ? 'bg-[#FF9E47] text-black shadow-[0_6px_16px_rgba(240,140,50,0.35)]' : 'text-[#8E8E8E] hover:text-[#F08C32] hover:bg-[#1E1915]'
           }`}
         >
           <ScrollText className="w-4 h-4" />
@@ -948,26 +948,26 @@ export const AdminPanelTab: React.FC = () => {
           
           {/* Financial Controls Analytics */}
           <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="bg-[#F8FAFC] border border-[#D7E0EA] p-4 rounded-2xl relative overflow-hidden">
+            <div className="bg-[#1E1915] border border-[#2B231D] p-4 rounded-2xl relative overflow-hidden">
               <DollarSign className="w-10 h-10 text-[#F08C32] absolute right-3 top-3 opacity-10" />
-              <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">Collected Revenue</p>
-              <h3 className="text-xl font-black text-[#7C2D12]">{formatUsd(platformRevenue)}</h3>
+              <p className="text-[9px] font-bold text-[#8E8E8E] uppercase tracking-widest mb-1">Collected Revenue</p>
+              <h3 className="text-xl font-black text-white">{formatUsd(platformRevenue)}</h3>
             </div>
-            <div className="bg-[#F8FAFC] border border-[#D7E0EA] p-4 rounded-2xl relative overflow-hidden">
+            <div className="bg-[#1E1915] border border-[#2B231D] p-4 rounded-2xl relative overflow-hidden">
               <Award className="w-10 h-10 text-green-500 absolute right-3 top-3 opacity-10" />
-              <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">Active Listings</p>
+              <p className="text-[9px] font-bold text-[#8E8E8E] uppercase tracking-widest mb-1">Active Listings</p>
               <h3 className="text-xl font-black text-[#F08C32]">{activePaidListings.length}</h3>
             </div>
           </div>
 
           {/* Name / photo change requests from listing owners */}
-          <div className="p-4 rounded-3xl bg-white border border-amber-200 space-y-3" id="admin-change-requests">
+          <div className="p-4 rounded-3xl bg-[#171310] border border-[#F08C32]/35 space-y-3" id="admin-change-requests">
             <div className="flex items-center justify-between gap-2">
-              <h4 className="text-xs font-black uppercase tracking-wider text-amber-600 flex items-center gap-1.5">
+              <h4 className="text-xs font-black uppercase tracking-wider text-[#F08C32] flex items-center gap-1.5">
                 <AlertTriangle className="w-4 h-4" />
                 Name / Photo Change Requests
                 {!changeReqLoading && (
-                  <span className="text-[9px] text-slate-500 font-bold normal-case">({changeRequests.length} pending)</span>
+                  <span className="text-[9px] text-[#8E8E8E] font-bold normal-case">({changeRequests.length} pending)</span>
                 )}
               </h4>
               <button
@@ -978,22 +978,22 @@ export const AdminPanelTab: React.FC = () => {
                 Refresh
               </button>
             </div>
-            {changeReqLoading && <p className="text-[10px] text-gray-500 text-center py-2">Loading…</p>}
+            {changeReqLoading && <p className="text-[10px] text-[#8E8E8E] text-center py-2">Loading…</p>}
             {changeReqError && <p className="text-[10px] text-red-400">{changeReqError}</p>}
             {!changeReqLoading && !changeReqError && changeRequests.length === 0 && (
-              <p className="text-[10px] text-gray-500 text-center py-2">
+              <p className="text-[10px] text-[#8E8E8E] text-center py-2">
                 No pending name or photo change requests.
               </p>
             )}
             <div className="space-y-2">
               {changeRequests.map((req) => (
-                <div key={req.id} className="p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] space-y-2 text-xs">
-                  <div className="flex justify-between gap-2 text-[9px] text-gray-500">
+                <div key={req.id} className="p-3 rounded-xl bg-[#1E1915] border border-[#2B231D] space-y-2 text-xs">
+                  <div className="flex justify-between gap-2 text-[9px] text-[#8E8E8E]">
                     <span>{req.date}</span>
                     <span className="text-amber-400 font-bold uppercase">Pending</span>
                   </div>
                   <p>
-                    <strong className="text-[#7C2D12]">Listing:</strong> {req.currentName}
+                    <strong className="text-white">Listing:</strong> {req.currentName}
                     {req.ownerEmail ? ` · ${req.ownerEmail}` : ''}
                   </p>
                   {req.proposedName && (
@@ -1005,20 +1005,20 @@ export const AdminPanelTab: React.FC = () => {
                     <div className="flex gap-2 flex-wrap">
                       {req.proposedImageUrl && (
                         <div className="space-y-1">
-                          <span className="text-[9px] text-gray-500 block">New logo</span>
-                          <img src={req.proposedImageUrl} alt="Proposed logo" className="w-16 h-16 rounded-lg object-cover border border-[#D7E0EA]" />
+                          <span className="text-[9px] text-[#8E8E8E] block">New logo</span>
+                          <img src={req.proposedImageUrl} alt="Proposed logo" className="w-16 h-16 rounded-lg object-cover border border-[#2B231D]" />
                         </div>
                       )}
                       {req.proposedCoverUrl && (
                         <div className="space-y-1">
-                          <span className="text-[9px] text-gray-500 block">New cover</span>
-                          <img src={req.proposedCoverUrl} alt="Proposed cover" className="h-16 max-w-[140px] rounded-lg object-cover border border-[#D7E0EA]" />
+                          <span className="text-[9px] text-[#8E8E8E] block">New cover</span>
+                          <img src={req.proposedCoverUrl} alt="Proposed cover" className="h-16 max-w-[140px] rounded-lg object-cover border border-[#2B231D]" />
                         </div>
                       )}
                     </div>
                   )}
                   {req.note && (
-                    <p className="text-[11px] text-gray-400">Note: &quot;{req.note}&quot;</p>
+                    <p className="text-[11px] text-[#8E8E8E]">Note: &quot;{req.note}&quot;</p>
                   )}
                   <div className="flex gap-2 pt-1">
                     <button
@@ -1056,14 +1056,14 @@ export const AdminPanelTab: React.FC = () => {
             </button>
           </div>
           
-          <div className="flex items-center bg-white border border-[#D7E0EA] rounded-xl px-4 py-3 mb-2">
-            <Search className="w-4 h-4 text-gray-500 mr-3" />
+          <div className="flex items-center bg-[#171310] border border-[#2B231D] rounded-xl px-4 py-3 mb-2">
+            <Search className="w-4 h-4 text-[#8E8E8E] mr-3" />
             <input 
               type="text" 
               placeholder="Search vendors by name, email, or city..." 
               value={vendorSearch}
               onChange={(e) => setVendorSearch(e.target.value)}
-              className="bg-transparent border-none text-[#7C2D12] text-sm outline-none w-full placeholder:text-gray-500"
+              className="bg-transparent border-none text-white text-sm outline-none w-full placeholder:text-[#8E8E8E]"
             />
           </div>
 
@@ -1081,20 +1081,20 @@ export const AdminPanelTab: React.FC = () => {
                 className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all flex items-center gap-1.5 ${
                   bizFilter === key
                     ? key === 'all'
-                      ? 'bg-[#EEF2F6] text-[#7C2D12] border border-[#D7E0EA]'
+                      ? 'bg-[#1E1915] text-white border border-[#2B231D]'
                       : key === 'submissions'
                       ? 'bg-[#FF9E47] text-white shadow-lg shadow-[#FF9E47]/20'
                       : key === 'active'
-                        ? 'bg-orange-50 text-[#F08C32] border border-orange-200'
+                        ? 'bg-[#FF9E47]/10 text-[#F08C32] border border-[#F08C32]/30'
                         : key === 'pending'
-                          ? 'bg-orange-500/20 text-orange-400 border border-orange-500/50'
+                          ? 'bg-[#FF9E47]/100/20 text-orange-400 border border-orange-500/50'
                           : 'bg-red-500/20 text-red-400 border border-red-500/50'
-                    : 'bg-white text-gray-400 border border-[#D7E0EA]'
+                    : 'bg-[#171310] text-[#8E8E8E] border border-[#2B231D]'
                 }`}
               >
                 {label}
                 <span className={`px-1.5 py-0.5 rounded-full text-[8px] ${
-                  bizFilter === key ? 'bg-white/30' : 'bg-[#EEF2F6] text-gray-500'
+                  bizFilter === key ? 'bg-[#171310]/30' : 'bg-[#1E1915] text-[#8E8E8E]'
                 }`}>
                   {count}
                 </span>
@@ -1115,11 +1115,11 @@ export const AdminPanelTab: React.FC = () => {
 
           <div className="space-y-3" id="admin-vetting-list">
             {vettingLoading && (
-              <p className="text-[10px] text-gray-500 py-4 text-center">Loading listings from server…</p>
+              <p className="text-[10px] text-[#8E8E8E] py-4 text-center">Loading listings from server…</p>
             )}
 
             {!vettingLoading && filteredVettingListings.length === 0 && (
-              <div className="p-6 rounded-2xl bg-white border border-dashed border-[#D7E0EA] text-center text-gray-500 text-xs space-y-2">
+              <div className="p-6 rounded-2xl bg-[#171310] border border-dashed border-[#2B231D] text-center text-[#8E8E8E] text-xs space-y-2">
                 {bizFilter === 'submissions' ? (
                   <>
                     <p>
@@ -1150,32 +1150,32 @@ export const AdminPanelTab: React.FC = () => {
               const awaitingApproval = isPendingSubmission(biz);
               const descPreview = (biz.description?.en || '').trim();
               return (
-                <div key={biz.id} className="p-4 rounded-3xl bg-white border border-[#D7E0EA] space-y-3.5">
+                <div key={biz.id} className="p-4 rounded-3xl bg-[#171310] border border-[#2B231D] space-y-3.5">
                   <AdminListingPhotos business={biz} language={language} />
 
                   <div className="flex justify-between items-start gap-2">
                     <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h4 className="text-xs font-black text-[#7C2D12] truncate">{biz.name}</h4>
-                          <span className="px-1.5 py-0.5 rounded text-[7px] font-bold uppercase bg-[#EEF2F6] text-gray-400">
+                          <h4 className="text-xs font-black text-white truncate">{biz.name}</h4>
+                          <span className="px-1.5 py-0.5 rounded text-[7px] font-bold uppercase bg-[#1E1915] text-[#8E8E8E]">
                             {biz.listingType === 'service' ? 'Service' : 'Business'}
                           </span>
                         </div>
-                        <span className="text-[9px] text-gray-500 block uppercase tracking-wider mt-0.5">
+                        <span className="text-[9px] text-[#8E8E8E] block uppercase tracking-wider mt-0.5">
                           {biz.city} • {biz.subcategory.en}
                         </span>
-                        <span className="text-[8px] text-gray-600 block truncate">{biz.ownerId}</span>
+                        <span className="text-[8px] text-[#8E8E8E] block truncate">{biz.ownerId}</span>
                         {biz.phone && (
-                          <span className="text-[8px] text-gray-500 block">{biz.phone}</span>
+                          <span className="text-[8px] text-[#8E8E8E] block">{biz.phone}</span>
                         )}
                         {biz.address && (
-                          <span className="text-[8px] text-gray-600 block truncate">{biz.address}{biz.area ? `, ${biz.area}` : ''}</span>
+                          <span className="text-[8px] text-[#8E8E8E] block truncate">{biz.address}{biz.area ? `, ${biz.area}` : ''}</span>
                         )}
                         {descPreview && (
-                          <p className="text-[9px] text-gray-500 mt-1.5 line-clamp-2 leading-relaxed">{descPreview}</p>
+                          <p className="text-[9px] text-[#8E8E8E] mt-1.5 line-clamp-2 leading-relaxed">{descPreview}</p>
                         )}
                         {biz.registeredAt && (
-                          <span className="text-[7px] text-gray-600 block mt-1">Registered: {biz.registeredAt}</span>
+                          <span className="text-[7px] text-[#8E8E8E] block mt-1">Registered: {biz.registeredAt}</span>
                         )}
                     </div>
 
@@ -1186,8 +1186,8 @@ export const AdminPanelTab: React.FC = () => {
                         </span>
                       )}
                       <span className={`px-2 py-0.5 rounded-full text-[8px] font-bold tracking-widest uppercase block ${
-                        biz.status === 'active' ? 'bg-orange-50 text-[#F08C32]' :
-                        biz.status === 'pending' ? 'bg-orange-50 text-orange-600' : 'bg-red-50 text-red-600'
+                        biz.status === 'active' ? 'bg-[#FF9E47]/10 text-[#F08C32]' :
+                        biz.status === 'pending' ? 'bg-[#FF9E47]/10 text-orange-600' : 'bg-red-50 text-red-600'
                       }`}>
                         {biz.status.toUpperCase()}
                       </span>
@@ -1205,7 +1205,7 @@ export const AdminPanelTab: React.FC = () => {
                   </div>
 
                   {/* Actions area */}
-                  <div className="flex flex-wrap gap-2 pt-2 border-t border-[#D7E0EA]/45 justify-between items-center text-xs" id={`vet-actions-${biz.id}`}>
+                  <div className="flex flex-wrap gap-2 pt-2 border-t border-[#2B231D]/45 justify-between items-center text-xs" id={`vet-actions-${biz.id}`}>
                     <div className="flex gap-2 w-full justify-between flex-wrap">
                       {awaitingApproval && (
                         <div className="flex gap-2">
@@ -1254,7 +1254,7 @@ export const AdminPanelTab: React.FC = () => {
                       <button
                         onClick={() => handleDeleteListing(biz)}
                         disabled={isBusy}
-                        className="p-1 px-2 rounded bg-slate-100 hover:bg-stone-850 text-gray-400 hover:text-red-400 disabled:opacity-50"
+                        className="p-1 px-2 rounded bg-[#1E1915] hover:bg-[#1E1915] text-[#8E8E8E] hover:text-red-400 disabled:opacity-50"
                         title="Delete listing"
                       >
                         <Trash className="w-3.5 h-3.5" />
@@ -1310,22 +1310,22 @@ export const AdminPanelTab: React.FC = () => {
                 hint: language === 'en' ? 'Including free trial' : 'يشمل التجربة المجانية',
               }
             ].map(({ label, value, color, hint }) => (
-              <div key={label} className="p-3.5 rounded-2xl bg-white border border-[#D7E0EA] text-center">
+              <div key={label} className="p-3.5 rounded-2xl bg-[#171310] border border-[#2B231D] text-center">
                 <span className={`text-xl font-black block ${color}`}>{value}</span>
-                <span className="text-[9px] text-gray-500 font-bold uppercase tracking-wider block mt-0.5">{label}</span>
-                <span className="text-[8px] text-gray-600 block mt-0.5">{hint}</span>
+                <span className="text-[9px] text-[#8E8E8E] font-bold uppercase tracking-wider block mt-0.5">{label}</span>
+                <span className="text-[8px] text-[#8E8E8E] block mt-0.5">{hint}</span>
               </div>
             ))}
           </div>
 
           {/* Payment Records Table */}
-          <div className="p-4 rounded-3xl bg-white border border-[#D7E0EA] space-y-3">
+          <div className="p-4 rounded-3xl bg-[#171310] border border-[#2B231D] space-y-3">
             {duesLoading && (
-              <p className="text-[10px] text-gray-500 py-4 text-center">Loading dues ledger…</p>
+              <p className="text-[10px] text-[#8E8E8E] py-4 text-center">Loading dues ledger…</p>
             )}
 
             {!duesLoading && duesLedger.length === 0 && !duesError && (
-              <p className="text-[10px] text-gray-500 py-4 text-center">
+              <p className="text-[10px] text-[#8E8E8E] py-4 text-center">
                 No listings yet. Revenue stays $0 during the 2-month free trial until owners pay.
               </p>
             )}
@@ -1333,7 +1333,7 @@ export const AdminPanelTab: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-[11px] border-collapse" id="admin-payments-table">
                 <thead>
-                  <tr className="border-b border-[#D7E0EA] text-gray-500 font-bold uppercase tracking-wider">
+                  <tr className="border-b border-[#2B231D] text-[#8E8E8E] font-bold uppercase tracking-wider">
                     <th className="py-2 pr-2">{language === 'en' ? 'Business' : 'النشاط التجاري'}</th>
                     <th className="py-2 pr-2">{t.amount}</th>
                     <th className="py-2 pr-2">{t.date}</th>
@@ -1341,7 +1341,7 @@ export const AdminPanelTab: React.FC = () => {
                     <th className="py-2">{t.refNo}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#D7E0EA]/45 text-gray-300">
+                <tbody className="divide-y divide-[#2B231D] text-[#CFCFCF]">
                   {duesLedger.map((row) => {
                     const today = new Date();
                     const expiry = row.expires && row.expires !== '—' ? new Date(row.expires) : null;
@@ -1357,7 +1357,7 @@ export const AdminPanelTab: React.FC = () => {
                           <div className="flex items-center gap-1.5">
                             {biz && <BusinessThumbnail business={biz} eager className="w-6 h-6 rounded object-cover" />}
                             <div>
-                              <span className="font-semibold text-[#7C2D12] text-[10px] block">{row.businessName}</span>
+                              <span className="font-semibold text-white text-[10px] block">{row.businessName}</span>
                               {row.status === 'trial' && (
                                 <span className="text-[8px] text-green-400 font-bold">FREE TRIAL</span>
                               )}
@@ -1367,7 +1367,7 @@ export const AdminPanelTab: React.FC = () => {
                         <td className="py-3 pr-2 font-mono font-bold text-[#F08C32]">
                           {row.amount === 0 ? '$0' : `$${row.amount}`}
                         </td>
-                        <td className="py-3 pr-2 text-gray-400">{row.date}</td>
+                        <td className="py-3 pr-2 text-[#8E8E8E]">{row.date}</td>
                         <td className="py-3 pr-2">
                           <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
                             isExpired ? 'bg-red-500/20 text-red-400' :
@@ -1377,7 +1377,7 @@ export const AdminPanelTab: React.FC = () => {
                             {row.expires}
                           </span>
                         </td>
-                        <td className="py-3 font-mono text-gray-500 text-[10px]">{row.refNo}</td>
+                        <td className="py-3 font-mono text-[#8E8E8E] text-[10px]">{row.refNo}</td>
                       </tr>
                     );
                   })}
@@ -1387,7 +1387,7 @@ export const AdminPanelTab: React.FC = () => {
           </div>
 
           {/* Subscription status overview */}
-          <div className="p-4 rounded-3xl bg-white border border-[#D7E0EA] space-y-2">
+          <div className="p-4 rounded-3xl bg-[#171310] border border-[#2B231D] space-y-2">
             <h4 className="text-[10px] font-black uppercase tracking-wider text-[#F08C32] mb-3">
               {language === 'en' ? 'All Business Subscription Status' : 'حالة اشتراك جميع النشاطات'}
             </h4>
@@ -1403,13 +1403,13 @@ export const AdminPanelTab: React.FC = () => {
                 : Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
               const onTrial = ledgerRow?.status === 'trial';
               return (
-                <div key={biz.id} className="flex items-center justify-between py-2 border-b border-[#D7E0EA]/40 last:border-0">
+                <div key={biz.id} className="flex items-center justify-between py-2 border-b border-[#2B231D]/40 last:border-0">
                   <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full flex-shrink-0 ${biz.status === 'active' ? 'bg-green-400 animate-pulse' : 'bg-red-500'}`} />
-                    <span className="text-[10px] font-semibold text-[#7C2D12]">{biz.name}</span>
+                    <span className="text-[10px] font-semibold text-white">{biz.name}</span>
                   </div>
                   <div className="flex items-center gap-2 text-[9px]">
-                    <span className="text-gray-500">{expiryStr}</span>
+                    <span className="text-[#8E8E8E]">{expiryStr}</span>
                     <span className={`px-1.5 py-0.5 rounded-full font-bold ${
                       biz.status === 'suspended' ? 'bg-red-500/20 text-red-400' :
                       onTrial ? 'bg-green-500/20 text-green-400' :
@@ -1462,23 +1462,23 @@ export const AdminPanelTab: React.FC = () => {
                 className={`p-3.5 rounded-2xl border text-center transition-all ${
                   jobFilter === key
                     ? 'bg-[#FF9E47]/10 border-[#F08C32]/40'
-                    : 'bg-white border-[#D7E0EA]'
+                    : 'bg-[#171310] border-[#2B231D]'
                 }`}
               >
                 <span className={`text-xl font-black block ${color}`}>{count}</span>
-                <span className="text-[9px] text-gray-500 font-bold uppercase tracking-wider">{label}</span>
+                <span className="text-[9px] text-[#8E8E8E] font-bold uppercase tracking-wider">{label}</span>
               </button>
             ))}
           </div>
 
-          <div className="flex items-center bg-white border border-[#D7E0EA] rounded-xl px-4 py-3">
-            <Search className="w-4 h-4 text-gray-500 mr-3 shrink-0" />
+          <div className="flex items-center bg-[#171310] border border-[#2B231D] rounded-xl px-4 py-3">
+            <Search className="w-4 h-4 text-[#8E8E8E] mr-3 shrink-0" />
             <input
               type="text"
               placeholder="Search by job title, business, category, or email…"
               value={jobSearch}
               onChange={(e) => setJobSearch(e.target.value)}
-              className="bg-transparent border-none text-[#7C2D12] text-sm outline-none w-full placeholder:text-gray-500"
+              className="bg-transparent border-none text-white text-sm outline-none w-full placeholder:text-[#8E8E8E]"
             />
           </div>
 
@@ -1486,11 +1486,11 @@ export const AdminPanelTab: React.FC = () => {
 
           <div className="space-y-3" id="admin-jobs-list">
             {jobsLoading && (
-              <p className="text-[10px] text-gray-500 py-4 text-center">Loading job postings…</p>
+              <p className="text-[10px] text-[#8E8E8E] py-4 text-center">Loading job postings…</p>
             )}
 
             {!jobsLoading && filteredAdminJobs.length === 0 && (
-              <div className="p-6 rounded-2xl bg-white border border-dashed border-[#D7E0EA] text-center text-gray-500 text-xs">
+              <div className="p-6 rounded-2xl bg-[#171310] border border-dashed border-[#2B231D] text-center text-[#8E8E8E] text-xs">
                 {language === 'en'
                   ? 'No job postings match this filter.'
                   : 'لا توجد وظائف مطابقة لهذا الفلتر.'}
@@ -1504,10 +1504,10 @@ export const AdminPanelTab: React.FC = () => {
               return (
                 <div
                   key={job.id}
-                  className="p-4 rounded-3xl bg-white border border-[#D7E0EA] space-y-3"
+                  className="p-4 rounded-3xl bg-[#171310] border border-[#2B231D] space-y-3"
                 >
                   {jobPoster ? (
-                    <div className="relative h-28 rounded-xl overflow-hidden border border-[#D7E0EA] bg-[#EEF2F6]">
+                    <div className="relative h-28 rounded-xl overflow-hidden border border-[#2B231D] bg-[#1E1915]">
                       <img
                         src={listingMediaUrl(jobPoster) || jobPoster}
                         alt={job.title}
@@ -1531,24 +1531,24 @@ export const AdminPanelTab: React.FC = () => {
                           logoUrl: jobPoster || job.businessLogoUrl,
                         }}
                         eager
-                        className="w-11 h-11 rounded-lg object-cover bg-[#F8FAFC] border border-[#D7E0EA] shrink-0"
+                        className="w-11 h-11 rounded-lg object-cover bg-[#1E1915] border border-[#2B231D] shrink-0"
                       />
                       <div className="min-w-0">
-                        <h4 className="text-xs font-black text-[#7C2D12] truncate">{job.title}</h4>
-                        <span className="text-[9px] text-gray-500 block uppercase tracking-wider mt-0.5">
+                        <h4 className="text-xs font-black text-white truncate">{job.title}</h4>
+                        <span className="text-[9px] text-[#8E8E8E] block uppercase tracking-wider mt-0.5">
                           {job.businessName}
                         </span>
                         <span className="text-[8px] text-[#F08C32] font-bold block mt-0.5">{job.category}</span>
-                        <span className="text-[8px] text-gray-600 block truncate">{job.hiringEmail}</span>
+                        <span className="text-[8px] text-[#8E8E8E] block truncate">{job.hiringEmail}</span>
                         {job.requirements && (
-                          <p className="text-[9px] text-gray-500 mt-1.5 line-clamp-2">{job.requirements}</p>
+                          <p className="text-[9px] text-[#8E8E8E] mt-1.5 line-clamp-2">{job.requirements}</p>
                         )}
-                        <span className="text-[8px] text-gray-600 block mt-1">
+                        <span className="text-[8px] text-[#8E8E8E] block mt-1">
                           ${job.salaryMin.toLocaleString()} – ${job.salaryMax.toLocaleString()}/mo
                           {job.postedDate ? ` • Posted ${job.postedDate}` : ''}
                         </span>
                         {biz && (
-                          <span className="text-[7px] text-gray-600 block">
+                          <span className="text-[7px] text-[#8E8E8E] block">
                             Listing: {biz.city} • {biz.subcategory.en}
                           </span>
                         )}
@@ -1565,7 +1565,7 @@ export const AdminPanelTab: React.FC = () => {
                     </span>
                   </div>
 
-                  <div className="flex flex-wrap gap-2 pt-2 border-t border-[#D7E0EA]/45">
+                  <div className="flex flex-wrap gap-2 pt-2 border-t border-[#2B231D]/45">
                     <button
                       type="button"
                       onClick={() => handleToggleJobBlock(job)}
@@ -1582,7 +1582,7 @@ export const AdminPanelTab: React.FC = () => {
                       type="button"
                       onClick={() => handleDeleteJob(job)}
                       disabled={isBusy}
-                      className="p-1 px-2 rounded bg-slate-100 hover:bg-stone-850 text-gray-400 hover:text-red-400 disabled:opacity-50"
+                      className="p-1 px-2 rounded bg-[#1E1915] hover:bg-[#1E1915] text-[#8E8E8E] hover:text-red-400 disabled:opacity-50"
                       title="Delete job"
                     >
                       <Trash className="w-3.5 h-3.5" />
@@ -1603,17 +1603,17 @@ export const AdminPanelTab: React.FC = () => {
           </h3>
 
           {/* Creation Form */}
-          <form onSubmit={handleAddCategorySubmit} className="p-4 rounded-3xl bg-white border border-[#D7E0EA] space-y-3.5" id="admin-cat-form">
+          <form onSubmit={handleAddCategorySubmit} className="p-4 rounded-3xl bg-[#171310] border border-[#2B231D] space-y-3.5" id="admin-cat-form">
             {catSuccess && <p className="text-xs text-green-400 mb-1">{catSuccess}</p>}
             {catError && <p className="text-xs text-red-400 mb-1">{catError}</p>}
             <div>
-              <label className="block text-[10px] text-gray-400 mb-1">Category Title</label>
+              <label className="block text-[10px] text-[#8E8E8E] mb-1">Category Title</label>
               <input
                 type="text"
                 placeholder="e.g. Construction"
                 value={newCatNameEn}
                 onChange={(e) => setNewCatNameEn(e.target.value)}
-                className="w-full p-2 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] text-xs text-[#7C2D12]"
+                className="w-full p-2 rounded-xl bg-[#1E1915] border border-[#2B231D] text-xs text-white"
                 required
               />
             </div>
@@ -1643,9 +1643,9 @@ export const AdminPanelTab: React.FC = () => {
           </form>
 
           {/* Existing Categories list */}
-          <div className="p-4 rounded-3xl bg-white border border-[#D7E0EA]" id="admin-cats-list">
+          <div className="p-4 rounded-3xl bg-[#171310] border border-[#2B231D]" id="admin-cats-list">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-[10px] text-gray-500 uppercase font-black">
+              <span className="text-[10px] text-[#8E8E8E] uppercase font-black">
                 Currently Configured Directory Tags ({categories.length})
               </span>
               <button
@@ -1658,20 +1658,20 @@ export const AdminPanelTab: React.FC = () => {
             </div>
 
             {catsLoading && (
-              <p className="text-[10px] text-gray-500 py-4 text-center">Loading categories…</p>
+              <p className="text-[10px] text-[#8E8E8E] py-4 text-center">Loading categories…</p>
             )}
 
             {!catsLoading && categories.length === 0 && (
-              <p className="text-[10px] text-gray-500 py-4 text-center">
+              <p className="text-[10px] text-[#8E8E8E] py-4 text-center">
                 No categories yet. Create one above — they appear on Home, Search, and registration forms.
               </p>
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-72 overflow-y-auto scrollbar-thin" id="admin-cats-grid">
               {categories.map((c) => (
-                <div key={c.id} className="p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA]/40 flex justify-between items-center gap-2">
+                <div key={c.id} className="p-2.5 rounded-xl bg-[#1E1915] border border-[#2B231D]/40 flex justify-between items-center gap-2">
                   <div className="min-w-0">
-                    <span className="text-xs font-bold text-[#7C2D12] block truncate">{c.name.en}</span>
+                    <span className="text-xs font-bold text-white block truncate">{c.name.en}</span>
                     <span className="text-[8px] text-[#F08C32] font-bold block">{c.group}</span>
                   </div>
                   <button
@@ -1686,7 +1686,7 @@ export const AdminPanelTab: React.FC = () => {
                       }
                       await refreshCategories();
                     }}
-                    className="p-1 shrink-0 text-gray-600 hover:text-red-400 rounded"
+                    className="p-1 shrink-0 text-[#8E8E8E] hover:text-red-400 rounded"
                     title="Remove category"
                   >
                     <Trash className="w-3.5 h-3.5" />
@@ -1701,28 +1701,28 @@ export const AdminPanelTab: React.FC = () => {
       {/* SEGMENT 4: USER MANAGEMENT & ABUSE REPORTS */}
       {adminTab === 'users' && (
         <div className="space-y-4 animate-scale-up" id="admin-users-section">
-          <div className="p-4 rounded-3xl bg-white border border-[#D7E0EA] space-y-3">
+          <div className="p-4 rounded-3xl bg-[#171310] border border-[#2B231D] space-y-3">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <h4 className="text-xs font-black uppercase tracking-wider text-[#FFA500] flex items-center gap-1">
+              <h4 className="text-xs font-black uppercase tracking-wider text-[#F08C32] flex items-center gap-1">
                 <Users className="w-4 h-4" /> Active Directory Members
                 {!usersLoading && (
-                  <span className="text-[9px] text-gray-500 font-bold normal-case">({directoryUsers.length})</span>
+                  <span className="text-[9px] text-[#8E8E8E] font-bold normal-case">({directoryUsers.length})</span>
                 )}
               </h4>
               <div className="relative">
-                <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500" />
+                <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[#8E8E8E]" />
                 <input
                   type="text"
                   value={userSearch}
                   onChange={(e) => setUserSearch(e.target.value)}
                   placeholder="Search users..."
-                  className="w-full sm:w-48 pl-8 pr-3 py-1.5 text-[10px] rounded-lg bg-[#EEF2F6] border border-[#D7E0EA] text-gray-300 placeholder:text-gray-600"
+                  className="w-full sm:w-48 pl-8 pr-3 py-1.5 text-[10px] rounded-lg bg-[#1E1915] border border-[#2B231D] text-[#CFCFCF] placeholder:text-[#8E8E8E]"
                 />
               </div>
             </div>
 
             {usersLoading && (
-              <p className="text-[10px] text-gray-500 py-4 text-center">Loading users...</p>
+              <p className="text-[10px] text-[#8E8E8E] py-4 text-center">Loading users...</p>
             )}
 
             {usersError && !usersLoading && (
@@ -1738,17 +1738,17 @@ export const AdminPanelTab: React.FC = () => {
             )}
 
             {!usersLoading && !usersError && filteredDirectoryUsers.length === 0 && (
-              <p className="text-[10px] text-gray-500 py-4 text-center">
+              <p className="text-[10px] text-[#8E8E8E] py-4 text-center">
                 {userSearch ? 'No users match your search.' : 'No registered users yet.'}
               </p>
             )}
 
-            <div className="divide-y divide-[#D7E0EA]/45 text-xs text-gray-300">
+            <div className="divide-y divide-[#2B231D] text-xs text-[#CFCFCF]">
               {filteredDirectoryUsers.map((user) => (
                 <div key={user.id} className="py-2.5 flex justify-between items-center gap-3">
                   <div className="min-w-0">
                     <span className="block font-bold truncate">{user.email}</span>
-                    <span className="text-[9px] text-gray-550 block truncate">
+                    <span className="text-[9px] text-[#8E8E8E] block truncate">
                       {user.name} • {user.listingStatus}
                     </span>
                   </div>
@@ -1762,7 +1762,7 @@ export const AdminPanelTab: React.FC = () => {
                       className={`shrink-0 px-2.5 py-1 text-[9px] font-bold rounded ${
                         user.isBlocked
                           ? 'bg-green-600/20 text-green-400 hover:bg-green-600/30 border border-green-800/40'
-                          : 'bg-slate-100 text-red-400 hover:bg-stone-850'
+                          : 'bg-[#1E1915] text-red-400 hover:bg-[#1E1915]'
                       }`}
                     >
                       {user.isBlocked ? 'Unblock' : 'Block User'}
@@ -1774,13 +1774,13 @@ export const AdminPanelTab: React.FC = () => {
           </div>
 
           {/* Abuse reporting index */}
-          <div className="p-4 rounded-3xl bg-white border border-[#D7E0EA] space-y-3">
+          <div className="p-4 rounded-3xl bg-[#171310] border border-[#2B231D] space-y-3">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <h4 className="text-xs font-black uppercase tracking-wider text-[#FFA500] flex items-center gap-1.5 text-amber-400">
+              <h4 className="text-xs font-black uppercase tracking-wider text-[#F08C32] flex items-center gap-1.5 text-amber-400">
                 <AlertTriangle className="w-4 h-4 text-amber-400" />
                 Community Integrity & Feedback Reports
                 {!reportsLoading && (
-                  <span className="text-[9px] text-gray-500 font-bold normal-case">({integrityReports.length})</span>
+                  <span className="text-[9px] text-[#8E8E8E] font-bold normal-case">({integrityReports.length})</span>
                 )}
               </h4>
               <div className="flex gap-1">
@@ -1791,7 +1791,7 @@ export const AdminPanelTab: React.FC = () => {
                     className={`px-2 py-1 text-[9px] font-bold rounded uppercase ${
                       reportFilter === filter
                         ? 'bg-[#FF9E47] text-white'
-                        : 'bg-slate-100 text-gray-400 hover:text-[#7C2D12]'
+                        : 'bg-[#1E1915] text-[#8E8E8E] hover:text-[#F08C32]'
                     }`}
                   >
                     {filter}
@@ -1801,7 +1801,7 @@ export const AdminPanelTab: React.FC = () => {
             </div>
 
             {reportsLoading && (
-              <p className="text-[10px] text-gray-500 py-4 text-center">Loading reports...</p>
+              <p className="text-[10px] text-[#8E8E8E] py-4 text-center">Loading reports...</p>
             )}
 
             {reportsError && !reportsLoading && (
@@ -1817,7 +1817,7 @@ export const AdminPanelTab: React.FC = () => {
             )}
 
             {!reportsLoading && !reportsError && filteredIntegrityReports.length === 0 && (
-              <p className="text-[10px] text-gray-500 py-4 text-center">
+              <p className="text-[10px] text-[#8E8E8E] py-4 text-center">
                 {reportFilter === 'open'
                   ? 'No open reports. Community members can flag listings from a business detail page.'
                   : 'No reports in this filter.'}
@@ -1826,22 +1826,22 @@ export const AdminPanelTab: React.FC = () => {
 
             <div className="space-y-2" id="admin-reports-list">
               {filteredIntegrityReports.map((rep) => (
-                <div key={rep.id} className="p-3 rounded-xl bg-[#EEF2F6] border border-red-950/20 space-y-1 text-xs">
-                  <div className="flex justify-between items-start gap-2 text-[9px] text-gray-500">
+                <div key={rep.id} className="p-3 rounded-xl bg-[#1E1915] border border-red-950/20 space-y-1 text-xs">
+                  <div className="flex justify-between items-start gap-2 text-[9px] text-[#8E8E8E]">
                     <span>Date: {rep.date}</span>
                     <span className={`font-bold text-right ${rep.status === 'open' ? 'text-red-400' : 'text-green-400'}`}>
                       {rep.status === 'open' ? 'UNRESOLVED' : 'RESOLVED'}
                     </span>
                   </div>
                   <p>
-                    <strong className="text-[#7C2D12]">Reporter:</strong> {rep.reporterName}
+                    <strong className="text-white">Reporter:</strong> {rep.reporterName}
                     {rep.reporterEmail ? ` (${rep.reporterEmail})` : ''}
                   </p>
                   <p>
-                    <strong className="text-[#7C2D12]">Flagged Listing:</strong> {rep.businessName}
+                    <strong className="text-white">Flagged Listing:</strong> {rep.businessName}
                   </p>
-                  <p className="text-gray-400 text-[11px] leading-relaxed mt-1">
-                    <strong className="text-gray-350">Incident details: </strong>
+                  <p className="text-[#8E8E8E] text-[11px] leading-relaxed mt-1">
+                    <strong className="text-white">Incident details: </strong>
                     &quot;{rep.reason}&quot;
                   </p>
                   {rep.status === 'open' && (
@@ -1863,25 +1863,25 @@ export const AdminPanelTab: React.FC = () => {
         <div className="space-y-4 animate-fade-in-up" id="admin-activity-log">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-bold text-[#7C2D12]">Admin activity log</h3>
-              <p className="text-[10px] text-gray-500">Who approved, suspended, or declined what</p>
+              <h3 className="text-sm font-bold text-white">Admin activity log</h3>
+              <p className="text-[10px] text-[#8E8E8E]">Who approved, suspended, or declined what</p>
             </div>
             <button
               type="button"
               onClick={() => void loadActivityLogs()}
-              className="px-3 py-1.5 rounded-xl text-[10px] font-bold bg-[#EEF2F6] border border-[#D7E0EA] text-[#F08C32]"
+              className="px-3 py-1.5 rounded-xl text-[10px] font-bold bg-[#1E1915] border border-[#2B231D] text-[#F08C32]"
             >
               Refresh
             </button>
           </div>
           {activityLoading && (
-            <p className="text-xs text-gray-500">Loading activity…</p>
+            <p className="text-xs text-[#8E8E8E]">Loading activity…</p>
           )}
           {activityError && (
             <p className="text-xs text-red-400">{activityError}</p>
           )}
           {!activityLoading && activityLogs.length === 0 && !activityError && (
-            <p className="text-xs text-gray-500 p-4 rounded-2xl border border-dashed border-[#D7E0EA]">
+            <p className="text-xs text-[#8E8E8E] p-4 rounded-2xl border border-dashed border-[#2B231D]">
               No admin actions logged yet. Approvals and suspensions will appear here.
             </p>
           )}
@@ -1889,28 +1889,28 @@ export const AdminPanelTab: React.FC = () => {
             {activityLogs.map((row) => (
               <div
                 key={row.id}
-                className="p-3.5 rounded-2xl bg-white border border-[#D7E0EA] space-y-1"
+                className="p-3.5 rounded-2xl bg-[#171310] border border-[#2B231D] space-y-1"
               >
                 <div className="flex items-start justify-between gap-2">
                   <span className="text-[11px] font-black uppercase tracking-wide text-[#F08C32]">
                     {row.action.replace(/_/g, ' ')}
                   </span>
-                  <span className="text-[9px] text-gray-500 whitespace-nowrap">
+                  <span className="text-[9px] text-[#8E8E8E] whitespace-nowrap">
                     {row.createdAt
                       ? new Date(row.createdAt).toLocaleString()
                       : row.date}
                   </span>
                 </div>
-                <p className="text-xs text-[#7C2D12] font-semibold">
+                <p className="text-xs text-white font-semibold">
                   {row.targetName || row.targetId || '—'}
-                  <span className="text-gray-500 font-normal"> · {row.targetType}</span>
+                  <span className="text-[#8E8E8E] font-normal"> · {row.targetType}</span>
                 </p>
-                <p className="text-[10px] text-gray-400">
+                <p className="text-[10px] text-[#8E8E8E]">
                   By {row.adminName || 'Admin'}
                   {row.adminEmail ? ` (${row.adminEmail})` : ''}
                 </p>
                 {row.details && (
-                  <p className="text-[10px] text-gray-500 leading-relaxed">{row.details}</p>
+                  <p className="text-[10px] text-[#8E8E8E] leading-relaxed">{row.details}</p>
                 )}
               </div>
             ))}

@@ -31,7 +31,7 @@ const PhotoTile: React.FC<PhotoTileProps> = ({ url, fallback, label, onExpand })
     <button
       type="button"
       onClick={onExpand}
-      className="group relative aspect-[4/3] rounded-xl overflow-hidden border border-[#D7E0EA] bg-[#EEF2F6] text-left"
+      className="group relative aspect-[4/3] rounded-xl overflow-hidden border border-[#2B231D] bg-[#1E1915] text-left"
       title={label}
     >
       <img
@@ -43,7 +43,7 @@ const PhotoTile: React.FC<PhotoTileProps> = ({ url, fallback, label, onExpand })
         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
         onError={() => setSrc(fallback)}
       />
-      <span className="absolute bottom-0 inset-x-0 px-2 py-1 text-[8px] font-bold uppercase tracking-wider bg-black/70 text-gray-300">
+      <span className="absolute bottom-0 inset-x-0 px-2 py-1 text-[8px] font-bold uppercase tracking-wider bg-black/70 text-[#CFCFCF]">
         {label}
       </span>
       <span className="absolute top-1.5 right-1.5 p-1 rounded-md bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
@@ -75,7 +75,7 @@ export const AdminListingPhotos: React.FC<AdminListingPhotosProps> = ({ business
 
   return (
     <div className="space-y-2" id={`admin-photos-${business.id}`}>
-      <div className="relative h-24 rounded-xl overflow-hidden border border-[#D7E0EA] bg-[#EEF2F6]">
+      <div className="relative h-24 rounded-xl overflow-hidden border border-[#2B231D] bg-[#1E1915]">
         <img
           src={coverSrc}
           alt={`${business.name} cover`}
@@ -87,7 +87,7 @@ export const AdminListingPhotos: React.FC<AdminListingPhotosProps> = ({ business
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
         <div className="absolute bottom-2 left-2 flex items-end gap-2">
-          <div className="w-12 h-12 rounded-lg overflow-hidden border-2 border-[#F08C32]/60 bg-white shrink-0">
+          <div className="w-12 h-12 rounded-lg overflow-hidden border-2 border-[#F08C32]/60 bg-[#171310] shrink-0">
             <img
               src={logoSrc}
               alt={`${business.name} logo`}
@@ -98,7 +98,7 @@ export const AdminListingPhotos: React.FC<AdminListingPhotosProps> = ({ business
               onError={() => setLogoSrc(fallbackLogo)}
             />
           </div>
-          <span className="text-[8px] font-bold uppercase tracking-wider text-gray-300 pb-0.5">
+          <span className="text-[8px] font-bold uppercase tracking-wider text-[#CFCFCF] pb-0.5">
             {language === 'en' ? 'Business photos' : 'صور النشاط'}
           </span>
         </div>
