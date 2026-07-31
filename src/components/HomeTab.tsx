@@ -38,7 +38,6 @@ import {
   Star,
   Heart,
   Briefcase,
-  Users,
   Store,
   Handshake,
   Grid3X3,
