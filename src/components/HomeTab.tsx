@@ -340,6 +340,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
   );
 
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [showRegisterJobModal, setShowRegisterJobModal] = useState(false);
 
   const handleOverlayBack = useCallback((): boolean => {
     if (selectedJob) {
@@ -707,14 +708,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                   onSwitchTab('job-management');
                   return;
                 }
-                window.alert(
-                  'FIRST REGISTER AS BUSSINESS/SERVICE PROVIDER THEN YOU POST A JOB',
-                );
-                if (!currentUser) {
-                  onSwitchTab('account');
-                } else {
-                  onSwitchTab('business');
-                }
+                setShowRegisterJobModal(true);
               }}
               className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#FF9E47] text-black text-[12px] font-extrabold"
               id="btn-post-job-cta"
@@ -823,6 +817,60 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           </div>
         </section>
       </div>
+
+      {showRegisterJobModal && (
+        <div
+          className="fixed inset-0 z-[90] flex items-center justify-center p-5 bg-black/80 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="register-job-modal-title"
+          id="register-job-required-modal"
+          onClick={() => setShowRegisterJobModal(false)}
+        >
+          <div
+            className="relative w-full max-w-sm rounded-3xl border border-[#3A2E22] shadow-[0_24px_60px_rgba(0,0,0,0.7)] overflow-hidden"
+            style={{ background: 'linear-gradient(180deg, #1A1510 0%, #100C09 100%)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-5 pt-5 pb-4 text-center">
+              <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-[#FF9E47]/15 border border-[#F08C32]/40 flex items-center justify-center">
+                <Briefcase className="w-7 h-7 text-[#F08C32]" strokeWidth={1.75} />
+              </div>
+              <h3
+                id="register-job-modal-title"
+                className="text-[15px] font-extrabold text-white leading-snug mb-2"
+              >
+                Registration Required
+              </h3>
+              <p className="text-[12px] text-[#CFCFCF] leading-relaxed">
+                First register as a <span className="font-bold text-[#F08C32]">Business</span> or{' '}
+                <span className="font-bold text-[#F08C32]">Service Provider</span>, then you can post a job.
+              </p>
+            </div>
+            <div className="px-5 pb-5 flex flex-col gap-2.5">
+              <button
+                type="button"
+                className="w-full py-3 rounded-2xl bg-[#FF9E47] text-black text-[13px] font-extrabold flex items-center justify-center gap-1.5"
+                id="btn-register-job-modal-cta"
+                onClick={() => {
+                  setShowRegisterJobModal(false);
+                  onSwitchTab(currentUser ? 'business' : 'account');
+                }}
+              >
+                Register Now <ArrowRight className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                className="w-full py-2.5 rounded-2xl border border-[#2B231D] bg-[#171310] text-[#CFCFCF] text-[12px] font-bold"
+                id="btn-register-job-modal-close"
+                onClick={() => setShowRegisterJobModal(false)}
+              >
+                Not Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
