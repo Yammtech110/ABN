@@ -699,10 +699,10 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                 {t.contactBusiness}
               </h3>
               
-              {/* Call / WhatsApp / Map — solid brand colors (theme-safe contrast) */}
+              {/* Call / WhatsApp / Map — charcoal theme orange */}
               <button
                 onClick={() => handleActionClick('phone')}
-                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#FF9E47] hover:bg-[#D9771D] transition-all border border-[#D9771D] text-white group"
+                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#FF9E47] hover:bg-[#F08C32] transition-all border border-[#F08C32] text-white group"
                 id="action-btn-call"
               >
                 <span className="flex items-center gap-3 text-sm font-bold text-black">
@@ -712,30 +712,28 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                 <ChevronRight className="w-4 h-4 text-black/70 group-hover:text-black" />
               </button>
 
-              {/* Whatsapp */}
               <button
                 onClick={() => handleActionClick('whatsapp')}
-                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#128C7E] hover:bg-[#0e7a6e] transition-all border border-[#0e7a6e] text-white group"
+                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#FF9E47] hover:bg-[#F08C32] transition-all border border-[#F08C32] text-white group"
                 id="action-btn-whatsapp"
               >
-                <span className="flex items-center gap-3 text-sm font-bold text-white">
-                  <MessageSquare className="w-4 h-4 text-white" />
+                <span className="flex items-center gap-3 text-sm font-bold text-black">
+                  <MessageSquare className="w-4 h-4 text-black" />
                   {t.openWhatsapp}
                 </span>
-                <ChevronRight className="w-4 h-4 text-white/80 group-hover:text-[#FFFFFF]" />
+                <ChevronRight className="w-4 h-4 text-black/70 group-hover:text-black" />
               </button>
 
-              {/* Map Location — opens Google Maps externally (BRD §5.4: communication outside the app) */}
               <button
                 onClick={() => handleActionClick('maps')}
-                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#1A73E8] hover:bg-[#1557b0] transition-all border border-[#1557b0] text-white group"
+                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#FF9E47] hover:bg-[#F08C32] transition-all border border-[#F08C32] text-white group"
                 id="action-btn-map"
               >
-                <span className="flex items-center gap-3 text-sm font-bold text-white">
-                  <MapPin className="w-4 h-4 text-white" />
+                <span className="flex items-center gap-3 text-sm font-bold text-black">
+                  <MapPin className="w-4 h-4 text-black" />
                   {t.openMap}
                 </span>
-                <ChevronRight className="w-4 h-4 text-white/80 group-hover:text-[#FFFFFF]" />
+                <ChevronRight className="w-4 h-4 text-black/70 group-hover:text-black" />
               </button>
 
               {/* Website link */}
