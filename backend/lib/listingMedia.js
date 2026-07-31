@@ -89,8 +89,20 @@ const toPublicImageUrl = (profile, field, kind) => {
   return publicMediaPath(id, kind);
 };
 
+/** Normalize up to 5 gallery uploads for persistence. */
+const normalizeIncomingGallery = (incoming) => {
+  if (!Array.isArray(incoming)) return [];
+  const out = [];
+  for (const item of incoming.slice(0, 5)) {
+    const normalized = normalizeIncomingImage(item, '');
+    if (normalized) out.push(normalized);
+  }
+  return out;
+};
+
 /** Public directory responses must not expose owner email (PII). */
 const mapProfileForList = (profile, { includeEmail = false } = {}) => {
+  const id = profile?.id;
   const rawImg = sanitizeStoredImage(profile?.imageUrl);
   const rawCover = sanitizeStoredImage(profile?.coverUrl);
   // Owner/admin payloads may keep inline data URLs so <img> works without Bearer on /logo
@@ -101,10 +113,22 @@ const mapProfileForList = (profile, { includeEmail = false } = {}) => {
     ? rawCover
     : toPublicImageUrl(profile, 'coverUrl', 'cover');
 
+  const rawGallery = Array.isArray(profile?.gallery) ? profile.gallery : [];
+  const gallery = rawGallery
+    .map((url, i) => {
+      const raw = sanitizeStoredImage(url);
+      if (!raw || !id) return '';
+      if (includeEmail && (isDataImage(raw) || isRemoteImage(raw))) return raw;
+      if (isRemoteImage(raw)) return raw;
+      return publicMediaPath(id, `gallery/${i}`);
+    })
+    .filter(Boolean);
+
   const mapped = {
     ...profile,
     imageUrl,
     coverUrl,
+    gallery,
   };
   if (!includeEmail) {
     delete mapped.email;
@@ -222,6 +246,7 @@ module.exports = {
   hasStoredImage,
   sanitizeStoredImage,
   normalizeIncomingImage,
+  normalizeIncomingGallery,
   buildPlaceholderSvg,
   isPubliclyVisibleListing,
   MAX_IMAGE_BYTES,

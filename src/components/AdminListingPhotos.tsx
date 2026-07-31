@@ -121,24 +121,30 @@ export const AdminListingPhotos: React.FC<AdminListingPhotosProps> = ({ business
 
       {expanded && (
         <div className="grid grid-cols-2 gap-2">
-          <PhotoTile
-            url={logoUrl}
-            fallback={fallbackLogo}
-            label={language === 'en' ? 'Logo' : 'الشعار'}
-            onExpand={() => {
-              const idx = photos.indexOf(logoUrl);
-              setLightboxIndex(idx >= 0 ? idx : 0);
-            }}
-          />
-          <PhotoTile
-            url={coverUrl}
-            fallback={fallbackCover}
-            label={language === 'en' ? 'Cover' : 'الغلاف'}
-            onExpand={() => {
-              const idx = photos.indexOf(coverUrl);
-              setLightboxIndex(idx >= 0 ? idx : 0);
-            }}
-          />
+          {photos.map((url, i) => {
+            const isLogo = url === logoUrl;
+            const isCover = url === coverUrl && !isLogo;
+            const label = isLogo
+              ? language === 'en'
+                ? 'Logo'
+                : 'الشعار'
+              : isCover
+                ? language === 'en'
+                  ? 'Cover'
+                  : 'الغلاف'
+                : language === 'en'
+                  ? `Photo ${i + 1}`
+                  : `صورة ${i + 1}`;
+            return (
+              <PhotoTile
+                key={`${business.id}-photo-${i}`}
+                url={url}
+                fallback={isCover ? fallbackCover : fallbackLogo}
+                label={label}
+                onExpand={() => setLightboxIndex(i)}
+              />
+            );
+          })}
         </div>
       )}
 

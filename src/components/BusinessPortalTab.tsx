@@ -624,6 +624,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
           description: regDesc,
           imageUrl: defaultLogo,
           coverUrl: defaultCover,
+          gallery,
           address: regAddress,
           area: regZipCode,
           city: regCity,

@@ -12,7 +12,7 @@ import {
   INITIAL_PAYMENTS, INITIAL_JOBS, INITIAL_HIRING_ACTIVE,
 } from '../data/mockData';
 import { resolveCategoryId } from '../utils/categoryMatch';
-import { resolveListingCoverUrl, resolveListingLogoUrl, resolveJobImageUrl } from '../utils/listingImages';
+import { listingMediaUrl, resolveListingCoverUrl, resolveListingLogoUrl, resolveJobImageUrl } from '../utils/listingImages';
 import { networkErrorMessage, userFacingError } from '../utils/userFacingError';
 
 // ── Safe storage helpers ────────────────────────────────────────────────────
@@ -88,7 +88,16 @@ const mapDirectoryProfile = (p: Record<string, unknown>, categories: Category[] 
   membershipExpiryDate: String(p.membershipExpiry ?? ''),
   registeredAt:         p.createdAt ? String(p.createdAt).slice(0, 10) : undefined,
   subscriptionTier:     p.subscriptionTier === 30 ? 30 : p.subscriptionTier === 50 ? 50 : undefined,
-  gallery:              [],
+  gallery:              Array.isArray(p.gallery)
+    ? (p.gallery as unknown[])
+        .map((url) => {
+          const s = String(url ?? '').trim();
+          if (!s) return '';
+          if (s.startsWith('data:image/') || /^https?:\/\//i.test(s)) return s;
+          return listingMediaUrl(s);
+        })
+        .filter(Boolean)
+    : [],
   rating:               Number(p.rating ?? 0),
   reviewsCount:         Number(p.reviewsCount ?? 0),
 };

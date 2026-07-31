@@ -7,7 +7,7 @@ import { Job, JobCategory } from '../types';
 import { textEn } from '../utils/englishOnly';
 import { isLiveDirectoryListing } from '../utils/listingAccess';
 import { resolveCategoryId } from '../utils/categoryMatch';
-import { resolveListingCoverUrl, resolveListingLogoUrl } from '../utils/listingImages';
+import { listingMediaUrl, resolveListingCoverUrl, resolveListingLogoUrl } from '../utils/listingImages';
 import { BusinessThumbnail } from './BusinessThumbnail';
 import { canPostJobs, getUserListing } from '../utils/listingAccess';
 import {
@@ -295,7 +295,16 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             website:              String(p.website ?? ''),
             workingHours:         { en: String(p.workingHours ?? ''), ar: '' },
             membershipExpiryDate: String(p.membershipExpiry ?? ''),
-            gallery:              [],
+            gallery:              Array.isArray(p.gallery)
+              ? (p.gallery as unknown[])
+                  .map((url) => {
+                    const s = String(url ?? '').trim();
+                    if (!s) return '';
+                    if (s.startsWith('data:image/') || /^https?:\/\//i.test(s)) return s;
+                    return listingMediaUrl(s);
+                  })
+                  .filter(Boolean)
+              : [],
             rating:               Number(p.rating ?? 0),
             reviewsCount:         Number(p.reviewsCount ?? 0),
           }));

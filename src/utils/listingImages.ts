@@ -186,9 +186,10 @@ export const businessPhotoUrls = (biz: {
     .map((url) => {
       const cleaned = clean(url);
       if (!cleaned) return '';
-      if (isDataImage(cleaned) && biz.id) return mediaUrl(`/api/directory/${biz.id}/logo`);
       if (isApiMediaPath(cleaned) || cleaned.startsWith('/api/directory/')) return mediaUrl(cleaned);
       if (isHttpUrl(cleaned)) return cleaned;
+      // Owner preview may still hold inline data URLs before refresh
+      if (isDataImage(cleaned)) return cleaned;
       return cleaned;
     })
     .filter(Boolean);

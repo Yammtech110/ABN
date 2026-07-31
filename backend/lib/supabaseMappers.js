@@ -11,6 +11,9 @@ const mapProfileFromDb = (row) => ({
   subscriptionTier:   row.subscription_tier != null ? Number(row.subscription_tier) : undefined,
   imageUrl:           row.image_url || '',
   coverUrl:           row.cover_url || '',
+  gallery:            Array.isArray(row.gallery_urls)
+    ? row.gallery_urls.filter((u) => typeof u === 'string' && u.trim())
+    : [],
   description:        row.description || '',
   address:            row.address || '',
   area:               row.area || '',
@@ -48,6 +51,11 @@ const mapProfileToDb = (api, { email } = {}) => {
   if (api.subscriptionTier !== undefined) row.subscription_tier = api.subscriptionTier;
   if (api.imageUrl !== undefined) row.image_url = api.imageUrl;
   if (api.coverUrl !== undefined) row.cover_url = api.coverUrl;
+  if (api.gallery !== undefined) {
+    row.gallery_urls = Array.isArray(api.gallery)
+      ? api.gallery.filter((u) => typeof u === 'string' && u.trim()).slice(0, 5)
+      : [];
+  }
   if (api.description !== undefined) row.description = api.description;
   if (api.address !== undefined) row.address = api.address;
   if (api.area !== undefined) row.area = api.area;

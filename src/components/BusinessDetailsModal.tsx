@@ -17,9 +17,15 @@ import {
   ChevronRight,
   Send,
   AlertTriangle,
+  ImageIcon,
 } from 'lucide-react';
 import { apiFetch } from '../lib/api';
-import { businessLogoUrl, listingPlaceholderDataUrl, resolveListingCoverUrl } from '../utils/listingImages';
+import {
+  businessLogoUrl,
+  businessPhotoUrls,
+  listingPlaceholderDataUrl,
+  resolveListingCoverUrl,
+} from '../utils/listingImages';
 import { BusinessThumbnail } from './BusinessThumbnail';
 import {
   buildBusinessMapQuery,
@@ -85,10 +91,21 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
   const [reportError, setReportError] = useState('');
   const [reportSuccess, setReportSuccess] = useState('');
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  const photoUrls = useMemo(() => businessPhotoUrls(business), [business]);
+  const lightboxSrc =
+    lightboxIndex !== null
+      ? photoUrls[lightboxIndex] || listingPlaceholderDataUrl(business.name || business.id)
+      : '';
 
   useEffect(() => {
     fetchReviewsForBusiness(business.id);
   }, [business.id, fetchReviewsForBusiness]);
+
+  useEffect(() => {
+    setLightboxIndex(null);
+  }, [business.id]);
 
   // Filter reviews matching current business id
   const businessReviews = reviews.filter((r) => r.businessId === business.id);
@@ -431,20 +448,32 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
               </form>
             </div>
 
-            {/* Gallery Images Strip */}
-            {business.gallery && business.gallery.length > 0 && (
+            {/* Gallery — logo, cover, and extra business photos */}
+            {photoUrls.length > 0 && (
               <div className="p-5 rounded-2xl bg-[#171310] border border-[#2B231D]">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-[#F08C32] mb-3">
-                  {language === 'en' ? 'Photos & Service Shots' : 'صور المقر والخدمات'}
-                </h3>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-[#F08C32] flex items-center gap-1.5">
+                    <ImageIcon className="w-3.5 h-3.5" />
+                    {language === 'en' ? 'Photos' : 'الصور'}
+                  </h3>
+                  <span className="text-[10px] text-[#8E8E8E]">
+                    {photoUrls.length} {language === 'en' ? 'photos' : 'صور'}
+                  </span>
+                </div>
                 <div className="grid grid-cols-2 gap-2" id="gallery-grid">
-                  {business.gallery.map((img, i) => (
-                    <div key={i} className="aspect-video rounded-xl overflow-hidden bg-stone-900 border border-[#2B231D]">
+                  {photoUrls.map((img, i) => (
+                    <button
+                      key={`${business.id}-gallery-${i}`}
+                      type="button"
+                      onClick={() => setLightboxIndex(i)}
+                      className="aspect-video rounded-xl overflow-hidden bg-[#1E1915] border border-[#2B231D] text-left group relative"
+                    >
                       <img
                         src={img}
-                        alt={`gallery-${i}`}
+                        alt={`${business.name} photo ${i + 1}`}
                         loading="lazy"
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         onError={(e) => {
                           (e.target as HTMLImageElement).src = listingPlaceholderDataUrl(
                             business.name || business.id,
@@ -452,9 +481,85 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                           );
                         }}
                       />
-                    </div>
+                      <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/65 text-[8px] font-bold uppercase tracking-wider text-[#CFCFCF]">
+                        {i === 0
+                          ? language === 'en'
+                            ? 'Logo'
+                            : 'الشعار'
+                          : i === 1
+                            ? language === 'en'
+                              ? 'Cover'
+                              : 'الغلاف'
+                            : language === 'en'
+                              ? `Photo ${i + 1}`
+                              : `صورة ${i + 1}`}
+                      </span>
+                    </button>
                   ))}
                 </div>
+                <p className="mt-2 text-[10px] text-[#8E8E8E]">
+                  {language === 'en' ? 'Tap a photo to view full size' : 'اضغط على صورة لعرضها بحجم كامل'}
+                </p>
+              </div>
+            )}
+
+            {lightboxIndex !== null && (
+              <div
+                className="fixed inset-0 z-[220] flex items-center justify-center bg-black/90 p-4"
+                onClick={() => setLightboxIndex(null)}
+                role="dialog"
+                aria-modal="true"
+              >
+                <button
+                  type="button"
+                  onClick={() => setLightboxIndex(null)}
+                  className="absolute top-4 right-4 p-2 rounded-full bg-black/60 text-white hover:bg-black/80"
+                  aria-label="Close"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+                {photoUrls.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 text-white hover:bg-black/80"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setLightboxIndex((prev) =>
+                          prev === null ? 0 : (prev - 1 + photoUrls.length) % photoUrls.length,
+                        );
+                      }}
+                      aria-label="Previous photo"
+                    >
+                      <ChevronRight className="w-5 h-5 rotate-180" />
+                    </button>
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 text-white hover:bg-black/80"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setLightboxIndex((prev) =>
+                          prev === null ? 0 : (prev + 1) % photoUrls.length,
+                        );
+                      }}
+                      aria-label="Next photo"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </>
+                )}
+                <img
+                  src={lightboxSrc}
+                  alt={business.name}
+                  referrerPolicy="no-referrer"
+                  className="max-w-full max-h-[85vh] rounded-xl object-contain"
+                  onClick={(e) => e.stopPropagation()}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = listingPlaceholderDataUrl(
+                      business.name || business.id,
+                    );
+                  }}
+                />
               </div>
             )}
 

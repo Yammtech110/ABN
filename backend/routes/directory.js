@@ -20,6 +20,8 @@ const {
   streamStoredImage,
   publicMediaPath,
   normalizeIncomingImage,
+  normalizeIncomingGallery,
+  sanitizeStoredImage,
 } = require('../lib/listingMedia');
 
 const router = express.Router();
@@ -205,6 +207,25 @@ router.get('/:id/cover', async (req, res, next) => {
   }
 });
 
+// ── GET /api/directory/:id/gallery/:index ───────────────────────────────────
+router.get('/:id/gallery/:index', async (req, res, next) => {
+  try {
+    const profile = await findProfileById(req.params.id);
+    if (!profile) return res.status(404).end();
+    const allow = await mayViewListingMedia(req, profile);
+    const idx = Number.parseInt(String(req.params.index), 10);
+    const gallery = Array.isArray(profile.gallery) ? profile.gallery : [];
+    const primary = allow && Number.isInteger(idx) && idx >= 0 ? sanitizeStoredImage(gallery[idx] || '') : '';
+    await streamStoredImage(res, primary, allow ? profile.imageUrl : '', {
+      name: profile.businessName,
+      seed: `${profile.id}-g${idx}`,
+      wide: true,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // ── GET /api/directory/:id ────────────────────────────────────────────────
 router.get('/:id', async (req, res, next) => {
   try {
@@ -225,6 +246,7 @@ router.post('/', authenticate, requireRole('customer', 'business', 'service_prov
     const {
       businessName, category, description,
       imageUrl = '', coverUrl = '',
+      gallery = [],
       address = '', area = '', city = '', state = '',
       phone = '', whatsapp = '', website = '',
       workingHours = '',
@@ -257,6 +279,7 @@ router.post('/', authenticate, requireRole('customer', 'business', 'service_prov
       subscriptionTier:   tier,
       imageUrl:           normalizeIncomingImage(imageUrl, '') || '',
       coverUrl:           normalizeIncomingImage(coverUrl, '') || '',
+      gallery:            normalizeIncomingGallery(gallery),
       description:        description || '',
       address,
       area,
@@ -278,11 +301,23 @@ router.post('/', authenticate, requireRole('customer', 'business', 'service_prov
     if (!isSupabaseStorage()) {
       directoryProfiles.push(savedProfile);
     } else {
-      const { data, error } = await supabaseAdmin
+      let rowPayload = mapProfileToDb(savedProfile, { email: req.user.email });
+      let { data, error } = await supabaseAdmin
         .from('profiles_directory')
-        .insert(mapProfileToDb(savedProfile, { email: req.user.email }))
+        .insert(rowPayload)
         .select('*')
         .single();
+
+      // Older DBs may lack gallery_urls — still save logo/cover
+      if (error && /gallery_urls/i.test(String(error.message || error.details || ''))) {
+        delete rowPayload.gallery_urls;
+        savedProfile.gallery = [];
+        ({ data, error } = await supabaseAdmin
+          .from('profiles_directory')
+          .insert(rowPayload)
+          .select('*')
+          .single());
+      }
 
       if (error) return res.status(500).json({ error: 'Failed to save listing. Please try again.' });
       savedProfile = mapProfile(mapProfileFromDb(data));
@@ -322,7 +357,7 @@ router.put('/:id', authenticate, async (req, res, next) => {
 
     const {
       businessName, category, description,
-      imageUrl, coverUrl,
+      imageUrl, coverUrl, gallery,
       address, area, city, state,
       phone, whatsapp, website,
       workingHours, membershipExpiry, subscriptionTier,
@@ -337,7 +372,11 @@ router.put('/:id', authenticate, async (req, res, next) => {
         String(businessName).trim() !== String(existing.businessName || '').trim();
       const wantsLogo = imageUrl !== undefined && typeof imageUrl === 'string' && imageUrl.startsWith('data:image/');
       const wantsCover = coverUrl !== undefined && typeof coverUrl === 'string' && coverUrl.startsWith('data:image/');
-      if (wantsName || wantsLogo || wantsCover) {
+      const wantsGallery =
+        gallery !== undefined &&
+        Array.isArray(gallery) &&
+        gallery.some((u) => typeof u === 'string' && u.startsWith('data:image/'));
+      if (wantsName || wantsLogo || wantsCover || wantsGallery) {
         return res.status(403).json({
           error:
             'Name and photos cannot be changed directly. Submit a change request for admin approval.',
@@ -352,6 +391,7 @@ router.put('/:id', authenticate, async (req, res, next) => {
     if (description        !== undefined) updated.description        = description;
     if (imageUrl !== undefined && isAdmin) updated.imageUrl = normalizeIncomingImage(imageUrl, existing.imageUrl);
     if (coverUrl !== undefined && isAdmin) updated.coverUrl = normalizeIncomingImage(coverUrl, existing.coverUrl);
+    if (gallery !== undefined && isAdmin) updated.gallery = normalizeIncomingGallery(gallery);
     if (address            !== undefined) updated.address            = address;
     if (area               !== undefined) updated.area               = area;
     if (city               !== undefined) updated.city               = city;
