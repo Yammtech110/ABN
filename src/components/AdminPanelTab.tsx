@@ -1619,11 +1619,11 @@ export const AdminPanelTab: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-[10px] app-label mb-1">Grouping classification</label>
+              <label className="block text-[10px] text-[#8E8E8E] mb-1">Grouping classification</label>
               <select
                 value={newCatGroup}
                 onChange={(e: any) => setNewCatGroup(e.target.value)}
-                className="w-full p-2 rounded-xl border text-xs app-field"
+                className="w-full p-2 rounded-xl bg-[#1E1915] border border-[#2B231D] text-xs text-white"
               >
                 <option value="Shops">Shops</option>
                 <option value="Services">Services</option>
