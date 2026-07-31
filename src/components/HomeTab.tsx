@@ -51,43 +51,59 @@ import { Business, BusinessStatus } from '../types';
 
 const NAVY = '#110E0B';
 
-/** Network map graphic for orange hero. */
-const HeroNetworkMap: React.FC = () => (
-  <svg
-    className="pointer-events-none absolute inset-0 w-full h-full opacity-50"
-    viewBox="0 0 390 280"
-    fill="none"
-    aria-hidden="true"
-    id="home-hero-network"
-    preserveAspectRatio="xMidYMid slice"
-  >
-    <defs>
-      <radialGradient id="netGlow" cx="70%" cy="35%" r="50%">
-        <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.22" />
-        <stop offset="100%" stopColor="#F08C32" stopOpacity="0" />
-      </radialGradient>
-    </defs>
-    <rect width="390" height="280" fill="url(#netGlow)" />
-    {/* Connection lines — white */}
-    <path d="M40 80 L120 60 L200 95 L280 50 L350 90" stroke="#FFFFFF" strokeWidth="1" opacity="0.55" />
-    <path d="M60 160 L140 130 L220 170 L300 120 L360 155" stroke="#FFFFFF" strokeWidth="1" opacity="0.4" strokeDasharray="4 6" />
-    <path d="M90 220 L170 190 L250 230 L330 200" stroke="#FFFFFF" strokeWidth="1" opacity="0.45" />
-    <path d="M120 60 L140 130 L170 190" stroke="#FFFFFF" strokeWidth="0.8" opacity="0.4" />
-    <path d="M200 95 L220 170 L250 230" stroke="#FFFFFF" strokeWidth="0.8" opacity="0.35" />
-    <path d="M280 50 L300 120 L330 200" stroke="#FFFFFF" strokeWidth="0.8" opacity="0.4" />
-    {/* Nodes — white */}
-    {[
-      [40, 80], [120, 60], [200, 95], [280, 50], [350, 90],
-      [60, 160], [140, 130], [220, 170], [300, 120], [360, 155],
-      [90, 220], [170, 190], [250, 230], [330, 200], [180, 110],
-    ].map(([x, y], i) => (
-      <g key={i}>
-        <circle cx={x} cy={y} r="3.5" fill="#FFFFFF" opacity={i % 3 === 0 ? 1 : 0.85} />
-        <circle cx={x} cy={y} r="7" stroke="#FFFFFF" strokeWidth="1" opacity="0.35" />
-      </g>
-    ))}
-  </svg>
-);
+/** Network + dotted map graphic for charcoal hero (mockup match). */
+const HeroNetworkMap: React.FC = () => {
+  const mapDots = [
+    [210, 40], [225, 48], [240, 42], [255, 55], [270, 48], [285, 60], [300, 52], [315, 68],
+    [330, 58], [345, 72], [355, 85], [220, 70], [235, 78], [250, 90], [265, 82], [280, 95],
+    [295, 105], [310, 98], [325, 112], [340, 108], [230, 110], [248, 118], [262, 130],
+    [278, 122], [292, 138], [308, 128], [322, 145], [338, 140], [245, 150], [260, 160],
+    [275, 155], [290, 170], [305, 162], [320, 175], [335, 168], [255, 185], [270, 192],
+    [285, 200], [300, 195], [315, 205], [265, 210], [280, 218], [295, 225],
+  ];
+  const nodes: [number, number][] = [
+    [200, 55], [250, 40], [300, 70], [340, 50], [360, 95],
+    [220, 120], [270, 100], [320, 130], [355, 150],
+    [210, 175], [260, 160], [305, 180], [345, 200],
+    [240, 210], [290, 220], [330, 230],
+  ];
+  return (
+    <svg
+      className="pointer-events-none absolute inset-0 w-full h-full"
+      viewBox="0 0 390 300"
+      fill="none"
+      aria-hidden="true"
+      id="home-hero-network"
+      preserveAspectRatio="xMidYMid slice"
+    >
+      <defs>
+        <radialGradient id="netGlow" cx="78%" cy="42%" r="55%">
+          <stop offset="0%" stopColor="#F08C32" stopOpacity="0.28" />
+          <stop offset="100%" stopColor="#0D0906" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <rect width="390" height="300" fill="url(#netGlow)" />
+      {/* Dotted world-map cloud (right side) */}
+      {mapDots.map(([x, y], i) => (
+        <circle key={`m-${i}`} cx={x} cy={y} r="1.4" fill="#F08C32" opacity={0.35 + (i % 5) * 0.08} />
+      ))}
+      {/* Connection lines — brand orange */}
+      <path d="M200 55 L250 40 L300 70 L340 50 L360 95" stroke="#F08C32" strokeWidth="1.2" opacity="0.65" />
+      <path d="M220 120 L270 100 L320 130 L355 150" stroke="#F08C32" strokeWidth="1.1" opacity="0.5" strokeDasharray="4 5" />
+      <path d="M210 175 L260 160 L305 180 L345 200" stroke="#FF9E47" strokeWidth="1" opacity="0.55" />
+      <path d="M250 40 L270 100 L260 160 L240 210" stroke="#F08C32" strokeWidth="0.9" opacity="0.4" />
+      <path d="M300 70 L320 130 L305 180 L290 220" stroke="#FF9E47" strokeWidth="0.9" opacity="0.4" />
+      <path d="M340 50 L355 150 L330 230" stroke="#F08C32" strokeWidth="0.9" opacity="0.35" />
+      {/* Glowing nodes */}
+      {nodes.map(([x, y], i) => (
+        <g key={`n-${i}`}>
+          <circle cx={x} cy={y} r="7" fill="#F08C32" opacity="0.18" />
+          <circle cx={x} cy={y} r="3.2" fill="#FF9E47" opacity={i % 2 === 0 ? 1 : 0.85} />
+        </g>
+      ))}
+    </svg>
+  );
+};
 
 const JOB_CATEGORY_COLORS: Record<JobCategory, string> = {
   'IT':               'bg-orange-100 text-orange-700 border-orange-200',
@@ -405,27 +421,27 @@ export const HomeTab: React.FC<HomeTabProps> = ({
   return (
     <div className="pb-6 bg-[#0D0906]" id="home-tab-container">
 
-      {/* ── Hero (final mockup) ──────────────────────────────── */}
+      {/* ── Hero (charcoal + orange network mockup) ─────────── */}
       <section
-        className="relative overflow-hidden px-4 pt-[max(0.85rem,env(safe-area-inset-top))] pb-5"
+        className="relative overflow-hidden px-4 pt-[max(0.85rem,env(safe-area-inset-top))] pb-4"
         id="home-hero"
-        style={{ background: 'linear-gradient(165deg, #FF9E47 0%, #F08C32 48%, #D9771D 100%)' }}
+        style={{ background: 'linear-gradient(180deg, #12100E 0%, #0D0906 55%, #0A0806 100%)' }}
       >
         <HeroNetworkMap />
 
-        <div className="relative flex items-start justify-between gap-3 mb-5">
+        <div className="relative flex items-start justify-between gap-3 mb-6">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-[52px] h-[52px] rounded-full bg-transparent flex items-center justify-center flex-shrink-0 overflow-hidden">
               <AbnLogo size="sm" className="h-11 max-w-[44px] bg-transparent" />
             </div>
             <div className="min-w-0">
-              <h1 className="leading-none flex items-baseline gap-0">
-                <span className="text-[30px] font-black tracking-tight text-white">ABN</span>
+              <h1 className="leading-none">
+                <span className="text-[32px] font-black tracking-tight text-[#F08C32]">ABN</span>
               </h1>
-              <p className="text-[9px] font-bold tracking-[0.18em] uppercase text-white mt-0.5">
+              <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-white mt-0.5">
                 Ahlebait Network
               </p>
-              <p className="text-[8px] font-semibold tracking-[0.16em] uppercase text-white mt-0.5">
+              <p className="text-[8px] font-semibold tracking-[0.18em] uppercase text-[#F08C32] mt-1">
                 Connect · Collaborate · Grow
               </p>
             </div>
@@ -434,7 +450,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             type="button"
             onClick={() => void handleRefreshApp()}
             disabled={isRefreshing}
-            className="p-2.5 rounded-full border border-white/50 text-white hover:bg-white/15 disabled:opacity-60 flex-shrink-0"
+            className="p-2.5 rounded-full border border-white/25 text-white hover:bg-white/10 disabled:opacity-60 flex-shrink-0"
             aria-label="Refresh"
             id="btn-home-refresh"
           >
@@ -442,37 +458,46 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           </button>
         </div>
 
-        <p className="relative text-[14px] text-white font-medium mb-5 max-w-[320px] leading-snug">
-          Connecting Businesses. Building Community. Creating Opportunities.
+        <p className="relative text-[15px] text-white font-medium mb-6 max-w-[280px] leading-[1.45]">
+          Connecting Businesses.<br />
+          Building Community.<br />
+          Creating Opportunities.
         </p>
 
-        <div className="relative flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] font-semibold text-white">
-          <span className="inline-flex items-center gap-1.5">
-            <Building2 className="w-3.5 h-3.5 text-white" />
-            {Math.max(liveListings.length, 1).toLocaleString()}+ Businesses
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <MapPin className="w-3.5 h-3.5 text-white" />
-            {Math.max(cityCount, 1)}+ Cities
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <Users className="w-3.5 h-3.5 text-white" />
-            12,000+ Members
-          </span>
+        <div className="relative grid grid-cols-3 gap-0 mb-1">
+          <div className="flex flex-col items-center text-center px-1 border-r border-[#3A3029]">
+            <Building2 className="w-4 h-4 text-[#F08C32] mb-1.5" />
+            <span className="text-[15px] font-black text-white leading-none">
+              {Math.max(liveListings.length, 1).toLocaleString()}+
+            </span>
+            <span className="text-[10px] text-white/85 mt-1">Businesses</span>
+          </div>
+          <div className="flex flex-col items-center text-center px-1 border-r border-[#3A3029]">
+            <MapPin className="w-4 h-4 text-[#F08C32] mb-1.5" />
+            <span className="text-[15px] font-black text-white leading-none">
+              {Math.max(cityCount, 1)}+
+            </span>
+            <span className="text-[10px] text-white/85 mt-1">Cities</span>
+          </div>
+          <div className="flex flex-col items-center text-center px-1">
+            <Users className="w-4 h-4 text-[#F08C32] mb-1.5" />
+            <span className="text-[15px] font-black text-white leading-none">12,000+</span>
+            <span className="text-[10px] text-white/85 mt-1">Members</span>
+          </div>
         </div>
       </section>
 
-      <div className="space-y-5 px-4 pt-4 relative z-10 bg-[#0D0906]">
+      <div className="space-y-5 px-4 pt-3 relative z-10 bg-[#0D0906]">
 
         {/* Search */}
         <form onSubmit={handleSearchSubmit} id="home-search-form">
           <div
-            className="relative flex items-center bg-[#171310] rounded-2xl border border-[#2B231D] shadow-[0_14px_36px_rgba(0,0,0,0.14)] px-1.5 py-1.5"
+            className="relative flex items-center bg-[#171310] rounded-2xl border border-[#2B231D] shadow-[0_14px_36px_rgba(0,0,0,0.25)] px-1.5 py-1.5"
             id="home-search-box"
           >
             {isSearching
               ? <span className="absolute left-3.5 w-4 h-4 border-2 border-[#F08C32] border-t-transparent rounded-full animate-spin" />
-              : <Search className="absolute left-3.5 w-4 h-4 text-[#F08C32]" />
+              : <Search className="absolute left-3.5 w-4 h-4 text-white" />
             }
             <input
               type="text"
