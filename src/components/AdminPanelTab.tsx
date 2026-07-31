@@ -710,8 +710,8 @@ export const AdminPanelTab: React.FC = () => {
   if (isNativeApp()) {
     return (
       <div className="p-8 text-center rounded-3xl bg-white border border-[#D7E0EA] text-gray-400" id="admin-web-only-state">
-        <ShieldAlert className="w-12 h-12 text-[#F2994A] mx-auto mb-3" />
-        <h3 className="text-sm font-black text-[#F2994A] uppercase tracking-widest">{t.adminPanel}</h3>
+        <ShieldAlert className="w-12 h-12 text-[#F08C32] mx-auto mb-3" />
+        <h3 className="text-sm font-black text-[#F08C32] uppercase tracking-widest">{t.adminPanel}</h3>
         <p className="text-xs text-gray-500 mt-2 max-w-sm mx-auto leading-relaxed">
           The admin panel is available only on the web app. Approvals and changes you make there appear automatically in the Android and iOS apps.
         </p>
@@ -850,7 +850,7 @@ export const AdminPanelTab: React.FC = () => {
       <div className="pb-1.5 border-b border-[#D7E0EA] flex justify-between items-center" id="admin-main-header">
         <div>
           <h2 className="text-xl font-extrabold text-[#7C2D12] flex items-center gap-2">
-            <Sliders className="w-5 h-5 text-[#F2994A]" />
+            <Sliders className="w-5 h-5 text-[#F08C32]" />
             {t.adminTitle}
           </h2>
           <p className="text-[10px] text-gray-500 font-medium">Platform-wide control, dues audit, and directory indexing</p>
@@ -858,7 +858,7 @@ export const AdminPanelTab: React.FC = () => {
       </div>
 
       {adminToast && (
-        <div className="px-4 py-2.5 rounded-xl bg-orange-50 border border-orange-200 text-[#D87D2E] text-xs font-semibold flex items-center gap-2 animate-scale-up">
+        <div className="px-4 py-2.5 rounded-xl bg-orange-50 border border-orange-200 text-[#D9771D] text-xs font-semibold flex items-center gap-2 animate-scale-up">
           <CheckCircle className="w-4 h-4 shrink-0" />
           {adminToast}
         </div>
@@ -869,7 +869,7 @@ export const AdminPanelTab: React.FC = () => {
         <button
           onClick={() => setAdminTab('biz')}
           className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
-            adminTab === 'biz' ? 'bg-[#F2994A] text-white shadow-md' : 'text-gray-400 hover:text-[#7C2D12]'
+            adminTab === 'biz' ? 'bg-[#FF9E47] text-white shadow-md' : 'text-gray-400 hover:text-[#7C2D12]'
           }`}
         >
           <Award className="w-4 h-4" />
@@ -884,7 +884,7 @@ export const AdminPanelTab: React.FC = () => {
         <button
           onClick={() => setAdminTab('pay')}
           className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
-            adminTab === 'pay' ? 'bg-[#F2994A] text-white shadow-md' : 'text-gray-400 hover:text-[#7C2D12]'
+            adminTab === 'pay' ? 'bg-[#FF9E47] text-white shadow-md' : 'text-gray-400 hover:text-[#7C2D12]'
           }`}
         >
           <DollarSign className="w-4 h-4" />
@@ -894,7 +894,7 @@ export const AdminPanelTab: React.FC = () => {
         <button
           onClick={() => setAdminTab('jobs')}
           className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
-            adminTab === 'jobs' ? 'bg-[#F2994A] text-white shadow-md' : 'text-gray-400 hover:text-[#7C2D12]'
+            adminTab === 'jobs' ? 'bg-[#FF9E47] text-white shadow-md' : 'text-gray-400 hover:text-[#7C2D12]'
           }`}
         >
           <Briefcase className="w-4 h-4" />
@@ -909,7 +909,7 @@ export const AdminPanelTab: React.FC = () => {
         <button
           onClick={() => setAdminTab('cat')}
           className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
-            adminTab === 'cat' ? 'bg-[#F2994A] text-white shadow-md' : 'text-gray-400 hover:text-[#7C2D12]'
+            adminTab === 'cat' ? 'bg-[#FF9E47] text-white shadow-md' : 'text-gray-400 hover:text-[#7C2D12]'
           }`}
         >
           <Grid className="w-4 h-4" />
@@ -919,7 +919,7 @@ export const AdminPanelTab: React.FC = () => {
         <button
           onClick={() => setAdminTab('users')}
           className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
-            adminTab === 'users' ? 'bg-[#F2994A] text-white shadow-md' : 'text-gray-400 hover:text-[#7C2D12]'
+            adminTab === 'users' ? 'bg-[#FF9E47] text-white shadow-md' : 'text-gray-400 hover:text-[#7C2D12]'
           }`}
         >
           <Users className="w-4 h-4" />
@@ -934,7 +934,7 @@ export const AdminPanelTab: React.FC = () => {
         <button
           onClick={() => setAdminTab('log')}
           className={`py-2 rounded-xl text-[9px] font-black uppercase transition-all flex flex-col items-center gap-1 ${
-            adminTab === 'log' ? 'bg-[#F2994A] text-white shadow-md' : 'text-gray-400 hover:text-[#7C2D12]'
+            adminTab === 'log' ? 'bg-[#FF9E47] text-white shadow-md' : 'text-gray-400 hover:text-[#7C2D12]'
           }`}
         >
           <ScrollText className="w-4 h-4" />
@@ -949,14 +949,14 @@ export const AdminPanelTab: React.FC = () => {
           {/* Financial Controls Analytics */}
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="bg-[#F8FAFC] border border-[#D7E0EA] p-4 rounded-2xl relative overflow-hidden">
-              <DollarSign className="w-10 h-10 text-[#F2994A] absolute right-3 top-3 opacity-10" />
+              <DollarSign className="w-10 h-10 text-[#F08C32] absolute right-3 top-3 opacity-10" />
               <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">Collected Revenue</p>
               <h3 className="text-xl font-black text-[#7C2D12]">{formatUsd(platformRevenue)}</h3>
             </div>
             <div className="bg-[#F8FAFC] border border-[#D7E0EA] p-4 rounded-2xl relative overflow-hidden">
               <Award className="w-10 h-10 text-green-500 absolute right-3 top-3 opacity-10" />
               <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">Active Listings</p>
-              <h3 className="text-xl font-black text-[#F2994A]">{activePaidListings.length}</h3>
+              <h3 className="text-xl font-black text-[#F08C32]">{activePaidListings.length}</h3>
             </div>
           </div>
 
@@ -973,7 +973,7 @@ export const AdminPanelTab: React.FC = () => {
               <button
                 type="button"
                 onClick={() => void loadChangeRequests()}
-                className="text-[9px] font-bold text-[#F2994A] hover:underline"
+                className="text-[9px] font-bold text-[#F08C32] hover:underline"
               >
                 Refresh
               </button>
@@ -998,7 +998,7 @@ export const AdminPanelTab: React.FC = () => {
                   </p>
                   {req.proposedName && (
                     <p>
-                      <strong className="text-[#F2994A]">New name:</strong> {req.proposedName}
+                      <strong className="text-[#F08C32]">New name:</strong> {req.proposedName}
                     </p>
                   )}
                   {(req.proposedImageUrl || req.proposedCoverUrl) && (
@@ -1044,13 +1044,13 @@ export const AdminPanelTab: React.FC = () => {
           </div>
 
           <div className="flex items-center justify-between gap-2">
-            <h3 className="text-xs font-black uppercase tracking-wider text-[#F2994A]">
+            <h3 className="text-xs font-black uppercase tracking-wider text-[#F08C32]">
               Directory Index approvals & Status Locking
             </h3>
             <button
               type="button"
               onClick={loadVettingData}
-              className="text-[9px] font-bold text-[#F2994A] hover:underline shrink-0"
+              className="text-[9px] font-bold text-[#F08C32] hover:underline shrink-0"
             >
               {vettingLoading ? 'Refreshing…' : 'Refresh'}
             </button>
@@ -1083,9 +1083,9 @@ export const AdminPanelTab: React.FC = () => {
                     ? key === 'all'
                       ? 'bg-[#EEF2F6] text-[#7C2D12] border border-[#D7E0EA]'
                       : key === 'submissions'
-                      ? 'bg-[#F2994A] text-white shadow-lg shadow-[#F2994A]/20'
+                      ? 'bg-[#FF9E47] text-white shadow-lg shadow-[#FF9E47]/20'
                       : key === 'active'
-                        ? 'bg-orange-50 text-[#F2994A] border border-orange-200'
+                        ? 'bg-orange-50 text-[#F08C32] border border-orange-200'
                         : key === 'pending'
                           ? 'bg-orange-500/20 text-orange-400 border border-orange-500/50'
                           : 'bg-red-500/20 text-red-400 border border-red-500/50'
@@ -1103,7 +1103,7 @@ export const AdminPanelTab: React.FC = () => {
           </div>
 
           {vettingCounts.submissions > 0 && (
-            <div className="flex items-start gap-2 p-3 rounded-xl bg-[#F2994A]/10 border border-[#F2994A]/30 text-[10px] text-[#F2994A]">
+            <div className="flex items-start gap-2 p-3 rounded-xl bg-[#FF9E47]/10 border border-[#F08C32]/30 text-[10px] text-[#F08C32]">
               <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
               <p>
                 {language === 'en'
@@ -1128,7 +1128,7 @@ export const AdminPanelTab: React.FC = () => {
                         : 'لا توجد طلبات تسجيل جديدة بانتظار الموافقة.'}
                     </p>
                     {vettingCounts.active > 0 && (
-                      <p className="text-[10px] text-[#F2994A]">
+                      <p className="text-[10px] text-[#F08C32]">
                         {language === 'en'
                           ? `${vettingCounts.active} listing(s) already approved — open All Listings or Registered / Active to manage them.`
                           : `${vettingCounts.active} نشاط/أنشطة موافق عليها — افتح "كل القوائم" أو "مسجل / نشط" لإدارتها.`}
@@ -1181,12 +1181,12 @@ export const AdminPanelTab: React.FC = () => {
 
                     <div className="text-right space-y-1 shrink-0">
                       {awaitingApproval && (
-                        <span className="px-2 py-0.5 rounded-full text-[8px] font-bold tracking-widest uppercase block bg-[#F2994A]/15 text-[#F2994A]">
+                        <span className="px-2 py-0.5 rounded-full text-[8px] font-bold tracking-widest uppercase block bg-[#FF9E47]/15 text-[#F08C32]">
                           AWAITING APPROVAL
                         </span>
                       )}
                       <span className={`px-2 py-0.5 rounded-full text-[8px] font-bold tracking-widest uppercase block ${
-                        biz.status === 'active' ? 'bg-orange-50 text-[#F2994A]' :
+                        biz.status === 'active' ? 'bg-orange-50 text-[#F08C32]' :
                         biz.status === 'pending' ? 'bg-orange-50 text-orange-600' : 'bg-red-50 text-red-600'
                       }`}>
                         {biz.status.toUpperCase()}
@@ -1230,7 +1230,7 @@ export const AdminPanelTab: React.FC = () => {
                         <button
                           onClick={() => handleMarkAsPaid(biz)}
                           disabled={isBusy}
-                          className="px-3 py-1 rounded bg-[#F2994A]/20 text-[#F2994A] hover:bg-[#F2994A]/30 border border-[#F2994A]/50 font-bold text-[10px] flex items-center gap-1 disabled:opacity-50"
+                          className="px-3 py-1 rounded bg-[#FF9E47]/20 text-[#F08C32] hover:bg-[#FF9E47]/30 border border-[#F08C32]/50 font-bold text-[10px] flex items-center gap-1 disabled:opacity-50"
                         >
                           <DollarSign className="w-3 h-3" /> {isBusy ? 'Recording…' : 'Mark as Paid'}
                         </button>
@@ -1272,13 +1272,13 @@ export const AdminPanelTab: React.FC = () => {
       {adminTab === 'pay' && (
         <div className="space-y-4 animate-scale-up" id="admin-pay-section">
           <div className="flex items-center justify-between gap-2">
-            <h3 className="text-xs font-black uppercase tracking-wider text-[#F2994A]">
+            <h3 className="text-xs font-black uppercase tracking-wider text-[#F08C32]">
               {t.payments} — Membership Fees Register (2-month free trial, then $30–$50/mo)
             </h3>
             <button
               type="button"
               onClick={loadDuesLedger}
-              className="text-[9px] font-bold text-[#F2994A] hover:underline shrink-0"
+              className="text-[9px] font-bold text-[#F08C32] hover:underline shrink-0"
             >
               Refresh
             </button>
@@ -1300,7 +1300,7 @@ export const AdminPanelTab: React.FC = () => {
               {
                 label: language === 'en' ? 'Total Transactions' : 'عدد المعاملات',
                 value: duesStats.transactionCount,
-                color: 'text-[#F2994A]',
+                color: 'text-[#F08C32]',
                 hint: language === 'en' ? 'Paid renewals' : 'تجديدات مدفوعة',
               },
               {
@@ -1364,7 +1364,7 @@ export const AdminPanelTab: React.FC = () => {
                             </div>
                           </div>
                         </td>
-                        <td className="py-3 pr-2 font-mono font-bold text-[#F2994A]">
+                        <td className="py-3 pr-2 font-mono font-bold text-[#F08C32]">
                           {row.amount === 0 ? '$0' : `$${row.amount}`}
                         </td>
                         <td className="py-3 pr-2 text-gray-400">{row.date}</td>
@@ -1388,7 +1388,7 @@ export const AdminPanelTab: React.FC = () => {
 
           {/* Subscription status overview */}
           <div className="p-4 rounded-3xl bg-white border border-[#D7E0EA] space-y-2">
-            <h4 className="text-[10px] font-black uppercase tracking-wider text-[#F2994A] mb-3">
+            <h4 className="text-[10px] font-black uppercase tracking-wider text-[#F08C32] mb-3">
               {language === 'en' ? 'All Business Subscription Status' : 'حالة اشتراك جميع النشاطات'}
             </h4>
             {businesses.map((biz) => {
@@ -1437,13 +1437,13 @@ export const AdminPanelTab: React.FC = () => {
       {adminTab === 'jobs' && (
         <div className="space-y-4 animate-scale-up" id="admin-jobs-section">
           <div className="flex items-center justify-between gap-2">
-            <h3 className="text-xs font-black uppercase tracking-wider text-[#F2994A]">
+            <h3 className="text-xs font-black uppercase tracking-wider text-[#F08C32]">
               Job Board — Business Postings
             </h3>
             <button
               type="button"
               onClick={loadAdminJobs}
-              className="text-[9px] font-bold text-[#F2994A] hover:underline shrink-0"
+              className="text-[9px] font-bold text-[#F08C32] hover:underline shrink-0"
             >
               {jobsLoading ? 'Refreshing…' : 'Refresh'}
             </button>
@@ -1451,7 +1451,7 @@ export const AdminPanelTab: React.FC = () => {
 
           <div className="grid grid-cols-3 gap-3">
             {([
-              ['all', language === 'en' ? 'Total Jobs' : 'إجمالي الوظائف', jobCounts.all, 'text-[#F2994A]'],
+              ['all', language === 'en' ? 'Total Jobs' : 'إجمالي الوظائف', jobCounts.all, 'text-[#F08C32]'],
               ['active', language === 'en' ? 'Active' : 'نشطة', jobCounts.active, 'text-green-400'],
               ['blocked', language === 'en' ? 'Blocked' : 'محظورة', jobCounts.blocked, 'text-red-400'],
             ] as const).map(([key, label, count, color]) => (
@@ -1461,7 +1461,7 @@ export const AdminPanelTab: React.FC = () => {
                 onClick={() => setJobFilter(key)}
                 className={`p-3.5 rounded-2xl border text-center transition-all ${
                   jobFilter === key
-                    ? 'bg-[#F2994A]/10 border-[#F2994A]/40'
+                    ? 'bg-[#FF9E47]/10 border-[#F08C32]/40'
                     : 'bg-white border-[#D7E0EA]'
                 }`}
               >
@@ -1517,7 +1517,7 @@ export const AdminPanelTab: React.FC = () => {
                           (e.target as HTMLImageElement).style.display = 'none';
                         }}
                       />
-                      <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-wider bg-black/70 text-[#F2994A]">
+                      <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded text-[7px] font-black uppercase tracking-wider bg-black/70 text-[#F08C32]">
                         Job image
                       </span>
                     </div>
@@ -1538,7 +1538,7 @@ export const AdminPanelTab: React.FC = () => {
                         <span className="text-[9px] text-gray-500 block uppercase tracking-wider mt-0.5">
                           {job.businessName}
                         </span>
-                        <span className="text-[8px] text-[#F2994A] font-bold block mt-0.5">{job.category}</span>
+                        <span className="text-[8px] text-[#F08C32] font-bold block mt-0.5">{job.category}</span>
                         <span className="text-[8px] text-gray-600 block truncate">{job.hiringEmail}</span>
                         {job.requirements && (
                           <p className="text-[9px] text-gray-500 mt-1.5 line-clamp-2">{job.requirements}</p>
@@ -1598,7 +1598,7 @@ export const AdminPanelTab: React.FC = () => {
       {/* SEGMENT 3: DYNAMIC CATEGORY CREATOR */}
       {adminTab === 'cat' && (
         <div className="space-y-4 animate-scale-up" id="admin-cat-section">
-          <h3 className="text-xs font-black uppercase tracking-wider text-[#F2994A]">
+          <h3 className="text-xs font-black uppercase tracking-wider text-[#F08C32]">
             Create Categories & Subcategories
           </h3>
 
@@ -1635,7 +1635,7 @@ export const AdminPanelTab: React.FC = () => {
             <button
               type="submit"
               disabled={catSubmitting}
-              className="w-full py-2 bg-[#F2994A] hover:bg-opacity-95 text-white font-extrabold text-xs rounded-xl disabled:opacity-60"
+              className="w-full py-2 bg-[#FF9E47] hover:bg-opacity-95 text-white font-extrabold text-xs rounded-xl disabled:opacity-60"
               id="btn-admin-add-cat-submit"
             >
               {catSubmitting ? 'Saving…' : '+ Create Category Record'}
@@ -1651,7 +1651,7 @@ export const AdminPanelTab: React.FC = () => {
               <button
                 type="button"
                 onClick={() => refreshCategories()}
-                className="text-[9px] font-bold text-[#F2994A] hover:underline"
+                className="text-[9px] font-bold text-[#F08C32] hover:underline"
               >
                 Refresh
               </button>
@@ -1672,7 +1672,7 @@ export const AdminPanelTab: React.FC = () => {
                 <div key={c.id} className="p-2.5 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA]/40 flex justify-between items-center gap-2">
                   <div className="min-w-0">
                     <span className="text-xs font-bold text-[#7C2D12] block truncate">{c.name.en}</span>
-                    <span className="text-[8px] text-[#F2994A] font-bold block">{c.group}</span>
+                    <span className="text-[8px] text-[#F08C32] font-bold block">{c.group}</span>
                   </div>
                   <button
                     type="button"
@@ -1730,7 +1730,7 @@ export const AdminPanelTab: React.FC = () => {
                 <p className="text-[10px] text-red-400">{usersError}</p>
                 <button
                   onClick={loadDirectoryUsers}
-                  className="text-[9px] font-bold text-[#F2994A] hover:underline"
+                  className="text-[9px] font-bold text-[#F08C32] hover:underline"
                 >
                   Retry
                 </button>
@@ -1753,7 +1753,7 @@ export const AdminPanelTab: React.FC = () => {
                     </span>
                   </div>
                   {user.role === 'admin' ? (
-                    <span className="shrink-0 px-2.5 py-1 text-[9px] font-bold rounded bg-[#F2994A]/15 text-[#F2994A]">
+                    <span className="shrink-0 px-2.5 py-1 text-[9px] font-bold rounded bg-[#FF9E47]/15 text-[#F08C32]">
                       Admin
                     </span>
                   ) : (
@@ -1790,7 +1790,7 @@ export const AdminPanelTab: React.FC = () => {
                     onClick={() => setReportFilter(filter)}
                     className={`px-2 py-1 text-[9px] font-bold rounded uppercase ${
                       reportFilter === filter
-                        ? 'bg-[#F2994A] text-white'
+                        ? 'bg-[#FF9E47] text-white'
                         : 'bg-slate-100 text-gray-400 hover:text-[#7C2D12]'
                     }`}
                   >
@@ -1809,7 +1809,7 @@ export const AdminPanelTab: React.FC = () => {
                 <p className="text-[10px] text-red-400">{reportsError}</p>
                 <button
                   onClick={loadIntegrityReports}
-                  className="text-[9px] font-bold text-[#F2994A] hover:underline"
+                  className="text-[9px] font-bold text-[#F08C32] hover:underline"
                 >
                   Retry
                 </button>
@@ -1869,7 +1869,7 @@ export const AdminPanelTab: React.FC = () => {
             <button
               type="button"
               onClick={() => void loadActivityLogs()}
-              className="px-3 py-1.5 rounded-xl text-[10px] font-bold bg-[#EEF2F6] border border-[#D7E0EA] text-[#F2994A]"
+              className="px-3 py-1.5 rounded-xl text-[10px] font-bold bg-[#EEF2F6] border border-[#D7E0EA] text-[#F08C32]"
             >
               Refresh
             </button>
@@ -1892,7 +1892,7 @@ export const AdminPanelTab: React.FC = () => {
                 className="p-3.5 rounded-2xl bg-white border border-[#D7E0EA] space-y-1"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <span className="text-[11px] font-black uppercase tracking-wide text-[#F2994A]">
+                  <span className="text-[11px] font-black uppercase tracking-wide text-[#F08C32]">
                     {row.action.replace(/_/g, ' ')}
                   </span>
                   <span className="text-[9px] text-gray-500 whitespace-nowrap">

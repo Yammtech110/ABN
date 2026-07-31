@@ -273,12 +273,10 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // ── Persisted preferences ────────────────────────────────────────────────
   const language = 'en' as const;
   const [theme, setThemeState] = useState<'light' | 'dark'>(() => {
-    // Redesign is light-first; migrate old dark preference once.
     const saved = safeGetItem('shia_dir_theme');
-    if (saved === 'dark') {
-      safeSetItem('shia_dir_theme', 'light');
-    }
-    return 'light';
+    if (saved === 'light' || saved === 'dark') return saved;
+    // Warm charcoal + burnt orange is the brand look
+    return 'dark';
   });
 
   // ── Auth ─────────────────────────────────────────────────────────────────

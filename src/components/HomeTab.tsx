@@ -63,7 +63,7 @@ const HeroNetworkMap: React.FC = () => (
   >
     <defs>
       <radialGradient id="netGlow" cx="70%" cy="35%" r="50%">
-        <stop offset="0%" stopColor="#F2994A" stopOpacity="0.45" />
+        <stop offset="0%" stopColor="#FF9E47" stopOpacity="0.45" />
         <stop offset="100%" stopColor="#7C2D12" stopOpacity="0" />
       </radialGradient>
     </defs>
@@ -82,7 +82,7 @@ const HeroNetworkMap: React.FC = () => (
       [90, 220], [170, 190], [250, 230], [330, 200], [180, 110],
     ].map(([x, y], i) => (
       <g key={i}>
-        <circle cx={x} cy={y} r="3.5" fill={i % 3 === 0 ? '#FFFFFF' : '#F2994A'} />
+        <circle cx={x} cy={y} r="3.5" fill={i % 3 === 0 ? '#FFFFFF' : '#FF9E47'} />
         <circle cx={x} cy={y} r="7" stroke="#FDBA74" strokeWidth="1" opacity="0.35" />
       </g>
     ))}
@@ -341,7 +341,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
     onSwitchTab('search');
   };
 
-  const renderCategoryIcon = (iconName: string, className = 'w-5 h-5 text-[#F2994A]') => {
+  const renderCategoryIcon = (iconName: string, className = 'w-5 h-5 text-[#F08C32]') => {
     const IconComponent = ICON_MAP[iconName] || HelpCircle;
     return <IconComponent className={className} />;
   };
@@ -357,7 +357,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             className="p-2 rounded-full bg-white hover:bg-slate-50 border border-[#D7E0EA] transition-colors"
             aria-label="Back to home"
           >
-            <ArrowRight className="w-4 h-4 text-[#F2994A] rotate-180" />
+            <ArrowRight className="w-4 h-4 text-[#F08C32] rotate-180" />
           </button>
           <h2 className="text-sm font-extrabold text-[#7C2D12] flex-1 truncate">Job Details</h2>
         </div>
@@ -379,12 +379,12 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${JOB_CATEGORY_COLORS[selectedJob.category]}`}>
               {selectedJob.category}
             </span>
-            <span className="text-[10px] font-extrabold text-[#F2994A] bg-orange-50 border border-orange-200 px-2.5 py-1 rounded-full">
+            <span className="text-[10px] font-extrabold text-[#F08C32] bg-orange-50 border border-orange-200 px-2.5 py-1 rounded-full">
               ${selectedJob.salaryMin.toLocaleString()} – ${selectedJob.salaryMax.toLocaleString()}/mo
             </span>
           </div>
           <div>
-            <h4 className="text-[10px] font-extrabold text-[#F2994A] uppercase tracking-wider mb-2">
+            <h4 className="text-[10px] font-extrabold text-[#F08C32] uppercase tracking-wider mb-2">
               Requirements & Skills
             </h4>
             <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-wrap">
@@ -393,7 +393,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           </div>
           <a
             href={`mailto:${selectedJob.hiringEmail}?subject=Job Application: ${encodeURIComponent(selectedJob.title)} at ${encodeURIComponent(selectedJob.businessName)}`}
-            className="flex items-center justify-center gap-2 w-full py-3.5 bg-[#F2994A] hover:bg-[#D87D2E] text-black font-extrabold rounded-2xl text-sm transition-all shadow-lg active:scale-95 no-underline"
+            className="flex items-center justify-center gap-2 w-full py-3.5 bg-[#FF9E47] hover:bg-[#D9771D] text-black font-extrabold rounded-2xl text-sm transition-all shadow-lg active:scale-95 no-underline"
           >
             Apply via Email
           </a>
@@ -471,8 +471,8 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             id="home-search-box"
           >
             {isSearching
-              ? <span className="absolute left-3.5 w-4 h-4 border-2 border-[#F2994A] border-t-transparent rounded-full animate-spin" />
-              : <Search className="absolute left-3.5 w-4 h-4 text-[#F2994A]" />
+              ? <span className="absolute left-3.5 w-4 h-4 border-2 border-[#F08C32] border-t-transparent rounded-full animate-spin" />
+              : <Search className="absolute left-3.5 w-4 h-4 text-[#F08C32]" />
             }
             <input
               type="text"
@@ -489,7 +489,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                 setSearchQueryText(query);
                 onSwitchTab('search');
               }}
-              className="absolute right-1.5 px-2.5 py-2 rounded-xl bg-[#F2994A] text-black font-bold text-[11px] flex items-center gap-1"
+              className="absolute right-1.5 px-2.5 py-2 rounded-xl bg-[#FF9E47] text-black font-bold text-[11px] flex items-center gap-1"
               id="home-location-badge-btn"
             >
               <MapPin className="w-3 h-3" />
@@ -513,15 +513,15 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                   data-active={active ? 'true' : 'false'}
                   className={`city-pill flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[11px] font-bold border transition-all snap-start ${
                     active
-                      ? 'city-pill-active bg-[#F2994A] text-black border-[#F2994A] shadow-md'
-                      : 'bg-white text-[#F2994A] border-[#F2994A]/45'
+                      ? 'city-pill-active bg-[#FF9E47] text-black border-[#F08C32] shadow-md'
+                      : 'bg-white text-[#F08C32] border-[#F08C32]/45'
                   }`}
                   id={`city-pill-${key}`}
                 >
                   {key === 'all'
-                    ? <Globe className={`w-3.5 h-3.5 ${active ? 'text-black' : 'text-[#F2994A]'}`} />
-                    : <MapPin className={`w-3 h-3 ${active ? 'text-black' : 'text-[#F2994A]'}`} />}
-                  <span className={active ? 'text-black' : 'text-[#F2994A]'}>{label}</span>
+                    ? <Globe className={`w-3.5 h-3.5 ${active ? 'text-black' : 'text-[#F08C32]'}`} />
+                    : <MapPin className={`w-3 h-3 ${active ? 'text-black' : 'text-[#F08C32]'}`} />}
+                  <span className={active ? 'text-black' : 'text-[#F08C32]'}>{label}</span>
                 </button>
               );
             })}
@@ -534,7 +534,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             <h3 className="text-[16px] font-extrabold text-[#7C2D12]">Featured Businesses</h3>
             <button
               onClick={() => { setSearchQueryText(''); onSwitchTab('search'); }}
-              className="text-[12px] text-[#F2994A] font-bold flex items-center gap-0.5"
+              className="text-[12px] text-[#F08C32] font-bold flex items-center gap-0.5"
             >
               See all <ArrowRight className="w-3.5 h-3.5" />
             </button>
@@ -563,11 +563,11 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                     </div>
                     <div className="flex items-center gap-1 min-w-0 pr-5">
                       <h4 className="text-[13px] font-extrabold text-[#7C2D12] truncate">{biz.name}</h4>
-                      {biz.isVerified && <CheckCircle className="w-3.5 h-3.5 text-[#F2994A] flex-shrink-0" />}
+                      {biz.isVerified && <CheckCircle className="w-3.5 h-3.5 text-[#F08C32] flex-shrink-0" />}
                     </div>
                     <p className="text-[11px] text-slate-500 capitalize truncate">{textEn(biz.subcategory)}</p>
                     <p className="text-[11px] text-slate-500 flex items-center gap-1 truncate">
-                      <MapPin className="w-3 h-3 text-[#F2994A] flex-shrink-0" />
+                      <MapPin className="w-3 h-3 text-[#F08C32] flex-shrink-0" />
                       {biz.city}
                     </p>
                     <div className="flex items-center justify-between gap-2 pt-0.5">
@@ -586,7 +586,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                           </span>
                         )}
                       </div>
-                      <ChevronRight className="w-4 h-4 text-[#F2994A] flex-shrink-0" />
+                      <ChevronRight className="w-4 h-4 text-[#F08C32] flex-shrink-0" />
                     </div>
                   </button>
                 </div>
@@ -600,7 +600,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           !businesses.some((b) => b.ownerId === currentUser?.id || b.ownerId === currentUser?.email) && (
           <button
             onClick={() => onSwitchTab('business')}
-            className="w-full p-4 rounded-2xl bg-gradient-to-r from-[#F2994A] to-[#D87D2E] text-black shadow-lg flex items-center justify-between"
+            className="w-full p-4 rounded-2xl bg-gradient-to-r from-[#FF9E47] to-[#D9771D] text-black shadow-lg flex items-center justify-between"
             id="btn-register-banner"
           >
             <div className="text-left">
@@ -617,7 +617,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             <h3 className="text-[16px] font-extrabold text-[#7C2D12]">Browse Businesses</h3>
             <button
               onClick={() => onSwitchTab('search')}
-              className="text-[12px] text-[#F2994A] font-bold flex items-center gap-0.5"
+              className="text-[12px] text-[#F08C32] font-bold flex items-center gap-0.5"
               id="btn-categories-seeall"
             >
               See all <ArrowRight className="w-3.5 h-3.5" />
@@ -631,7 +631,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                 className="flex flex-col items-center gap-1.5 text-center bg-transparent border-0 shadow-none p-0"
                 id={`cat-card-${cat.id}`}
               >
-                {renderCategoryIcon(cat.iconName, 'w-7 h-7 text-[#F2994A]')}
+                {renderCategoryIcon(cat.iconName, 'w-7 h-7 text-[#F08C32]')}
                 <span className="text-[10px] font-semibold text-[#7C2D12] leading-tight line-clamp-2 w-full">
                   {cat.name.en}
                 </span>
@@ -642,7 +642,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               className="flex flex-col items-center gap-1.5 text-center bg-transparent border-0 shadow-none p-0"
               id="cat-card-more"
             >
-              <Grid3X3 className="w-7 h-7 text-[#F2994A]" strokeWidth={2} />
+              <Grid3X3 className="w-7 h-7 text-[#F08C32]" strokeWidth={2} />
               <span className="text-[10px] font-semibold text-[#7C2D12]">More</span>
             </button>
           </div>
@@ -661,13 +661,13 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             <button
               type="button"
               onClick={() => onSwitchTab(currentUser ? 'job-board' : 'account')}
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#F2994A] text-black text-[12px] font-extrabold"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#FF9E47] text-black text-[12px] font-extrabold"
               id="btn-post-job-cta"
             >
               Post a Job <ArrowRight className="w-3.5 h-3.5 text-black" />
             </button>
           </div>
-          <Briefcase className="w-9 h-9 text-[#F2994A] flex-shrink-0" />
+          <Briefcase className="w-9 h-9 text-[#F08C32] flex-shrink-0" />
         </section>
 
         {/* Find the Right Talent */}
@@ -715,7 +715,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                     <p className="text-[9px] font-semibold text-slate-600 truncate">{job.businessName}</p>
                   </div>
                   <h4 className="text-[12px] font-extrabold text-[#7C2D12] leading-tight line-clamp-2">{job.title}</h4>
-                  <div className="text-[10px] font-extrabold text-[#F2994A]">
+                  <div className="text-[10px] font-extrabold text-[#F08C32]">
                     ${job.salaryMin.toLocaleString()} – ${job.salaryMax.toLocaleString()}/mo
                   </div>
                 </button>
@@ -738,7 +738,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               <button
                 type="button"
                 onClick={() => onSwitchTab('search')}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-[#F2994A] text-[#F2994A] text-[11px] font-extrabold bg-transparent"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-[#F08C32] text-[#F08C32] text-[11px] font-extrabold bg-transparent"
               >
                 Learn More
               </button>
@@ -766,7 +766,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               ].map((n) => (
                 <span
                   key={n.label}
-                  className={`absolute ${n.style} text-[7px] font-bold text-[#F2994A] whitespace-nowrap`}
+                  className={`absolute ${n.style} text-[7px] font-bold text-[#F08C32] whitespace-nowrap`}
                 >
                   {n.label}
                 </span>

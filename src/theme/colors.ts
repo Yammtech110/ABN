@@ -1,0 +1,21 @@
+﻿/** ABN design system — warm charcoal + burnt orange */
+export const colors = {
+  bg: '#0D0906',
+  bgSecondary: '#110E0B',
+  surface: '#171310',
+  surface2: '#1E1915',
+  elevated: '#322820',
+  primary: '#F08C32',
+  primaryLight: '#FF9E47',
+  primaryDark: '#D9771D',
+  orangeLight: '#ECB88A',
+  text: '#FFFFFF',
+  textSecondary: '#CFCFCF',
+  textMuted: '#8E8E8E',
+  textDisabled: '#626262',
+  border: '#2B231D',
+  divider: '#3A3029',
+  success: '#4CAF50',
+  warning: '#F08C32',
+  error: '#E84D4D',
+} as const;

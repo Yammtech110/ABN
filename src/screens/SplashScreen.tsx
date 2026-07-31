@@ -54,7 +54,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ fading = false }) =>
     {[0, 1, 2].map((i) => (
       <motion.div
         key={`ring-${i}`}
-        className="pointer-events-none absolute rounded-full border border-[#F2994A]/25"
+        className="pointer-events-none absolute rounded-full border border-[#F08C32]/25"
         style={{ width: 140 + i * 70, height: 140 + i * 70 }}
         initial={{ opacity: 0, scale: 0.55 }}
         animate={{ opacity: [0, 0.55, 0], scale: [0.55, 1.15, 1.45] }}
@@ -73,7 +73,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ fading = false }) =>
       {NODES.map((n, i) => (
         <motion.span
           key={`node-${i}`}
-          className="absolute w-2 h-2 rounded-full bg-[#F2994A] shadow-[0_0_12px_rgba(242, 153, 74,0.8)]"
+          className="absolute w-2 h-2 rounded-full bg-[#FF9E47] shadow-[0_0_12px_rgba(242, 153, 74,0.8)]"
           style={{ left: `${n.x}%`, top: `${n.y}%` }}
           initial={{ opacity: 0, scale: 0 }}
           animate={{ opacity: [0, 1, 0.45, 1], scale: [0, 1.2, 0.9, 1] }}
@@ -94,7 +94,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ fading = false }) =>
       </motion.div>
 
       <motion.p
-        className="text-[11px] font-bold tracking-[0.28em] uppercase text-[#F2994A] mb-2"
+        className="text-[11px] font-bold tracking-[0.28em] uppercase text-[#F08C32] mb-2"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.55, delay: 0.55 }}
@@ -111,7 +111,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ fading = false }) =>
         <span className="block text-[34px] sm:text-[40px] font-black tracking-tight text-white">
           AHLEBAIT
         </span>
-        <span className="block text-[34px] sm:text-[40px] font-black tracking-tight text-[#F2994A]">
+        <span className="block text-[34px] sm:text-[40px] font-black tracking-tight text-[#F08C32]">
           NETWORK
         </span>
       </motion.h1>
@@ -133,7 +133,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ fading = false }) =>
         transition={{ delay: 1.1 }}
       >
         <motion.div
-          className="h-full rounded-full bg-gradient-to-r from-[#F2994A] to-[#FDBA74]"
+          className="h-full rounded-full bg-gradient-to-r from-[#FF9E47] to-[#FDBA74]"
           initial={{ x: '-100%' }}
           animate={{ x: '100%' }}
           transition={{ duration: 1.4, delay: 1.15, ease: [0.22, 1, 0.36, 1], repeat: Infinity }}

@@ -23,12 +23,12 @@ import { userFacingError } from '../utils/userFacingError';
 type AuthMode = 'signin' | 'register' | 'verify' | 'forgot' | 'reset-code' | 'reset-choice';
 
 const fieldClass =
-  'w-full pl-11 pr-11 py-3.5 rounded-2xl bg-white border border-[#D7E0EA] focus:border-[#F2994A] focus:ring-1 focus:ring-[#F2994A]/25 outline-none text-[15px] text-[#7C2D12] placeholder:text-slate-400 transition-all';
+  'w-full pl-11 pr-11 py-3.5 rounded-2xl bg-white border border-[#D7E0EA] focus:border-[#F08C32] focus:ring-1 focus:ring-[#F08C32]/25 outline-none text-[15px] text-[#7C2D12] placeholder:text-slate-400 transition-all';
 
 const labelClass = 'block text-[11px] font-semibold tracking-wide text-[#7C2D12] mb-1.5 uppercase';
 
 const primaryBtn =
-  'w-full py-3.5 mt-1 rounded-2xl bg-gradient-to-r from-[#F2994A] to-[#D87D2E] text-black font-black text-sm tracking-wide shadow-[0_10px_28px_rgba(242, 153, 74,0.28)] hover:brightness-105 active:scale-[0.985] transition-all disabled:opacity-55 flex items-center justify-center gap-2';
+  'w-full py-3.5 mt-1 rounded-2xl bg-gradient-to-r from-[#FF9E47] to-[#D9771D] text-black font-black text-sm tracking-wide shadow-[0_10px_28px_rgba(242, 153, 74,0.28)] hover:brightness-105 active:scale-[0.985] transition-all disabled:opacity-55 flex items-center justify-center gap-2';
 
 /** Premium auth gateway — Sign In / Register / OTP / Forgot password (backend-wired) */
 export const AuthScreen: React.FC = () => {
@@ -357,7 +357,7 @@ export const AuthScreen: React.FC = () => {
                       {active && (
                         <motion.span
                           layoutId="authTabPill"
-                          className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#F2994A] to-[#D87D2E] shadow-md"
+                          className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#FF9E47] to-[#D9771D] shadow-md"
                           transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                         />
                       )}
@@ -425,7 +425,7 @@ export const AuthScreen: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => setShowPassword((v) => !v)}
-                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#F2994A]"
+                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#F08C32]"
                             aria-label={showPassword ? 'Hide password' : 'Show password'}
                           >
                             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -450,7 +450,7 @@ export const AuthScreen: React.FC = () => {
                         setRegSuccess('');
                         setPassword('');
                       }}
-                      className="w-full mt-4 text-center text-xs font-semibold text-[#F2994A] hover:underline"
+                      className="w-full mt-4 text-center text-xs font-semibold text-[#F08C32] hover:underline"
                     >
                       Forgot password?
                     </button>
@@ -532,7 +532,7 @@ export const AuthScreen: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => setShowPassword((v) => !v)}
-                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#F2994A]"
+                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#F08C32]"
                           >
                             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
@@ -555,7 +555,7 @@ export const AuthScreen: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => setShowConfirm((v) => !v)}
-                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#F2994A]"
+                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#F08C32]"
                           >
                             {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
@@ -583,7 +583,7 @@ export const AuthScreen: React.FC = () => {
 
                 {authMode === 'verify' && (
                   <>
-                    <div className="flex items-center justify-center gap-2 mb-3 text-[#F2994A]">
+                    <div className="flex items-center justify-center gap-2 mb-3 text-[#F08C32]">
                       <ShieldCheck className="w-5 h-5" />
                       <span className="text-xs font-black uppercase tracking-wider">Verify Email</span>
                     </div>
@@ -613,13 +613,13 @@ export const AuthScreen: React.FC = () => {
                       type="button"
                       onClick={handleResend}
                       disabled={isLoading}
-                      className="w-full mt-3 text-xs text-slate-500 hover:text-[#F2994A]"
+                      className="w-full mt-3 text-xs text-slate-500 hover:text-[#F08C32]"
                     >
                       Resend code
                     </button>
                     <a
                       href={SUPPORT_MAILTO}
-                      className="block w-full mt-2 text-center text-[10px] text-slate-400 hover:text-[#F2994A]"
+                      className="block w-full mt-2 text-center text-[10px] text-slate-400 hover:text-[#F08C32]"
                     >
                       Contact support
                     </a>
@@ -635,7 +635,7 @@ export const AuthScreen: React.FC = () => {
 
                 {authMode === 'forgot' && (
                   <>
-                    <div className="flex items-center justify-center gap-2 mb-3 text-[#F2994A]">
+                    <div className="flex items-center justify-center gap-2 mb-3 text-[#F08C32]">
                       <KeyRound className="w-5 h-5" />
                       <span className="text-xs font-black uppercase tracking-wider">Forgot Password</span>
                     </div>
@@ -674,7 +674,7 @@ export const AuthScreen: React.FC = () => {
 
                 {authMode === 'reset-code' && (
                   <>
-                    <div className="flex items-center justify-center gap-2 mb-3 text-[#F2994A]">
+                    <div className="flex items-center justify-center gap-2 mb-3 text-[#F08C32]">
                       <ShieldCheck className="w-5 h-5" />
                       <span className="text-xs font-black uppercase tracking-wider">Enter Reset Code</span>
                     </div>
@@ -715,7 +715,7 @@ export const AuthScreen: React.FC = () => {
                         setVerifyCode('');
                         setRegSuccess('A new reset code was emailed. Check Gmail Inbox and Spam.');
                       }}
-                      className="w-full mt-3 text-xs text-slate-500 hover:text-[#F2994A]"
+                      className="w-full mt-3 text-xs text-slate-500 hover:text-[#F08C32]"
                     >
                       Resend code
                     </button>
@@ -738,7 +738,7 @@ export const AuthScreen: React.FC = () => {
                       type="button"
                       disabled={isLoading}
                       onClick={handleKeepPassword}
-                      className="w-full py-3 mb-3 rounded-2xl border border-[#D7E0EA] text-sm font-bold text-[#7C2D12] hover:border-[#F2994A]/50 bg-white disabled:opacity-55"
+                      className="w-full py-3 mb-3 rounded-2xl border border-[#D7E0EA] text-sm font-bold text-[#7C2D12] hover:border-[#F08C32]/50 bg-white disabled:opacity-55"
                     >
                       {isLoading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Keep current password'}
                     </button>

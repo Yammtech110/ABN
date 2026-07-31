@@ -217,7 +217,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
           <button
             onClick={handleToggleFavorite}
             className={`p-2.5 rounded-full backdrop-blur-md border border-[#D7E0EA] transition-colors ${
-              isFav ? 'bg-[#F2994A] text-white hover:bg-opacity-95' : 'bg-white/90 text-[#7C2D12] hover:bg-white'
+              isFav ? 'bg-[#FF9E47] text-white hover:bg-opacity-95' : 'bg-white/90 text-[#7C2D12] hover:bg-white'
             }`}
             title={t.saved}
             id="details-btn-fav"
@@ -226,7 +226,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
           </button>
           <button
             onClick={onClose}
-            className="p-2.5 rounded-full backdrop-blur-md bg-black/50 hover:bg-black/80 text-[#F2994A] border border-[#D7E0EA] transition-colors"
+            className="p-2.5 rounded-full backdrop-blur-md bg-black/50 hover:bg-black/80 text-[#F08C32] border border-[#D7E0EA] transition-colors"
             id="details-btn-close"
           >
             <X className="w-5 h-5" />
@@ -247,21 +247,21 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
               );
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0F0E0C] to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-[#1E1915] to-transparent"></div>
         </div>
 
         {/* Business Badge & Title Header */}
         <div className="relative px-6 pb-6 -mt-16" id="details-header-content">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             {/* Logo Avatar */}
-            <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-2xl overflow-hidden border-4 border-[#0F0E0C] bg-[#EEF2F6]" id="details-logo-wrapper">
+            <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-2xl overflow-hidden border-4 border-[#1E1915] bg-[#EEF2F6]" id="details-logo-wrapper">
               <BusinessThumbnail business={business} className="w-full h-full object-cover" />
             </div>
 
             {/* Verification & Location */}
             <div className="flex-1 min-w-0 md:mb-2">
               <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider bg-[#EEF2F6] text-[#F2994A] border border-[#D7E0EA]">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider bg-[#EEF2F6] text-[#F08C32] border border-[#D7E0EA]">
                   {textEn(business.subcategory)}
                 </span>
                 {business.isVerified && (
@@ -289,7 +289,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
 
             {/* Quick rating bubble */}
             <div className="flex flex-col items-center bg-[#EEF2F6] border border-[#D7E0EA] p-2.5 rounded-2xl w-24">
-              <span className="text-xl font-black text-[#F2994A] flex items-center gap-1">
+              <span className="text-xl font-black text-[#F08C32] flex items-center gap-1">
                 {business.rating} <Star className="w-4 h-4 fill-current" />
               </span>
               <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider block mt-1">
@@ -322,7 +322,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
             
             {/* Description Card */}
             <div className="p-5 rounded-2xl bg-white border border-[#D7E0EA]">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-[#F2994A] mb-3">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-[#F08C32] mb-3">
                 {language === 'en' ? 'About Our Business' : 'نبذة وتفاصيل العمل'}
               </h3>
               <p className="text-sm leading-relaxed text-gray-300 whitespace-pre-line">
@@ -331,7 +331,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
 
               {/* Working Hours with Open/Closed badge */}
               <div className="mt-5 pt-4 border-t border-[#D7E0EA]/60 flex items-center gap-3 text-xs text-[#7C2D12]/90" id="details-working-hours">
-                <Clock className="w-4 h-4 text-[#F2994A] shrink-0" />
+                <Clock className="w-4 h-4 text-[#F08C32] shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <strong className="text-[#7C2D12]">{t.workingHours}:</strong>
@@ -347,9 +347,9 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
             </div>
 
             {/* ── Rate This Business (interactive 5-star + POST /api/reviews) ── */}
-            <div className="p-5 rounded-2xl bg-white border border-[#F2994A]/25 space-y-4" id="details-rate-business">
+            <div className="p-5 rounded-2xl bg-white border border-[#F08C32]/25 space-y-4" id="details-rate-business">
               <div className="flex items-center justify-between gap-2">
-                <h3 className="text-sm font-extrabold tracking-wider text-[#F2994A]">
+                <h3 className="text-sm font-extrabold tracking-wider text-[#F08C32]">
                   {language === 'en' ? '⭐ Rate This Business' : '⭐ قيّم هذا النشاط'}
                 </h3>
                 <span className="text-[10px] text-gray-500">
@@ -390,13 +390,13 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                         >
                           <Star
                             className={`w-8 h-8 transition-colors ${
-                              active ? 'text-[#F2994A] fill-[#F2994A]' : 'text-gray-700 hover:text-gray-500'
+                              active ? 'text-[#F08C32] fill-[#F08C32]' : 'text-gray-700 hover:text-gray-500'
                             }`}
                           />
                         </button>
                       );
                     })}
-                    <span className="ml-2 text-sm font-extrabold text-[#F2994A]">
+                    <span className="ml-2 text-sm font-extrabold text-[#F08C32]">
                       {hoverRating || rating}/5
                     </span>
                   </div>
@@ -413,14 +413,14 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                     onChange={(e) => setComment(e.target.value)}
                     disabled={!currentUser || isSubmittingReview}
                     placeholder={language === 'en' ? 'Share your experience with this business…' : 'شارك تجربتك مع هذا النشاط…'}
-                    className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#F2994A] text-xs outline-none text-[#7C2D12] transition-all disabled:opacity-50 resize-none"
+                    className="w-full p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA] focus:border-[#F08C32] text-xs outline-none text-[#7C2D12] transition-all disabled:opacity-50 resize-none"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={!currentUser || isSubmittingReview}
-                  className="w-full py-3 rounded-xl bg-[#F2994A] hover:bg-opacity-95 text-white font-extrabold text-xs transition-all shadow-md disabled:opacity-40 flex items-center justify-center gap-2"
+                  className="w-full py-3 rounded-xl bg-[#FF9E47] hover:bg-opacity-95 text-white font-extrabold text-xs transition-all shadow-md disabled:opacity-40 flex items-center justify-center gap-2"
                   id="details-btn-submit-rating"
                 >
                   <Send className="w-4 h-4" />
@@ -434,7 +434,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
             {/* Gallery Images Strip */}
             {business.gallery && business.gallery.length > 0 && (
               <div className="p-5 rounded-2xl bg-white border border-[#D7E0EA]">
-                <h3 className="text-xs font-bold uppercase tracking-widest text-[#F2994A] mb-3">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-[#F08C32] mb-3">
                   {language === 'en' ? 'Photos & Service Shots' : 'صور المقر والخدمات'}
                 </h3>
                 <div className="grid grid-cols-2 gap-2" id="gallery-grid">
@@ -461,7 +461,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
             {/* Reviews Section */}
             <div className="p-5 rounded-2xl bg-white border border-[#D7E0EA] space-y-4">
               <div className="flex items-center justify-between pb-2 border-b border-[#D7E0EA]">
-                <h3 className="text-sm font-bold tracking-wider text-[#F2994A]">
+                <h3 className="text-sm font-bold tracking-wider text-[#F08C32]">
                   {t.reviews}
                 </h3>
                 <span className="text-xs text-gray-400">
@@ -486,7 +486,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                               key={i}
                               className={`w-3 h-3 ${
                                 i < Math.floor(rev.rating)
-                                  ? 'text-[#F2994A] fill-[#F2994A]'
+                                  ? 'text-[#F08C32] fill-[#F08C32]'
                                   : 'text-gray-600'
                               }`}
                             />
@@ -498,7 +498,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
 
                       {rev.ownerReply ? (
                         <div className="mt-2 p-2.5 rounded-lg bg-[#EEF2F6] border border-[#D7E0EA]/60">
-                          <p className="text-[10px] font-bold text-[#F2994A] mb-1">
+                          <p className="text-[10px] font-bold text-[#F08C32] mb-1">
                             Owner reply{rev.ownerReplyBy ? ` · ${rev.ownerReplyBy}` : ''}
                           </p>
                           <p className="text-xs text-gray-300 leading-relaxed">{rev.ownerReply}</p>
@@ -519,7 +519,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                             type="button"
                             disabled={replyBusyId === rev.id}
                             onClick={() => void handleOwnerReply(rev.id)}
-                            className="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-[#F2994A]/15 text-[#F2994A] border border-[#F2994A]/30 hover:bg-[#F2994A]/25 disabled:opacity-50"
+                            className="px-3 py-1.5 rounded-lg text-[10px] font-bold bg-[#FF9E47]/15 text-[#F08C32] border border-[#F08C32]/30 hover:bg-[#FF9E47]/25 disabled:opacity-50"
                           >
                             {replyBusyId === rev.id ? 'Saving…' : 'Post reply'}
                           </button>
@@ -590,14 +590,14 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
 
             {/* Instant Communication Action Buttons */}
             <div className="p-5 rounded-2xl bg-white border border-[#D7E0EA] space-y-3" id="details-actions">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-[#F2994A] mb-1">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-[#F08C32] mb-1">
                 {t.contactBusiness}
               </h3>
               
               {/* Call / WhatsApp / Map — solid brand colors (theme-safe contrast) */}
               <button
                 onClick={() => handleActionClick('phone')}
-                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#F2994A] hover:bg-[#D87D2E] transition-all border border-[#D87D2E] text-white group"
+                className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#FF9E47] hover:bg-[#D9771D] transition-all border border-[#D9771D] text-white group"
                 id="action-btn-call"
               >
                 <span className="flex items-center gap-3 text-sm font-bold text-black">
@@ -639,21 +639,21 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                   href={business.website}
                   target="_blank"
                   rel="noreferrer"
-                  className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#F2994A]/15 hover:bg-[#F2994A]/25 transition-all border border-[#F2994A]/40 group"
+                  className="w-full flex items-center justify-between p-3.5 rounded-xl bg-[#FF9E47]/15 hover:bg-[#FF9E47]/25 transition-all border border-[#F08C32]/40 group"
                   id="action-link-website"
                 >
-                  <span className="flex items-center gap-3 text-sm font-bold text-[#F2994A]">
-                    <Globe className="w-4 h-4 text-[#F2994A]" />
+                  <span className="flex items-center gap-3 text-sm font-bold text-[#F08C32]">
+                    <Globe className="w-4 h-4 text-[#F08C32]" />
                     {t.openWebsite}
                   </span>
-                  <ChevronRight className="w-4 h-4 text-[#F2994A]/70 group-hover:text-[#F2994A]" />
+                  <ChevronRight className="w-4 h-4 text-[#F08C32]/70 group-hover:text-[#F08C32]" />
                 </a>
               )}
             </div>
 
             {/* Real Google Map embed */}
             <div className="p-5 rounded-2xl bg-white border border-[#D7E0EA] space-y-3">
-              <h4 className="text-xs font-bold uppercase tracking-widest text-[#F2994A]">
+              <h4 className="text-xs font-bold uppercase tracking-widest text-[#F08C32]">
                 {language === 'en' ? 'Map Location View' : 'موقع خارطة الدليل'}
               </h4>
               <div className="relative aspect-video rounded-xl overflow-hidden border border-[#D7E0EA] bg-stone-900" id="details-mini-map">

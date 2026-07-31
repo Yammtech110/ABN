@@ -162,7 +162,7 @@ export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
                 key={`add-${index}`}
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className={`${tileAspect} rounded-xl bg-[#0F0E0C] border-2 border-dashed flex flex-col items-center justify-center gap-1 transition-all ${
+                className={`${tileAspect} rounded-xl bg-[#1E1915] border-2 border-dashed flex flex-col items-center justify-center gap-1 transition-all ${
                   addSlotFlash || (required && images.length === 0 && errorMessage)
                     ? 'border-red-500/70 bg-red-950/20'
                     : 'border-[#2D2319] hover:border-[#FFA048]/50'
@@ -181,7 +181,7 @@ export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
             return (
               <div
                 key={`empty-${index}`}
-                className={`${tileAspect} rounded-xl bg-[#0F0E0C]/40 border border-[#2D2319]/40 flex items-center justify-center opacity-40`}
+                className={`${tileAspect} rounded-xl bg-[#1E1915]/40 border border-[#2D2319]/40 flex items-center justify-center opacity-40`}
               >
                 <ImageIcon className="w-4 h-4 text-gray-700" />
               </div>
@@ -191,7 +191,7 @@ export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
           return (
             <div
               key={`img-${index}`}
-              className={`relative ${tileAspect} rounded-xl bg-[#0F0E0C] border border-[#2D2319] overflow-hidden group`}
+              className={`relative ${tileAspect} rounded-xl bg-[#1E1915] border border-[#2D2319] overflow-hidden group`}
             >
               <img src={src!} alt={`Upload ${index + 1}`} className="w-full h-full object-cover" />
               {!readOnly && (
@@ -218,7 +218,7 @@ export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="mt-2 w-full py-2 rounded-xl bg-[#191613] border border-[#2D2319] text-xs text-gray-300 hover:text-white hover:border-[#FFA048]/40 transition-all flex items-center justify-center gap-2"
+          className="mt-2 w-full py-2 rounded-xl bg-[#1E1915] border border-[#2D2319] text-xs text-gray-300 hover:text-white hover:border-[#FFA048]/40 transition-all flex items-center justify-center gap-2"
         >
           <Camera className="w-3.5 h-3.5 text-[#FFA048]" />
           {language === 'en'

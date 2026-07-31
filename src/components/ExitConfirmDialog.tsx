@@ -22,7 +22,7 @@ export const ExitConfirmDialog: React.FC<ExitConfirmDialogProps> = ({
       aria-modal="true"
       aria-labelledby="exit-app-title"
     >
-      <div className="w-full max-w-sm rounded-2xl bg-[#13110E] border border-[#2D2319] p-5 shadow-2xl">
+      <div className="w-full max-w-sm rounded-2xl bg-[#171310] border border-[#2D2319] p-5 shadow-2xl">
         <h2 id="exit-app-title" className="text-base font-extrabold text-[#F4E3D7]">
           Exit ABN?
         </h2>
@@ -33,7 +33,7 @@ export const ExitConfirmDialog: React.FC<ExitConfirmDialogProps> = ({
           <button
             type="button"
             onClick={onStay}
-            className="flex-1 py-2.5 rounded-xl border border-[#2D2319] text-sm font-bold text-gray-300 hover:bg-[#191613] transition-colors"
+            className="flex-1 py-2.5 rounded-xl border border-[#2D2319] text-sm font-bold text-gray-300 hover:bg-[#1E1915] transition-colors"
             id="btn-exit-cancel"
           >
             No
