@@ -352,16 +352,16 @@ export const AuthScreen: React.FC = () => {
               initial={{ scale: 0.94, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.05, duration: 0.35 }}
-              className="rounded-[22px] border border-[#2B231D] bg-[#171310] p-4 shadow-[0_12px_40px_rgba(0,0,0,0.45)] overflow-hidden"
+              className="flex items-center justify-center"
             >
               <img
                 src="/abn-logo-login.png"
                 alt="ABN — Ahlebait Network"
-                className="h-[120px] w-auto max-w-[220px] object-contain object-center bg-transparent"
+                className="h-[168px] w-auto max-w-[min(88vw,300px)] object-contain object-center bg-transparent"
                 draggable={false}
               />
             </motion.div>
-            <h1 className="mt-5 text-center text-[22px] font-black text-white tracking-tight">
+            <h1 className="mt-4 text-center text-[22px] font-black text-white tracking-tight">
               {modeTitle[authMode]}
             </h1>
             <p className="mt-1.5 text-center text-[13px] text-[#8E8E8E] font-medium px-4">
