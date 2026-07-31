@@ -21,7 +21,7 @@ export const AbnBrandMark: React.FC<AbnBrandMarkProps> = ({ size = 'md', classNa
     <p className={`${TAGLINE_CLASSES[size]} font-bold text-[#F08C32] tracking-[0.22em] uppercase mt-3`}>
       AHLEBAIT NETWORK
     </p>
-    <p className="text-[9px] font-semibold tracking-[0.18em] uppercase text-[#7C2D12] mt-1.5">
+    <p className="text-[9px] font-semibold tracking-[0.18em] uppercase text-[#ECB88A] mt-1.5">
       Connect · Collaborate · Grow
     </p>
   </div>

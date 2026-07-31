@@ -23,9 +23,9 @@ import { userFacingError } from '../utils/userFacingError';
 type AuthMode = 'signin' | 'register' | 'verify' | 'forgot' | 'reset-code' | 'reset-choice';
 
 const fieldClass =
-  'w-full pl-11 pr-11 py-3.5 rounded-2xl bg-white border border-[#D7E0EA] focus:border-[#F08C32] focus:ring-1 focus:ring-[#F08C32]/25 outline-none text-[15px] text-[#7C2D12] placeholder:text-slate-400 transition-all';
+  'w-full pl-11 pr-11 py-3.5 rounded-2xl bg-[#171310] border border-[#2B231D] focus:border-[#F08C32] focus:ring-1 focus:ring-[#F08C32]/25 outline-none text-[15px] text-[#FFFFFF] placeholder:text-[#8E8E8E] transition-all';
 
-const labelClass = 'block text-[11px] font-semibold tracking-wide text-[#7C2D12] mb-1.5 uppercase';
+const labelClass = 'block text-[11px] font-semibold tracking-wide text-[#FFFFFF] mb-1.5 uppercase';
 
 const primaryBtn =
   'w-full py-3.5 mt-1 rounded-2xl bg-gradient-to-r from-[#FF9E47] to-[#D9771D] text-black font-black text-sm tracking-wide shadow-[0_10px_28px_rgba(242, 153, 74,0.28)] hover:brightness-105 active:scale-[0.985] transition-all disabled:opacity-55 flex items-center justify-center gap-2';
@@ -282,20 +282,20 @@ export const AuthScreen: React.FC = () => {
 
   return (
     <div
-      className="fixed inset-0 z-40 flex flex-col text-[#7C2D12] overflow-y-auto bg-[#EEF2F6]"
+      className="fixed inset-0 z-40 flex flex-col text-[#FFFFFF] overflow-y-auto bg-[#1E1915]"
       id="auth-screen-root"
       style={{
         paddingTop: 'env(safe-area-inset-top)',
         paddingBottom: 'env(safe-area-inset-bottom)',
         background:
-          'radial-gradient(120% 80% at 50% -10%, #FFEDD5 0%, #EEF2F6 42%, #FFE8D6 100%)',
+          'radial-gradient(120% 80% at 50% -10%, #FFEDD5 0%, #1E1915 42%, #FFE8D6 100%)',
       }}
     >
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.35]"
         style={{
           backgroundImage:
-            'linear-gradient(rgba(124,45,18,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(242, 153, 74,0.06) 1px, transparent 1px)',
+            'linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(242, 153, 74,0.06) 1px, transparent 1px)',
           backgroundSize: '28px 28px',
           maskImage: 'radial-gradient(circle at 50% 20%, black 20%, transparent 75%)',
         }}
@@ -328,7 +328,7 @@ export const AuthScreen: React.FC = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
-              className="mt-4 text-center text-[13px] text-slate-600 font-medium"
+              className="mt-4 text-center text-[13px] text-[#CFCFCF] font-medium"
             >
               {modeTitle[authMode]}
             </motion.p>
@@ -336,12 +336,12 @@ export const AuthScreen: React.FC = () => {
 
           <div
             id="auth-form-card"
-            className="rounded-[28px] border border-[#D7E0EA] bg-white/95 backdrop-blur-xl shadow-[0_20px_50px_rgba(124,45,18,0.1)] p-5 sm:p-6"
+            className="rounded-[28px] border border-[#2B231D] bg-[#171310]/95 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] p-5 sm:p-6"
           >
             {showTabs && (
               <div
                 id="auth-tab-bar"
-                className="relative mb-5 grid grid-cols-2 gap-1 rounded-2xl bg-[#EEF2F6] p-1 border border-[#D7E0EA]"
+                className="relative mb-5 grid grid-cols-2 gap-1 rounded-2xl bg-[#1E1915] p-1 border border-[#2B231D]"
               >
                 {(['signin', 'register'] as const).map((mode) => {
                   const active = authMode === mode;
@@ -351,7 +351,7 @@ export const AuthScreen: React.FC = () => {
                       type="button"
                       onClick={() => switchMode(mode)}
                       className={`relative z-10 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-colors ${
-                        active ? 'text-black' : 'text-slate-500 hover:text-[#7C2D12]'
+                        active ? 'text-black' : 'text-[#8E8E8E] hover:text-[#FFFFFF]'
                       }`}
                     >
                       {active && (
@@ -392,12 +392,12 @@ export const AuthScreen: React.FC = () => {
 
                 {authMode === 'signin' && (
                   <>
-                    <p className="text-xs text-center text-slate-600 mb-4">{t.signInPrompt}</p>
+                    <p className="text-xs text-center text-[#CFCFCF] mb-4">{t.signInPrompt}</p>
                     <form onSubmit={handleSignIn} className="space-y-3.5">
                       <div>
                         <label className={labelClass}>{t.email} *</label>
                         <div className="relative">
-                          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E8E]" />
                           <input
                             type="email"
                             value={email}
@@ -412,7 +412,7 @@ export const AuthScreen: React.FC = () => {
                       <div>
                         <label className={labelClass}>Password *</label>
                         <div className="relative">
-                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E8E]" />
                           <input
                             type={showPassword ? 'text' : 'password'}
                             value={password}
@@ -425,7 +425,7 @@ export const AuthScreen: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => setShowPassword((v) => !v)}
-                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#F08C32]"
+                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#8E8E8E] hover:text-[#F08C32]"
                             aria-label={showPassword ? 'Hide password' : 'Show password'}
                           >
                             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -457,7 +457,7 @@ export const AuthScreen: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => switchMode('register')}
-                      className="w-full mt-2.5 text-center text-xs text-slate-500 hover:text-[#7C2D12]"
+                      className="w-full mt-2.5 text-center text-xs text-[#8E8E8E] hover:text-[#FFFFFF]"
                     >
                       {t.noAccountYet}
                     </button>
@@ -466,14 +466,14 @@ export const AuthScreen: React.FC = () => {
 
                 {authMode === 'register' && (
                   <>
-                    <p className="text-xs text-center text-slate-600 mb-4">
+                    <p className="text-xs text-center text-[#CFCFCF] mb-4">
                       Create your ABN account. We will email a code to verify before you sign in.
                     </p>
                     <form onSubmit={handleRegister} className="space-y-3.5">
                       <div>
                         <label className={labelClass}>{t.name} *</label>
                         <div className="relative">
-                          <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                          <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E8E]" />
                           <input
                             type="text"
                             value={name}
@@ -488,7 +488,7 @@ export const AuthScreen: React.FC = () => {
                       <div>
                         <label className={labelClass}>{t.email} *</label>
                         <div className="relative">
-                          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E8E]" />
                           <input
                             type="email"
                             value={email}
@@ -503,7 +503,7 @@ export const AuthScreen: React.FC = () => {
                       <div>
                         <label className={labelClass}>{t.phone} *</label>
                         <div className="relative">
-                          <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                          <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E8E]" />
                           <input
                             type="tel"
                             value={phone}
@@ -518,7 +518,7 @@ export const AuthScreen: React.FC = () => {
                       <div>
                         <label className={labelClass}>Password *</label>
                         <div className="relative">
-                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E8E]" />
                           <input
                             type={showPassword ? 'text' : 'password'}
                             value={password}
@@ -532,7 +532,7 @@ export const AuthScreen: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => setShowPassword((v) => !v)}
-                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#F08C32]"
+                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#8E8E8E] hover:text-[#F08C32]"
                           >
                             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
@@ -541,7 +541,7 @@ export const AuthScreen: React.FC = () => {
                       <div>
                         <label className={labelClass}>Confirm password *</label>
                         <div className="relative">
-                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E8E]" />
                           <input
                             type={showConfirm ? 'text' : 'password'}
                             value={confirmPassword}
@@ -555,7 +555,7 @@ export const AuthScreen: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => setShowConfirm((v) => !v)}
-                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#F08C32]"
+                            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#8E8E8E] hover:text-[#F08C32]"
                           >
                             {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
@@ -574,7 +574,7 @@ export const AuthScreen: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => switchMode('signin')}
-                      className="w-full mt-4 text-center text-xs text-slate-500 hover:text-[#7C2D12]"
+                      className="w-full mt-4 text-center text-xs text-[#8E8E8E] hover:text-[#FFFFFF]"
                     >
                       {t.alreadyHaveAccount}
                     </button>
@@ -591,7 +591,7 @@ export const AuthScreen: React.FC = () => {
                       <div>
                         <label className={labelClass}>6-digit code *</label>
                         <div className="relative">
-                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E8E]" />
                           <input
                             type="text"
                             inputMode="numeric"
@@ -613,20 +613,20 @@ export const AuthScreen: React.FC = () => {
                       type="button"
                       onClick={handleResend}
                       disabled={isLoading}
-                      className="w-full mt-3 text-xs text-slate-500 hover:text-[#F08C32]"
+                      className="w-full mt-3 text-xs text-[#8E8E8E] hover:text-[#F08C32]"
                     >
                       Resend code
                     </button>
                     <a
                       href={SUPPORT_MAILTO}
-                      className="block w-full mt-2 text-center text-[10px] text-slate-400 hover:text-[#F08C32]"
+                      className="block w-full mt-2 text-center text-[10px] text-[#8E8E8E] hover:text-[#F08C32]"
                     >
                       Contact support
                     </a>
                     <button
                       type="button"
                       onClick={() => switchMode('signin')}
-                      className="w-full mt-3 flex items-center justify-center gap-1.5 text-xs text-slate-500 hover:text-[#7C2D12]"
+                      className="w-full mt-3 flex items-center justify-center gap-1.5 text-xs text-[#8E8E8E] hover:text-[#FFFFFF]"
                     >
                       <ArrowLeft className="w-3.5 h-3.5" /> Back to Sign In
                     </button>
@@ -639,14 +639,14 @@ export const AuthScreen: React.FC = () => {
                       <KeyRound className="w-5 h-5" />
                       <span className="text-xs font-black uppercase tracking-wider">Forgot Password</span>
                     </div>
-                    <p className="text-xs text-center text-slate-600 mb-4">
+                    <p className="text-xs text-center text-[#CFCFCF] mb-4">
                       Enter your account email. We will send a 6-digit code to Gmail.
                     </p>
                     <form onSubmit={handleForgotRequest} className="space-y-3.5" id="form-forgot-password">
                       <div>
                         <label className={labelClass}>{t.email} *</label>
                         <div className="relative">
-                          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E8E]" />
                           <input
                             type="email"
                             value={email}
@@ -665,7 +665,7 @@ export const AuthScreen: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => switchMode('signin')}
-                      className="w-full mt-4 flex items-center justify-center gap-1.5 text-xs text-slate-500 hover:text-[#7C2D12]"
+                      className="w-full mt-4 flex items-center justify-center gap-1.5 text-xs text-[#8E8E8E] hover:text-[#FFFFFF]"
                     >
                       <ArrowLeft className="w-3.5 h-3.5" /> Back to Sign In
                     </button>
@@ -682,7 +682,7 @@ export const AuthScreen: React.FC = () => {
                       <div>
                         <label className={labelClass}>6-digit code *</label>
                         <div className="relative">
-                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E8E]" />
                           <input
                             type="text"
                             inputMode="numeric"
@@ -715,14 +715,14 @@ export const AuthScreen: React.FC = () => {
                         setVerifyCode('');
                         setRegSuccess('A new reset code was emailed. Check Gmail Inbox and Spam.');
                       }}
-                      className="w-full mt-3 text-xs text-slate-500 hover:text-[#F08C32]"
+                      className="w-full mt-3 text-xs text-[#8E8E8E] hover:text-[#F08C32]"
                     >
                       Resend code
                     </button>
                     <button
                       type="button"
                       onClick={() => switchMode('signin')}
-                      className="w-full mt-3 text-xs text-slate-500 hover:text-[#7C2D12]"
+                      className="w-full mt-3 text-xs text-[#8E8E8E] hover:text-[#FFFFFF]"
                     >
                       Back to Sign In
                     </button>
@@ -731,14 +731,14 @@ export const AuthScreen: React.FC = () => {
 
                 {authMode === 'reset-choice' && (
                   <>
-                    <p className="text-xs text-center text-slate-600 mb-4">
+                    <p className="text-xs text-center text-[#CFCFCF] mb-4">
                       Change your password, or keep the current one and sign in.
                     </p>
                     <button
                       type="button"
                       disabled={isLoading}
                       onClick={handleKeepPassword}
-                      className="w-full py-3 mb-3 rounded-2xl border border-[#D7E0EA] text-sm font-bold text-[#7C2D12] hover:border-[#F08C32]/50 bg-white disabled:opacity-55"
+                      className="w-full py-3 mb-3 rounded-2xl border border-[#2B231D] text-sm font-bold text-[#FFFFFF] hover:border-[#F08C32]/50 bg-[#171310] disabled:opacity-55"
                     >
                       {isLoading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Keep current password'}
                     </button>
@@ -746,7 +746,7 @@ export const AuthScreen: React.FC = () => {
                       <div>
                         <label className={labelClass}>New password *</label>
                         <div className="relative">
-                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E8E]" />
                           <input
                             type={showPassword ? 'text' : 'password'}
                             value={password}
@@ -762,7 +762,7 @@ export const AuthScreen: React.FC = () => {
                       <div>
                         <label className={labelClass}>Confirm new password *</label>
                         <div className="relative">
-                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E8E]" />
                           <input
                             type={showConfirm ? 'text' : 'password'}
                             value={confirmPassword}
@@ -782,7 +782,7 @@ export const AuthScreen: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => switchMode('signin')}
-                      className="w-full mt-4 text-xs text-slate-500 hover:text-[#7C2D12]"
+                      className="w-full mt-4 text-xs text-[#8E8E8E] hover:text-[#FFFFFF]"
                     >
                       Back to Sign In
                     </button>

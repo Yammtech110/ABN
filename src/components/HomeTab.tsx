@@ -49,7 +49,7 @@ import {
 } from 'lucide-react';
 import { Business, BusinessStatus } from '../types';
 
-const NAVY = '#7C2D12';
+const NAVY = '#110E0B';
 
 /** Network map graphic for navy hero (final mockup). */
 const HeroNetworkMap: React.FC = () => (
@@ -64,7 +64,7 @@ const HeroNetworkMap: React.FC = () => (
     <defs>
       <radialGradient id="netGlow" cx="70%" cy="35%" r="50%">
         <stop offset="0%" stopColor="#FF9E47" stopOpacity="0.45" />
-        <stop offset="100%" stopColor="#7C2D12" stopOpacity="0" />
+        <stop offset="100%" stopColor="#0D0906" stopOpacity="0" />
       </radialGradient>
     </defs>
     <rect width="390" height="280" fill="url(#netGlow)" />
@@ -95,7 +95,7 @@ const JOB_CATEGORY_COLORS: Record<JobCategory, string> = {
   'Developer':        'bg-orange-100 text-emerald-700 border-orange-200',
   'Chef':             'bg-amber-100 text-amber-700 border-amber-200',
   'Maid':             'bg-pink-100 text-pink-700 border-pink-200',
-  'Others':           'bg-slate-100 text-slate-700 border-slate-300',
+  'Others':           'bg-[#1E1915] text-slate-700 border-slate-300',
 };
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -351,19 +351,19 @@ export const HomeTab: React.FC<HomeTabProps> = ({
   if (selectedJob) {
     return (
       <div className="space-y-5" id="home-job-detail-overlay">
-        <div className="flex items-center gap-3 pb-3 border-b border-[#D7E0EA]">
+        <div className="flex items-center gap-3 pb-3 border-b border-[#2B231D]">
           <button
             onClick={() => setSelectedJob(null)}
-            className="p-2 rounded-full bg-white hover:bg-slate-50 border border-[#D7E0EA] transition-colors"
+            className="p-2 rounded-full bg-[#171310] hover:bg-[#1E1915] border border-[#2B231D] transition-colors"
             aria-label="Back to home"
           >
             <ArrowRight className="w-4 h-4 text-[#F08C32] rotate-180" />
           </button>
-          <h2 className="text-sm font-extrabold text-[#7C2D12] flex-1 truncate">Job Details</h2>
+          <h2 className="text-sm font-extrabold text-[#FFFFFF] flex-1 truncate">Job Details</h2>
         </div>
-        <div className="p-5 rounded-3xl bg-white border border-[#D7E0EA] shadow-sm space-y-5">
+        <div className="p-5 rounded-3xl bg-[#171310] border border-[#2B231D] shadow-sm space-y-5">
           <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl overflow-hidden bg-slate-100 border border-[#D7E0EA] flex-shrink-0">
+            <div className="w-14 h-14 rounded-2xl overflow-hidden bg-[#1E1915] border border-[#2B231D] flex-shrink-0">
               <BusinessThumbnail
                 business={{ id: selectedJob.businessId, name: selectedJob.businessName, logoUrl: selectedJob.imageUrl || selectedJob.businessLogoUrl }}
                 className="w-full h-full object-cover"
@@ -371,8 +371,8 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               />
             </div>
             <div className="min-w-0">
-              <h3 className="text-sm font-extrabold text-[#7C2D12] leading-tight">{selectedJob.title}</h3>
-              <p className="text-[10px] text-slate-500 mt-0.5 truncate">{selectedJob.businessName}</p>
+              <h3 className="text-sm font-extrabold text-[#FFFFFF] leading-tight">{selectedJob.title}</h3>
+              <p className="text-[10px] text-[#8E8E8E] mt-0.5 truncate">{selectedJob.businessName}</p>
             </div>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -387,7 +387,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             <h4 className="text-[10px] font-extrabold text-[#F08C32] uppercase tracking-wider mb-2">
               Requirements & Skills
             </h4>
-            <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-wrap">
+            <p className="text-xs text-[#CFCFCF] leading-relaxed whitespace-pre-wrap">
               {selectedJob.requirements || 'No specific requirements listed.'}
             </p>
           </div>
@@ -403,13 +403,13 @@ export const HomeTab: React.FC<HomeTabProps> = ({
   }
 
   return (
-    <div className="pb-6 bg-[#F4F7FB]" id="home-tab-container">
+    <div className="pb-6 bg-[#0D0906]" id="home-tab-container">
 
       {/* ── Hero (final mockup) ──────────────────────────────── */}
       <section
         className="relative overflow-hidden px-4 pt-[max(0.85rem,env(safe-area-inset-top))] pb-5"
         id="home-hero"
-        style={{ background: 'linear-gradient(165deg, #431407 0%, #7C2D12 42%, #9A3412 100%)' }}
+        style={{ background: 'linear-gradient(165deg, #110E0B 0%, #0D0906 45%, #322820 100%)' }}
       >
         <HeroNetworkMap />
 
@@ -434,7 +434,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             type="button"
             onClick={() => void handleRefreshApp()}
             disabled={isRefreshing}
-            className="p-2.5 rounded-full border border-white/35 text-white hover:bg-white/10 disabled:opacity-60 flex-shrink-0"
+            className="p-2.5 rounded-full border border-white/35 text-white hover:bg-[#171310]/10 disabled:opacity-60 flex-shrink-0"
             aria-label="Refresh"
             id="btn-home-refresh"
           >
@@ -462,12 +462,12 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         </div>
       </section>
 
-      <div className="space-y-5 px-4 pt-4 relative z-10 bg-[#F4F7FB]">
+      <div className="space-y-5 px-4 pt-4 relative z-10 bg-[#0D0906]">
 
         {/* Search */}
         <form onSubmit={handleSearchSubmit} id="home-search-form">
           <div
-            className="relative flex items-center bg-white rounded-2xl border border-[#D7E0EA] shadow-[0_14px_36px_rgba(124,45,18,0.14)] px-1.5 py-1.5"
+            className="relative flex items-center bg-[#171310] rounded-2xl border border-[#2B231D] shadow-[0_14px_36px_rgba(0,0,0,0.14)] px-1.5 py-1.5"
             id="home-search-box"
           >
             {isSearching
@@ -479,7 +479,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               value={inputSearch}
               onChange={(e) => { setInputSearch(e.target.value); if (!e.target.value.trim()) setApiResults(null); }}
               placeholder="Search businesses, professionals or services..."
-              className="w-full pl-10 pr-[7.8rem] py-3 bg-transparent text-[13px] text-[#7C2D12] placeholder:text-slate-400 outline-none"
+              className="w-full pl-10 pr-[7.8rem] py-3 bg-transparent text-[13px] text-[#FFFFFF] placeholder:text-[#8E8E8E] outline-none"
               id="home-search-input"
             />
             <button
@@ -514,7 +514,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                   className={`city-pill flex-shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[11px] font-bold border transition-all snap-start ${
                     active
                       ? 'city-pill-active bg-[#FF9E47] text-black border-[#F08C32] shadow-md'
-                      : 'bg-white text-[#F08C32] border-[#F08C32]/45'
+                      : 'bg-[#171310] text-[#F08C32] border-[#F08C32]/45'
                   }`}
                   id={`city-pill-${key}`}
                 >
@@ -531,7 +531,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         {/* Featured Businesses — mockup cards */}
         <section className="space-y-3" id="home-featured-block">
           <div className="flex items-center justify-between">
-            <h3 className="text-[16px] font-extrabold text-[#7C2D12]">Featured Businesses</h3>
+            <h3 className="text-[16px] font-extrabold text-[#FFFFFF]">Featured Businesses</h3>
             <button
               onClick={() => { setSearchQueryText(''); onSwitchTab('search'); }}
               className="text-[12px] text-[#F08C32] font-bold flex items-center gap-0.5"
@@ -546,7 +546,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               return (
                 <div
                   key={biz.id}
-                  className="flex-shrink-0 w-[210px] rounded-2xl bg-white border border-[#D7E0EA] shadow-sm p-3 snap-start relative"
+                  className="flex-shrink-0 w-[210px] rounded-2xl bg-[#171310] border border-[#2B231D] shadow-sm p-3 snap-start relative"
                   id={`featured-card-${biz.id}`}
                 >
                   <button
@@ -555,32 +555,32 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                     className="absolute top-2.5 right-2.5 p-1.5 z-10"
                     aria-label={saved ? 'Remove favorite' : 'Save'}
                   >
-                    <Heart className={`w-4 h-4 ${saved ? 'fill-red-500 text-red-500' : 'text-slate-300'}`} />
+                    <Heart className={`w-4 h-4 ${saved ? 'fill-red-500 text-red-500' : 'text-[#8E8E8E]'}`} />
                   </button>
                   <button type="button" onClick={() => onSelectBusiness(biz)} className="w-full text-left space-y-2">
-                    <div className="w-12 h-12 rounded-xl bg-[#EEF3FF] border border-orange-100 overflow-hidden flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-xl bg-[#1E1915] border border-orange-100 overflow-hidden flex items-center justify-center">
                       <BusinessThumbnail business={biz} className="w-full h-full object-cover" eager />
                     </div>
                     <div className="flex items-center gap-1 min-w-0 pr-5">
-                      <h4 className="text-[13px] font-extrabold text-[#7C2D12] truncate">{biz.name}</h4>
+                      <h4 className="text-[13px] font-extrabold text-[#FFFFFF] truncate">{biz.name}</h4>
                       {biz.isVerified && <CheckCircle className="w-3.5 h-3.5 text-[#F08C32] flex-shrink-0" />}
                     </div>
-                    <p className="text-[11px] text-slate-500 capitalize truncate">{textEn(biz.subcategory)}</p>
-                    <p className="text-[11px] text-slate-500 flex items-center gap-1 truncate">
+                    <p className="text-[11px] text-[#8E8E8E] capitalize truncate">{textEn(biz.subcategory)}</p>
+                    <p className="text-[11px] text-[#8E8E8E] flex items-center gap-1 truncate">
                       <MapPin className="w-3 h-3 text-[#F08C32] flex-shrink-0" />
                       {biz.city}
                     </p>
                     <div className="flex items-center justify-between gap-2 pt-0.5">
                       <div className="flex items-center gap-1.5 min-w-0">
-                        <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-[#7C2D12]">
+                        <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-[#FFFFFF]">
                           <Star className="w-3 h-3 fill-amber-400 text-amber-400" /> {biz.rating || '—'}
                         </span>
                         {biz.reviewsCount > 0 && (
-                          <span className="text-[10px] text-slate-400">({biz.reviewsCount})</span>
+                          <span className="text-[10px] text-[#8E8E8E]">({biz.reviewsCount})</span>
                         )}
                         {isOpen !== null && (
                           <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full border ${
-                            isOpen ? 'text-emerald-600 border-emerald-300 bg-emerald-50' : 'text-red-500 border-red-200 bg-red-50'
+                            isOpen ? 'text-emerald-400 border-emerald-500/40 bg-emerald-500/10' : 'text-red-500 border-red-500/40 bg-red-500/10'
                           }`}>
                             {isOpen ? 'Open Now' : 'Closed'}
                           </span>
@@ -614,7 +614,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         {/* Browse Businesses */}
         <section id="home-categories-block">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-[16px] font-extrabold text-[#7C2D12]">Browse Businesses</h3>
+            <h3 className="text-[16px] font-extrabold text-[#FFFFFF]">Browse Businesses</h3>
             <button
               onClick={() => onSwitchTab('search')}
               className="text-[12px] text-[#F08C32] font-bold flex items-center gap-0.5"
@@ -632,7 +632,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
                 id={`cat-card-${cat.id}`}
               >
                 {renderCategoryIcon(cat.iconName, 'w-7 h-7 text-[#F08C32]')}
-                <span className="text-[10px] font-semibold text-[#7C2D12] leading-tight line-clamp-2 w-full">
+                <span className="text-[10px] font-semibold text-[#FFFFFF] leading-tight line-clamp-2 w-full">
                   {cat.name.en}
                 </span>
               </button>
@@ -643,19 +643,19 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               id="cat-card-more"
             >
               <Grid3X3 className="w-7 h-7 text-[#F08C32]" strokeWidth={2} />
-              <span className="text-[10px] font-semibold text-[#7C2D12]">More</span>
+              <span className="text-[10px] font-semibold text-[#FFFFFF]">More</span>
             </button>
           </div>
         </section>
 
         {/* Looking to Hire */}
         <section
-          className="rounded-2xl bg-white border border-[#D7E0EA] shadow-sm p-4 flex gap-3 items-center"
+          className="rounded-2xl bg-[#171310] border border-[#2B231D] shadow-sm p-4 flex gap-3 items-center"
           id="home-hire-card"
         >
           <div className="flex-1 min-w-0">
-            <h3 className="text-[16px] font-extrabold text-[#7C2D12] mb-1">Looking to Hire?</h3>
-            <p className="text-[12px] text-slate-500 leading-snug mb-3">
+            <h3 className="text-[16px] font-extrabold text-[#FFFFFF] mb-1">Looking to Hire?</h3>
+            <p className="text-[12px] text-[#8E8E8E] leading-snug mb-3">
               Post a job and reach professionals across the Ahlebait community.
             </p>
             <button
@@ -673,7 +673,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         {/* Find the Right Talent */}
         <section
           className="rounded-2xl p-4 flex items-center gap-3"
-          style={{ background: `linear-gradient(125deg, ${NAVY} 0%, #9A3412 55%, #7C2D12 100%)` }}
+          style={{ background: `linear-gradient(125deg, #171310 0%, #322820 55%, #F08C32 100%)` }}
           id="home-jobs-banner"
         >
           <div className="flex-1 min-w-0">
@@ -695,26 +695,26 @@ export const HomeTab: React.FC<HomeTabProps> = ({
 
         {activeJobs.length > 0 && (
           <div className="space-y-3" id="home-jobs-row">
-            <h3 className="text-[16px] font-extrabold text-[#7C2D12]">Active Job Openings</h3>
+            <h3 className="text-[16px] font-extrabold text-[#FFFFFF]">Active Job Openings</h3>
             <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-none snap-x" id="home-jobs-scroll">
               {activeJobs.map((job) => (
                 <button
                   key={job.id}
                   onClick={() => setSelectedJob(job)}
-                  className="flex-shrink-0 w-52 p-3.5 rounded-2xl bg-white border border-[#D7E0EA] shadow-sm text-left space-y-2 snap-start"
+                  className="flex-shrink-0 w-52 p-3.5 rounded-2xl bg-[#171310] border border-[#2B231D] shadow-sm text-left space-y-2 snap-start"
                   id={`home-job-card-${job.id}`}
                 >
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
+                    <div className="w-8 h-8 rounded-xl overflow-hidden bg-[#1E1915] flex-shrink-0">
                       <BusinessThumbnail
                         business={{ id: job.businessId, name: job.businessName, logoUrl: job.imageUrl || job.businessLogoUrl }}
                         className="w-full h-full object-cover"
                         eager
                       />
                     </div>
-                    <p className="text-[9px] font-semibold text-slate-600 truncate">{job.businessName}</p>
+                    <p className="text-[9px] font-semibold text-[#CFCFCF] truncate">{job.businessName}</p>
                   </div>
-                  <h4 className="text-[12px] font-extrabold text-[#7C2D12] leading-tight line-clamp-2">{job.title}</h4>
+                  <h4 className="text-[12px] font-extrabold text-[#FFFFFF] leading-tight line-clamp-2">{job.title}</h4>
                   <div className="text-[10px] font-extrabold text-[#F08C32]">
                     ${job.salaryMin.toLocaleString()} – ${job.salaryMax.toLocaleString()}/mo
                   </div>
@@ -726,13 +726,13 @@ export const HomeTab: React.FC<HomeTabProps> = ({
 
         {/* Stronger Together — network diagram */}
         <section
-          className="rounded-2xl bg-white border border-[#D7E0EA] shadow-sm p-5"
+          className="rounded-2xl bg-[#171310] border border-[#2B231D] shadow-sm p-5"
           id="home-community-block"
         >
           <div className="flex items-start justify-between gap-4 mb-4">
             <div className="min-w-0 flex-1">
-              <h3 className="text-[16px] font-extrabold text-[#7C2D12] mb-1">Stronger Together</h3>
-              <p className="text-[11px] text-slate-500 leading-snug mb-3">
+              <h3 className="text-[16px] font-extrabold text-[#FFFFFF] mb-1">Stronger Together</h3>
+              <p className="text-[11px] text-[#8E8E8E] leading-snug mb-3">
                 One network connecting local businesses, professionals, and community organizations.
               </p>
               <button
@@ -745,15 +745,15 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             </div>
             <div className="relative w-[132px] h-[132px] flex-shrink-0 bg-transparent" id="home-community-handshake">
               <svg viewBox="0 0 132 132" className="absolute inset-0 w-full h-full" aria-hidden>
-                <circle cx="66" cy="66" r="54" fill="none" stroke="#D7E0EA" strokeWidth="1" strokeDasharray="3 4" />
-                <line x1="66" y1="66" x2="66" y2="18" stroke="#B8C9E8" strokeWidth="1" />
-                <line x1="66" y1="66" x2="110" y2="40" stroke="#B8C9E8" strokeWidth="1" />
-                <line x1="66" y1="66" x2="110" y2="92" stroke="#B8C9E8" strokeWidth="1" />
-                <line x1="66" y1="66" x2="66" y2="114" stroke="#B8C9E8" strokeWidth="1" />
-                <line x1="66" y1="66" x2="22" y2="92" stroke="#B8C9E8" strokeWidth="1" />
-                <line x1="66" y1="66" x2="22" y2="40" stroke="#B8C9E8" strokeWidth="1" />
+                <circle cx="66" cy="66" r="54" fill="none" stroke="#2B231D" strokeWidth="1" strokeDasharray="3 4" />
+                <line x1="66" y1="66" x2="66" y2="18" stroke="#3A3029" strokeWidth="1" />
+                <line x1="66" y1="66" x2="110" y2="40" stroke="#3A3029" strokeWidth="1" />
+                <line x1="66" y1="66" x2="110" y2="92" stroke="#3A3029" strokeWidth="1" />
+                <line x1="66" y1="66" x2="66" y2="114" stroke="#3A3029" strokeWidth="1" />
+                <line x1="66" y1="66" x2="22" y2="92" stroke="#3A3029" strokeWidth="1" />
+                <line x1="66" y1="66" x2="22" y2="40" stroke="#3A3029" strokeWidth="1" />
               </svg>
-              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-[#7C2D12] flex items-center justify-center shadow-md">
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-[#F08C32] flex items-center justify-center shadow-md">
                 <Handshake className="w-5 h-5 text-white" />
               </div>
               {[

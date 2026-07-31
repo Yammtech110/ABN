@@ -46,7 +46,7 @@ const listingState = (biz: Business): string =>
 const SearchSkeleton = () => (
   <div className="space-y-3.5">
     {[1, 2, 3].map((i) => (
-      <div key={i} className="flex items-center gap-3.5 p-3 rounded-2xl bg-white border border-[#D7E0EA]">
+      <div key={i} className="flex items-center gap-3.5 p-3 rounded-2xl bg-[#171310] border border-[#2B231D]">
         <div className="w-14 h-14 rounded-xl skeleton flex-shrink-0" />
         <div className="flex-1 space-y-2">
           <div className="h-3 skeleton rounded w-3/4" />
@@ -205,19 +205,19 @@ export const SearchTab: React.FC<SearchTabProps> = ({
       <div className="flex items-center gap-3 pb-2 animate-fade-in-up" id="search-header">
         <button
           onClick={() => onSwitchTab('home')}
-          className="p-1 px-2 rounded-xl bg-[#EEF2F6] hover:bg-slate-100 text-[#F08C32] border border-[#D7E0EA] transition-colors"
+          className="p-1 px-2 rounded-xl bg-[#1E1915] hover:bg-[#1E1915] text-[#F08C32] border border-[#2B231D] transition-colors"
           id="btn-search-back"
         >
           <ArrowLeft className="w-5 h-5 inline rounded" />
         </button>
-        <h2 className="text-xl font-extrabold text-[#7C2D12] flex-1" id="search-header-title">
+        <h2 className="text-xl font-extrabold text-[#FFFFFF] flex-1" id="search-header-title">
           {language === 'en' ? 'Find a business' : 'ابحث عن نشاط تجاري'}
         </h2>
-        <div className="flex rounded-xl border border-[#D7E0EA] overflow-hidden" id="search-view-toggle">
+        <div className="flex rounded-xl border border-[#2B231D] overflow-hidden" id="search-view-toggle">
           <button
             type="button"
             onClick={() => setViewMode('list')}
-            className={`px-2.5 py-1.5 ${viewMode === 'list' ? 'bg-[#FF9E47] text-white' : 'bg-[#EEF2F6] text-gray-400'}`}
+            className={`px-2.5 py-1.5 ${viewMode === 'list' ? 'bg-[#FF9E47] text-white' : 'bg-[#1E1915] text-gray-400'}`}
             aria-label="List view"
           >
             <List className="w-4 h-4" />
@@ -225,7 +225,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
           <button
             type="button"
             onClick={() => setViewMode('map')}
-            className={`px-2.5 py-1.5 ${viewMode === 'map' ? 'bg-[#FF9E47] text-white' : 'bg-[#EEF2F6] text-gray-400'}`}
+            className={`px-2.5 py-1.5 ${viewMode === 'map' ? 'bg-[#FF9E47] text-white' : 'bg-[#1E1915] text-gray-400'}`}
             aria-label="Map view"
           >
             <Map className="w-4 h-4" />
@@ -240,7 +240,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder={language === 'en' ? 'Plumber, restaurant, bookstore...' : 'سباك، مطعم، مكتبة كتب...'}
-          className="w-full pl-10 pr-4 py-3 bg-white border border-[#D7E0EA] rounded-2xl text-xs text-[#7C2D12] placeholder-gray-500 outline-none focus:border-[#F08C32] transition-all"
+          className="w-full pl-10 pr-4 py-3 bg-[#171310] border border-[#2B231D] rounded-2xl text-xs text-[#FFFFFF] placeholder-[#8E8E8E] outline-none focus:border-[#F08C32] transition-all"
           id="search-input-field"
         />
         {isSearching && (
@@ -257,7 +257,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
             setSelectedCity('All');
             setMapFocusId(null);
           }}
-          className="w-full px-3 py-2.5 rounded-xl bg-white border border-[#D7E0EA] text-xs text-[#7C2D12] outline-none focus:border-[#F08C32]"
+          className="w-full px-3 py-2.5 rounded-xl bg-[#171310] border border-[#2B231D] text-xs text-[#FFFFFF] outline-none focus:border-[#F08C32]"
           id="search-state-select"
         >
           <option value="All">All states</option>
@@ -273,7 +273,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
             setSelectedCity(e.target.value);
             setMapFocusId(null);
           }}
-          className="w-full px-3 py-2.5 rounded-xl bg-white border border-[#D7E0EA] text-xs text-[#7C2D12] outline-none focus:border-[#F08C32]"
+          className="w-full px-3 py-2.5 rounded-xl bg-[#171310] border border-[#2B231D] text-xs text-[#FFFFFF] outline-none focus:border-[#F08C32]"
           id="search-city-select"
         >
           {CITIES.map((city) => (
@@ -288,7 +288,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
           className={`px-3 py-2.5 rounded-xl text-xs font-bold border transition-all ${
             openNowOnly
               ? 'bg-orange-50 text-[#F08C32] border-emerald-300'
-              : 'bg-white text-gray-400 border-[#D7E0EA]'
+              : 'bg-[#171310] text-gray-400 border-[#2B231D]'
           }`}
           id="search-open-now-toggle"
         >
@@ -297,7 +297,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
         <select
           value={minRating}
           onChange={(e) => setMinRating(Number(e.target.value))}
-          className="w-full px-3 py-2.5 rounded-xl bg-white border border-[#D7E0EA] text-xs text-[#7C2D12] outline-none focus:border-[#F08C32]"
+          className="w-full px-3 py-2.5 rounded-xl bg-[#171310] border border-[#2B231D] text-xs text-[#FFFFFF] outline-none focus:border-[#F08C32]"
           id="search-rating-select"
         >
           {MIN_RATINGS.map((opt) => (
@@ -314,7 +314,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
           className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold uppercase border transition-all ${
             selectedCategory === 'All'
               ? 'bg-transparent text-[#F08C32] border-[#F08C32]/80'
-              : 'bg-[#EEF2F6] text-slate-500 border-[#D7E0EA] hover:text-[#7C2D12]'
+              : 'bg-[#1E1915] text-[#8E8E8E] border-[#2B231D] hover:text-[#FFFFFF]'
           }`}
           id="cat-chip-all"
         >
@@ -329,7 +329,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
               className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-medium border transition-all ${
                 isSelected
                   ? 'bg-transparent text-[#F08C32] border-[#F08C32]'
-                  : 'bg-[#EEF2F6]/30 text-gray-500 border-[#D7E0EA]/55 hover:text-[#7C2D12]'
+                  : 'bg-[#1E1915]/30 text-gray-500 border-[#2B231D]/55 hover:text-[#FFFFFF]'
               }`}
               id={`cat-chip-${cat.id}`}
             >
@@ -356,7 +356,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
 
       {viewMode === 'map' && (
         <div className="space-y-3 animate-fade-in-up" id="search-map-panel">
-          <div className="rounded-2xl overflow-hidden border border-[#D7E0EA] bg-[#EEF2F6] aspect-[4/3] relative">
+          <div className="rounded-2xl overflow-hidden border border-[#2B231D] bg-[#1E1915] aspect-[4/3] relative">
             <iframe
               title="ABN listings map"
               src={googleMapsEmbedUrl(mapQuery)}
@@ -377,7 +377,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
       ) : (
         <div className="space-y-3.5" id="search-result-list">
           {filteredBusinesses.length === 0 ? (
-            <div className="text-center py-12 px-6 rounded-3xl bg-white border border-dashed border-[#D7E0EA] animate-scale-up" id="search-empty-state">
+            <div className="text-center py-12 px-6 rounded-3xl bg-[#171310] border border-dashed border-[#2B231D] animate-scale-up" id="search-empty-state">
               <p className="text-xs text-gray-400 font-medium">{t.noResults}</p>
             </div>
           ) : (
@@ -393,16 +393,16 @@ export const SearchTab: React.FC<SearchTabProps> = ({
                     }
                     onSelectBusiness(biz);
                   }}
-                  className={`flex items-center gap-3.5 p-3 rounded-2xl bg-white border transition-all cursor-pointer animate-fade-in-up card-hover ${
-                    focused ? 'border-[#F08C32]' : 'border-[#D7E0EA] hover:border-[#F08C32]/40'
+                  className={`flex items-center gap-3.5 p-3 rounded-2xl bg-[#171310] border transition-all cursor-pointer animate-fade-in-up card-hover ${
+                    focused ? 'border-[#F08C32]' : 'border-[#2B231D] hover:border-[#F08C32]/40'
                   }`}
                   id={`search-item-${biz.id}`}
                 >
-                  <div className="w-14 h-14 rounded-xl overflow-hidden bg-stone-900 border border-[#D7E0EA] flex-shrink-0">
+                  <div className="w-14 h-14 rounded-xl overflow-hidden bg-stone-900 border border-[#2B231D] flex-shrink-0">
                     <BusinessThumbnail business={biz} eager />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-xs font-black text-[#7C2D12] hover:text-[#F08C32] truncate transition-colors leading-snug">
+                    <h4 className="text-xs font-black text-[#FFFFFF] hover:text-[#F08C32] truncate transition-colors leading-snug">
                       {biz.name}
                     </h4>
                     <p className="text-[10px] text-gray-400 font-medium capitalize mt-0.5">

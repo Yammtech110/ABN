@@ -66,11 +66,11 @@ export const JobBoardScreen: React.FC<JobBoardScreenProps> = ({ onBack, initialJ
   // ── JOB DETAIL VIEW ──────────────────────────────────────────
   if (selectedJob) {
     return (
-      <div className="space-y-5 min-h-full bg-[#EEF2F6] px-4 pt-4 pb-8" id="job-detail-view">
-        <div className="subpage-header sticky top-0 z-10 -mx-4 px-4 pt-1 flex items-center gap-3 pb-3 border-b border-[#D7E0EA] bg-[#EEF2F6]/95 backdrop-blur-md">
+      <div className="space-y-5 min-h-full bg-[#1E1915] px-4 pt-4 pb-8" id="job-detail-view">
+        <div className="subpage-header sticky top-0 z-10 -mx-4 px-4 pt-1 flex items-center gap-3 pb-3 border-b border-[#2B231D] bg-[#1E1915]/95 backdrop-blur-md">
           <button
             onClick={() => setSelectedJob(null)}
-            className="p-2 rounded-full bg-[#EEF2F6] hover:bg-slate-100 border border-[#D7E0EA] transition-colors"
+            className="p-2 rounded-full bg-[#1E1915] hover:bg-[#1E1915] border border-[#2B231D] transition-colors"
             aria-label="Back to job list"
           >
             <ArrowLeft className="w-4 h-4 text-[#F08C32]" />
@@ -84,10 +84,10 @@ export const JobBoardScreen: React.FC<JobBoardScreenProps> = ({ onBack, initialJ
           Job posts are provided by third-party businesses. ABN is not the employer or recruiter and does not guarantee outcomes. Contact employers directly.
         </div>
 
-        <div className="p-5 rounded-3xl bg-white border border-[#D7E0EA] space-y-5">
+        <div className="p-5 rounded-3xl bg-[#171310] border border-[#2B231D] space-y-5">
           {/* Business identity header */}
           <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl overflow-hidden bg-[#EEF2F6] border border-[#D7E0EA] flex-shrink-0">
+            <div className="w-14 h-14 rounded-2xl overflow-hidden bg-[#1E1915] border border-[#2B231D] flex-shrink-0">
               <BusinessThumbnail
                 business={{ id: selectedJob.businessId, name: selectedJob.businessName, logoUrl: selectedJob.imageUrl || selectedJob.businessLogoUrl }}
                 className="w-full h-full object-cover"
@@ -95,7 +95,7 @@ export const JobBoardScreen: React.FC<JobBoardScreenProps> = ({ onBack, initialJ
               />
             </div>
             <div className="min-w-0">
-              <h3 className="text-sm font-extrabold text-[#7C2D12] leading-tight">{selectedJob.title}</h3>
+              <h3 className="text-sm font-extrabold text-[#FFFFFF] leading-tight">{selectedJob.title}</h3>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <Building2 className="w-3 h-3 text-gray-500 flex-shrink-0" />
                 <p className="text-[10px] text-gray-400 truncate">{selectedJob.businessName}</p>
@@ -128,7 +128,7 @@ export const JobBoardScreen: React.FC<JobBoardScreenProps> = ({ onBack, initialJ
           </div>
 
           {/* Hiring email display */}
-          <div className="flex items-center gap-2 p-3 rounded-xl bg-[#EEF2F6] border border-[#D7E0EA]">
+          <div className="flex items-center gap-2 p-3 rounded-xl bg-[#1E1915] border border-[#2B231D]">
             <Mail className="w-3.5 h-3.5 text-[#F08C32] flex-shrink-0" />
             <div className="min-w-0">
               <p className="text-[9px] text-gray-500">
@@ -154,11 +154,11 @@ export const JobBoardScreen: React.FC<JobBoardScreenProps> = ({ onBack, initialJ
 
   // ── JOB BOARD LIST VIEW ───────────────────────────────────────
   return (
-      <div className="space-y-5 min-h-full bg-[#EEF2F6] px-4 pt-4 pb-8" id="job-board-screen">
-      <div className="subpage-header sticky top-0 z-10 -mx-4 px-4 pt-1 flex items-center gap-3 pb-3 border-b border-[#D7E0EA] bg-[#EEF2F6]/95 backdrop-blur-md">
+      <div className="space-y-5 min-h-full bg-[#1E1915] px-4 pt-4 pb-8" id="job-board-screen">
+      <div className="subpage-header sticky top-0 z-10 -mx-4 px-4 pt-1 flex items-center gap-3 pb-3 border-b border-[#2B231D] bg-[#1E1915]/95 backdrop-blur-md">
         <button
           onClick={onBack}
-          className="p-2 rounded-full bg-[#EEF2F6] hover:bg-slate-100 border border-[#D7E0EA] transition-colors"
+          className="p-2 rounded-full bg-[#1E1915] hover:bg-[#1E1915] border border-[#2B231D] transition-colors"
           aria-label="Back"
         >
           <ArrowLeft className="w-4 h-4 text-[#F08C32]" />
@@ -188,13 +188,13 @@ export const JobBoardScreen: React.FC<JobBoardScreenProps> = ({ onBack, initialJ
               className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold border transition-all snap-start ${
                 selectedCategory === cat
                   ? 'bg-[#FF9E47] text-white border-[#F08C32] shadow-md'
-                  : 'bg-white text-gray-400 border-[#D7E0EA] hover:border-[#F08C32]/40 hover:text-[#7C2D12]'
+                  : 'bg-[#171310] text-gray-400 border-[#2B231D] hover:border-[#F08C32]/40 hover:text-[#FFFFFF]'
               }`}
               id={`job-filter-${cat}`}
             >
               {cat}
               <span className={`text-[9px] px-1 py-0.5 rounded-full font-black ${
-                selectedCategory === cat ? 'bg-black/20 text-black' : 'bg-[#EEF2F6] text-[#F08C32]'
+                selectedCategory === cat ? 'bg-black/20 text-black' : 'bg-[#1E1915] text-[#F08C32]'
               }`}>{count}</span>
             </button>
           );
@@ -203,7 +203,7 @@ export const JobBoardScreen: React.FC<JobBoardScreenProps> = ({ onBack, initialJ
 
       {filteredJobs.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-white border border-[#D7E0EA] flex items-center justify-center mb-4">
+          <div className="w-14 h-14 rounded-2xl bg-[#171310] border border-[#2B231D] flex items-center justify-center mb-4">
             <Briefcase className="w-6 h-6 text-gray-600" />
           </div>
           <p className="text-sm font-bold text-gray-400">
@@ -219,11 +219,11 @@ export const JobBoardScreen: React.FC<JobBoardScreenProps> = ({ onBack, initialJ
             <button
               key={job.id}
               onClick={() => setSelectedJob(job)}
-              className="w-full p-4 rounded-2xl bg-white border border-[#D7E0EA] hover:border-[#F08C32]/30 transition-all text-left space-y-2.5 group"
+              className="w-full p-4 rounded-2xl bg-[#171310] border border-[#2B231D] hover:border-[#F08C32]/30 transition-all text-left space-y-2.5 group"
               id={`job-board-card-${job.id}`}
             >
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl overflow-hidden bg-[#EEF2F6] border border-[#D7E0EA] flex-shrink-0">
+                <div className="w-10 h-10 rounded-xl overflow-hidden bg-[#1E1915] border border-[#2B231D] flex-shrink-0">
                   <BusinessThumbnail
                     business={{ id: job.businessId, name: job.businessName, logoUrl: job.imageUrl || job.businessLogoUrl }}
                     className="w-full h-full object-cover"
@@ -231,7 +231,7 @@ export const JobBoardScreen: React.FC<JobBoardScreenProps> = ({ onBack, initialJ
                   />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-xs font-extrabold text-[#7C2D12] group-hover:text-[#F08C32] transition-colors truncate">
+                  <h3 className="text-xs font-extrabold text-[#FFFFFF] group-hover:text-[#F08C32] transition-colors truncate">
                     {job.title}
                   </h3>
                   <p className="text-[9px] text-gray-500 mt-0.5">{job.businessName}</p>

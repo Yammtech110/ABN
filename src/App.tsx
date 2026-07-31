@@ -122,7 +122,7 @@ function TabContent({
       )}
       {activeTab === 'portal-management' && (
         <TabView tabKey="portal-management">
-          <div className="min-h-full bg-[#EEF2F6] px-4 pt-4 pb-8">
+          <div className="min-h-full bg-[#1E1915] px-4 pt-4 pb-8">
             <BusinessPortalTab
               onBack={() => setActiveTab('account')}
               manageMode
@@ -165,11 +165,11 @@ function TabContent({
 
       {activeTab === 'admin' && (
         <TabView tabKey="admin">
-          <div className="space-y-5 min-h-full px-4 pt-4 pb-8 bg-[#EEF2F6]">
-            <div className="subpage-header sticky top-0 z-10 -mx-4 px-4 pt-1 flex items-center gap-3 pb-3 border-b border-[#D7E0EA] bg-[#EEF2F6]/95 backdrop-blur-md">
+          <div className="space-y-5 min-h-full px-4 pt-4 pb-8 bg-[#1E1915]">
+            <div className="subpage-header sticky top-0 z-10 -mx-4 px-4 pt-1 flex items-center gap-3 pb-3 border-b border-[#2B231D] bg-[#1E1915]/95 backdrop-blur-md">
               <button
                 onClick={() => setActiveTab('account')}
-                className="p-2 rounded-full bg-white hover:bg-slate-100 border border-[#D7E0EA] transition-colors"
+                className="p-2 rounded-full bg-[#171310] hover:bg-[#1E1915] border border-[#2B231D] transition-colors"
                 aria-label="Back to Account"
               >
                 <ArrowLeft className="w-4 h-4 text-[#F08C32]" />
@@ -206,11 +206,11 @@ function BottomNav({
 
   const tabClass = (active: boolean) =>
     `flex flex-col items-center justify-center flex-1 py-2 transition-all ${
-      active ? 'text-[#F08C32] scale-105 font-black' : 'text-slate-600 hover:text-[#7C2D12]'
+      active ? 'text-[#F08C32] scale-105 font-black' : 'text-[#CFCFCF] hover:text-[#FFFFFF]'
     }`;
 
   return (
-    <nav className="flex justify-between items-center h-full px-1 bg-white" id="bottom-nav">
+    <nav className="flex justify-between items-center h-full px-1 bg-[#171310] border-t-0" id="bottom-nav">
 
       {!isAdmin && (
         <>
@@ -304,7 +304,7 @@ function WebTopNav({
       className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wide whitespace-nowrap transition-all ${
         activeTab === tab || (tab === 'account' && isAccountActive)
           ? 'bg-[#FF9E47] text-black shadow-[0_0_15px_rgba(242, 153, 74,0.35)]'
-          : 'text-slate-500 hover:text-[#7C2D12] hover:bg-slate-100'
+          : 'text-[#8E8E8E] hover:text-[#FFFFFF] hover:bg-[#1E1915]'
       }`}
       id={`web-tab-${tab}`}
     >
@@ -434,7 +434,7 @@ function DirectoryAppContent() {
           id="auth-boot-loading"
         >
           <Loader2 className="w-8 h-8 text-[#F08C32] animate-spin mb-3" />
-          <p className="text-xs text-slate-500 font-medium">Checking session…</p>
+          <p className="text-xs text-[#8E8E8E] font-medium">Checking session…</p>
         </div>
       </>
     );
@@ -456,7 +456,7 @@ function DirectoryAppContent() {
       <>
       {splashOverlay}
       <div
-        className="fixed inset-0 flex flex-col bg-[#EEF2F6] text-[#7C2D12]"
+        className="fixed inset-0 flex flex-col bg-[#0D0906] text-[#FFFFFF]"
         id="app-root-mobile"
         style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
@@ -491,7 +491,7 @@ function DirectoryAppContent() {
           activeTab === 'portal-management'
         ) && (
         <div
-          className="flex-shrink-0 bg-white border-t border-[#D7E0EA] z-30"
+          className="flex-shrink-0 bg-[#171310] border-t border-[#2B231D] z-30"
           id="bottom-nav-shell"
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         >
@@ -531,16 +531,16 @@ function DirectoryAppContent() {
   return (
     <>
       {splashOverlay}
-      <div className="min-h-screen bg-[#EEF2F6] text-[#7C2D12] font-sans flex flex-col antialiased" id="app-root-web">
-        <header className="border-b border-[#D7E0EA] bg-white/95 backdrop-blur-md p-4 sticky top-0 z-40 shadow-[0_4px_24px_rgba(124,45,18,0.06)]">
+      <div className="min-h-screen bg-[#0D0906] text-[#FFFFFF] font-sans flex flex-col antialiased" id="app-root-web">
+        <header className="border-b border-[#2B231D] bg-[#0D0906]/95 backdrop-blur-md p-4 sticky top-0 z-40 shadow-[0_4px_24px_rgba(0,0,0,0.06)]">
           <div className="max-w-7xl mx-auto flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center justify-between gap-3 min-w-0">
               <div className="min-w-0">
                 <h1 className="text-2xl font-black tracking-tight">
-                  <span className="text-[#7C2D12]">AHLE</span>
+                  <span className="text-[#FFFFFF]">AHLE</span>
                   <span className="text-[#F08C32]">BAIT</span>
                 </h1>
-                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest truncate">{t.tagline}</p>
+                <p className="text-[10px] text-[#8E8E8E] font-bold uppercase tracking-widest truncate">{t.tagline}</p>
               </div>
             </div>
             <WebTopNav
@@ -575,9 +575,9 @@ function DirectoryAppContent() {
           />
         </main>
 
-        <footer className="border-t border-[#D7E0EA] bg-white py-6 text-center text-xs text-slate-500">
+        <footer className="border-t border-[#2B231D] bg-[#171310] py-6 text-center text-xs text-[#8E8E8E]">
           <p>© 2026 Ahle Bait Network (ABN). All rights reserved.</p>
-          <p className="mt-1 text-[10px] text-slate-400">
+          <p className="mt-1 text-[10px] text-[#8E8E8E]">
             {verifiedActiveCount} active listings · Admin panel available on web
           </p>
         </footer>

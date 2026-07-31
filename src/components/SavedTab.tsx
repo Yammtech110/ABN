@@ -47,9 +47,9 @@ export const SavedTab: React.FC<SavedTabProps> = ({ onSelectBusiness, onSwitchTa
   return (
     <div className="space-y-4" id="saved-tab-container">
 
-      <div className="pb-1 border-b border-[#D7E0EA] animate-fade-in-up" id="saved-header">
+      <div className="pb-1 border-b border-[#2B231D] animate-fade-in-up" id="saved-header">
         <div className="flex items-center justify-between gap-2">
-          <h2 className="text-xl font-extrabold text-[#7C2D12]" id="saved-header-title">
+          <h2 className="text-xl font-extrabold text-[#FFFFFF]" id="saved-header-title">
             {t.savedLists}{' '}
             <span className="text-[#F08C32]">({favoritesLoading ? '…' : savedBusinesses.length})</span>
           </h2>
@@ -87,7 +87,7 @@ export const SavedTab: React.FC<SavedTabProps> = ({ onSelectBusiness, onSwitchTa
       )}
 
       {!favoritesLoading && !favoritesError && savedBusinesses.length === 0 && (
-        <div className="text-center py-16 px-6 rounded-3xl bg-white border border-dashed border-[#D7E0EA]" id="saved-empty-state">
+        <div className="text-center py-16 px-6 rounded-3xl bg-[#171310] border border-dashed border-[#2B231D]" id="saved-empty-state">
           <Heart className="w-10 h-10 text-gray-700 mx-auto mb-3" />
           <p className="text-xs text-gray-400 font-medium max-w-xs mx-auto leading-relaxed">
             {t.noSaved}
@@ -108,12 +108,12 @@ export const SavedTab: React.FC<SavedTabProps> = ({ onSelectBusiness, onSwitchTa
           {savedBusinesses.map((biz) => (
             <div
               key={biz.id}
-              className="p-3 rounded-2xl bg-white border border-[#D7E0EA] hover:border-[#F08C32]/30 transition-all relative flex gap-3.5 animate-fade-in-up card-hover"
+              className="p-3 rounded-2xl bg-[#171310] border border-[#2B231D] hover:border-[#F08C32]/30 transition-all relative flex gap-3.5 animate-fade-in-up card-hover"
               id={`saved-card-${biz.id}`}
             >
               <div
                 onClick={() => onSelectBusiness(biz)}
-                className="w-14 h-14 rounded-xl overflow-hidden bg-stone-900 border border-[#D7E0EA] cursor-pointer"
+                className="w-14 h-14 rounded-xl overflow-hidden bg-stone-900 border border-[#2B231D] cursor-pointer"
                 id={`saved-img-wrapper-${biz.id}`}
               >
                 <BusinessThumbnail business={biz} />
@@ -125,11 +125,11 @@ export const SavedTab: React.FC<SavedTabProps> = ({ onSelectBusiness, onSwitchTa
                 id={`saved-info-${biz.id}`}
               >
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[8px] tracking-wider uppercase font-extrabold px-1.5 py-0.5 rounded bg-[#EEF2F6] text-[#F08C32] border border-[#D7E0EA]/80">
+                  <span className="text-[8px] tracking-wider uppercase font-extrabold px-1.5 py-0.5 rounded bg-[#1E1915] text-[#F08C32] border border-[#2B231D]/80">
                     {textEn(biz.subcategory)}
                   </span>
                 </div>
-                <h3 className="text-xs font-black text-[#7C2D12] hover:text-[#F08C32] truncate mt-1 leading-snug">
+                <h3 className="text-xs font-black text-[#FFFFFF] hover:text-[#F08C32] truncate mt-1 leading-snug">
                   {biz.name}
                 </h3>
                 <span className="text-[9px] text-gray-500 flex items-center gap-0.5 mt-1 font-sans">
@@ -141,7 +141,7 @@ export const SavedTab: React.FC<SavedTabProps> = ({ onSelectBusiness, onSwitchTa
               <div className="flex flex-col justify-between items-end" id={`saved-actions-${biz.id}`}>
                 <button
                   onClick={() => handleRemoveFavorite(biz)}
-                  className="p-1.5 rounded-full hover:bg-[#EEF2F6] text-red-400 hover:text-red-300 transition-colors"
+                  className="p-1.5 rounded-full hover:bg-[#1E1915] text-red-400 hover:text-red-300 transition-colors"
                   title="Remove bookmark"
                   id={`saved-btn-remove-${biz.id}`}
                 >

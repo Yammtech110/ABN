@@ -57,8 +57,8 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ onBack
   };
 
   return (
-    <div className="page-shell min-h-full flex flex-col bg-white" id="notifications-page">
-      <div className="page-header sticky top-0 z-10 flex items-center gap-2 px-4 py-3.5 bg-white border-b border-[#D7E0EA]">
+    <div className="page-shell min-h-full flex flex-col bg-[#171310]" id="notifications-page">
+      <div className="page-header sticky top-0 z-10 flex items-center gap-2 px-4 py-3.5 bg-[#171310] border-b border-[#2B231D]">
         <button
           type="button"
           onClick={onBack}
@@ -69,7 +69,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ onBack
           <ArrowLeft className="w-4 h-4 text-[#F08C32]" />
         </button>
         <div className="min-w-0 flex-1">
-          <h1 className="page-title text-sm font-black uppercase tracking-wider flex items-center gap-2 text-[#7C2D12]">
+          <h1 className="page-title text-sm font-black uppercase tracking-wider flex items-center gap-2 text-[#FFFFFF]">
             <Bell className="page-title-icon w-4 h-4 text-[#F08C32]" />
             Notifications
             {unread > 0 && (
@@ -100,13 +100,13 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ onBack
         )}
       </div>
 
-      <div className="page-body flex-1 bg-white pb-8">
+      <div className="page-body flex-1 bg-[#171310] pb-8">
         {notificationsError && (
           <p className="page-error text-[11px] mx-4 mt-4 rounded-xl px-3 py-2">{notificationsError}</p>
         )}
 
         {notificationsLoading && visible.length === 0 && (
-          <p className="text-xs py-16 text-center font-semibold text-slate-600">Loading notifications…</p>
+          <p className="text-xs py-16 text-center font-semibold text-[#CFCFCF]">Loading notifications…</p>
         )}
 
         {!notificationsLoading && visible.length === 0 && !notificationsError && (
@@ -114,8 +114,8 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ onBack
             <div className="page-empty-icon mx-auto mb-3 w-12 h-12 rounded-2xl flex items-center justify-center">
               <Bell className="w-6 h-6 text-[#F08C32]" />
             </div>
-            <p className="text-xs font-extrabold text-[#7C2D12]">No notifications yet</p>
-            <p className="text-[11px] mt-2 leading-relaxed text-slate-600">
+            <p className="text-xs font-extrabold text-[#FFFFFF]">No notifications yet</p>
+            <p className="text-[11px] mt-2 leading-relaxed text-[#CFCFCF]">
               Listing approvals, payments, membership alerts, and admin updates will appear here.
             </p>
           </div>
@@ -128,22 +128,22 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ onBack
             return (
               <li
                 key={n.id}
-                className={`px-4 py-3.5 ${n.isRead ? 'bg-white' : 'bg-orange-50/50'}`}
+                className={`px-4 py-3.5 ${n.isRead ? 'bg-[#171310]' : 'bg-orange-50/50'}`}
               >
                 <div className="flex items-center justify-between gap-2 text-[9px] mb-1.5">
                   <div className="flex items-center gap-1.5 min-w-0">
                     <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotColor}`} />
-                    <span className="font-semibold text-slate-600">{n.date || 'Today'}</span>
-                    <span className="text-slate-400">•</span>
+                    <span className="font-semibold text-[#CFCFCF]">{n.date || 'Today'}</span>
+                    <span className="text-[#8E8E8E]">•</span>
                     <span className="font-bold uppercase tracking-wider truncate text-[#F08C32]">
                       {notificationKindLabel(kind)}
                     </span>
                   </div>
-                  <span className="uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0 bg-slate-100 text-slate-600 font-bold">
+                  <span className="uppercase tracking-wider px-1.5 py-0.5 rounded shrink-0 bg-[#1E1915] text-[#CFCFCF] font-bold">
                     {formatNotificationRole(n.receiverRole)}
                   </span>
                 </div>
-                <h2 className="text-[12px] font-extrabold leading-snug text-[#7C2D12]">{n.title}</h2>
+                <h2 className="text-[12px] font-extrabold leading-snug text-[#FFFFFF]">{n.title}</h2>
                 <p className="text-[11px] mt-1 leading-relaxed text-slate-700">{n.message}</p>
               </li>
             );

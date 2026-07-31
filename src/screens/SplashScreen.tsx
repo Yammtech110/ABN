@@ -36,7 +36,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ fading = false }) =>
       paddingBottom: 'env(safe-area-inset-bottom)',
       transitionDuration: `${SPLASH_FADE_MS}ms`,
       background:
-        'radial-gradient(120% 80% at 50% 20%, #9A3412 0%, #7C2D12 48%, #431407 100%)',
+        'radial-gradient(120% 80% at 50% 20%, #322820 0%, #110E0B 48%, #0D0906 100%)',
     }}
   >
     {/* Soft emerald glow behind brand */}
@@ -127,7 +127,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ fading = false }) =>
 
       {/* Loading pulse bar */}
       <motion.div
-        className="mt-8 h-1 w-28 rounded-full bg-white/10 overflow-hidden"
+        className="mt-8 h-1 w-28 rounded-full bg-[#171310]/10 overflow-hidden"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.1 }}
