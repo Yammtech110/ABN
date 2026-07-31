@@ -9,7 +9,6 @@ import { isLiveDirectoryListing } from '../utils/listingAccess';
 import { resolveCategoryId } from '../utils/categoryMatch';
 import { resolveListingCoverUrl, resolveListingLogoUrl } from '../utils/listingImages';
 import { BusinessThumbnail } from './BusinessThumbnail';
-import { AbnLogo } from './AbnLogo';
 import {
   Search,
   MapPin,
@@ -39,7 +38,6 @@ import {
   Star,
   Heart,
   Briefcase,
-  Users,
   Store,
   Handshake,
   Grid3X3,
@@ -50,60 +48,6 @@ import {
 import { Business, BusinessStatus } from '../types';
 
 const NAVY = '#110E0B';
-
-/** Network + dotted map graphic for charcoal hero (mockup match). */
-const HeroNetworkMap: React.FC = () => {
-  const mapDots = [
-    [210, 40], [225, 48], [240, 42], [255, 55], [270, 48], [285, 60], [300, 52], [315, 68],
-    [330, 58], [345, 72], [355, 85], [220, 70], [235, 78], [250, 90], [265, 82], [280, 95],
-    [295, 105], [310, 98], [325, 112], [340, 108], [230, 110], [248, 118], [262, 130],
-    [278, 122], [292, 138], [308, 128], [322, 145], [338, 140], [245, 150], [260, 160],
-    [275, 155], [290, 170], [305, 162], [320, 175], [335, 168], [255, 185], [270, 192],
-    [285, 200], [300, 195], [315, 205], [265, 210], [280, 218], [295, 225],
-  ];
-  const nodes: [number, number][] = [
-    [200, 55], [250, 40], [300, 70], [340, 50], [360, 95],
-    [220, 120], [270, 100], [320, 130], [355, 150],
-    [210, 175], [260, 160], [305, 180], [345, 200],
-    [240, 210], [290, 220], [330, 230],
-  ];
-  return (
-    <svg
-      className="pointer-events-none absolute inset-0 w-full h-full"
-      viewBox="0 0 390 300"
-      fill="none"
-      aria-hidden="true"
-      id="home-hero-network"
-      preserveAspectRatio="xMidYMid slice"
-    >
-      <defs>
-        <radialGradient id="netGlow" cx="78%" cy="42%" r="55%">
-          <stop offset="0%" stopColor="#F08C32" stopOpacity="0.28" />
-          <stop offset="100%" stopColor="#0D0906" stopOpacity="0" />
-        </radialGradient>
-      </defs>
-      <rect width="390" height="300" fill="url(#netGlow)" />
-      {/* Dotted world-map cloud (right side) */}
-      {mapDots.map(([x, y], i) => (
-        <circle key={`m-${i}`} cx={x} cy={y} r="1.4" fill="#F08C32" opacity={0.35 + (i % 5) * 0.08} />
-      ))}
-      {/* Connection lines — brand orange */}
-      <path d="M200 55 L250 40 L300 70 L340 50 L360 95" stroke="#F08C32" strokeWidth="1.2" opacity="0.65" />
-      <path d="M220 120 L270 100 L320 130 L355 150" stroke="#F08C32" strokeWidth="1.1" opacity="0.5" strokeDasharray="4 5" />
-      <path d="M210 175 L260 160 L305 180 L345 200" stroke="#FF9E47" strokeWidth="1" opacity="0.55" />
-      <path d="M250 40 L270 100 L260 160 L240 210" stroke="#F08C32" strokeWidth="0.9" opacity="0.4" />
-      <path d="M300 70 L320 130 L305 180 L290 220" stroke="#FF9E47" strokeWidth="0.9" opacity="0.4" />
-      <path d="M340 50 L355 150 L330 230" stroke="#F08C32" strokeWidth="0.9" opacity="0.35" />
-      {/* Glowing nodes */}
-      {nodes.map(([x, y], i) => (
-        <g key={`n-${i}`}>
-          <circle cx={x} cy={y} r="7" fill="#F08C32" opacity="0.18" />
-          <circle cx={x} cy={y} r="3.2" fill="#FF9E47" opacity={i % 2 === 0 ? 1 : 0.85} />
-        </g>
-      ))}
-    </svg>
-  );
-};
 
 const JOB_CATEGORY_COLORS: Record<JobCategory, string> = {
   'IT':               'bg-orange-100 text-orange-700 border-orange-200',
@@ -329,11 +273,6 @@ export const HomeTab: React.FC<HomeTabProps> = ({
 
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 
-  const cityCount = useMemo(
-    () => new Set(liveListings.map((b) => b.city).filter(Boolean)).size,
-    [liveListings],
-  );
-
   const handleOverlayBack = useCallback((): boolean => {
     if (selectedJob) {
       setSelectedJob(null);
@@ -421,67 +360,37 @@ export const HomeTab: React.FC<HomeTabProps> = ({
   return (
     <div className="pb-6 bg-[#0D0906]" id="home-tab-container">
 
-      {/* ── Hero (charcoal + orange network mockup) ─────────── */}
+      {/* ── Hero: pixel-exact design image (no custom redraw) ─ */}
       <section
-        className="relative overflow-hidden px-4 pt-[max(0.85rem,env(safe-area-inset-top))] pb-4"
+        className="relative overflow-hidden bg-black pt-[max(0.35rem,env(safe-area-inset-top))]"
         id="home-hero"
-        style={{ background: 'linear-gradient(180deg, #12100E 0%, #0D0906 55%, #0A0806 100%)' }}
       >
-        <HeroNetworkMap />
-
-        <div className="relative flex items-start justify-between gap-3 mb-6">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="min-w-0">
-              <AbnLogo size="lg" className="h-14 max-w-[160px] bg-transparent" />
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => void handleRefreshApp()}
-            disabled={isRefreshing}
-            className="p-2.5 rounded-full border border-white/25 text-white hover:bg-white/10 disabled:opacity-60 flex-shrink-0"
-            aria-label="Refresh"
-            id="btn-home-refresh"
-          >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} strokeWidth={2} />
-          </button>
-        </div>
-
-        <p className="relative text-[15px] text-white font-medium mb-6 max-w-[280px] leading-[1.45]">
-          Connecting Businesses.<br />
-          Building Community.<br />
-          Creating Opportunities.
-        </p>
-
-        <div className="relative grid grid-cols-3 gap-0 mb-1">
-          <div className="flex flex-col items-center text-center px-1 border-r border-[#3A3029]">
-            <Building2 className="w-4 h-4 text-[#F08C32] mb-1.5" />
-            <span className="text-[15px] font-black text-white leading-none">
-              {Math.max(liveListings.length, 1).toLocaleString()}+
-            </span>
-            <span className="text-[10px] text-white/85 mt-1">Businesses</span>
-          </div>
-          <div className="flex flex-col items-center text-center px-1 border-r border-[#3A3029]">
-            <MapPin className="w-4 h-4 text-[#F08C32] mb-1.5" />
-            <span className="text-[15px] font-black text-white leading-none">
-              {Math.max(cityCount, 1)}+
-            </span>
-            <span className="text-[10px] text-white/85 mt-1">Cities</span>
-          </div>
-          <div className="flex flex-col items-center text-center px-1">
-            <Users className="w-4 h-4 text-[#F08C32] mb-1.5" />
-            <span className="text-[15px] font-black text-white leading-none">12,000+</span>
-            <span className="text-[10px] text-white/85 mt-1">Members</span>
-          </div>
-        </div>
+        <img
+          src="/abn-hero-banner.png"
+          alt="ABN — Connecting Businesses. Building Community. Creating Opportunities."
+          className="block w-full h-auto select-none"
+          draggable={false}
+          id="home-hero-banner"
+        />
+        {/* Covers the baked-in refresh glyph so only one icon shows, still tappable */}
+        <button
+          type="button"
+          onClick={() => void handleRefreshApp()}
+          disabled={isRefreshing}
+          className="absolute top-[max(0.45rem,env(safe-area-inset-top))] right-2.5 z-20 p-2 rounded-full bg-black text-white/85 disabled:opacity-60"
+          aria-label="Refresh"
+          id="btn-home-refresh"
+        >
+          <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} strokeWidth={2} />
+        </button>
       </section>
 
-      <div className="space-y-5 px-4 pt-3 relative z-10 bg-[#0D0906]">
+      <div className="space-y-5 px-4 pt-3 relative z-10 bg-black">
 
-        {/* Search */}
+        {/* Search — matches app mockup under hero */}
         <form onSubmit={handleSearchSubmit} id="home-search-form">
           <div
-            className="relative flex items-center bg-[#171310] rounded-2xl border border-[#2B231D] shadow-[0_14px_36px_rgba(0,0,0,0.25)] px-1.5 py-1.5"
+            className="relative flex items-center bg-[#171310] rounded-2xl border border-[#F08C32]/55 px-1.5 py-1.5"
             id="home-search-box"
           >
             {isSearching
@@ -493,7 +402,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               value={inputSearch}
               onChange={(e) => { setInputSearch(e.target.value); if (!e.target.value.trim()) setApiResults(null); }}
               placeholder="Search businesses, professionals or services..."
-              className="w-full pl-10 pr-[7.8rem] py-3 bg-transparent text-[13px] text-[#FFFFFF] placeholder:text-[#8E8E8E] outline-none"
+              className="w-full pl-10 pr-[7.8rem] py-3 bg-transparent text-[13px] text-white placeholder:text-[#8E8E8E] outline-none"
               id="home-search-input"
             />
             <button
