@@ -31,6 +31,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ fading = false }) =>
         className="h-[min(42vw,180px)] w-auto max-w-[min(72vw,280px)] object-contain object-center"
         draggable={false}
       />
+      <p className="mt-3 text-center text-[10px] font-semibold tracking-[0.18em] uppercase text-[#CFCFCF]">
+        Connect <span className="text-[#F08C32]">•</span> Collaborate <span className="text-[#F08C32]">•</span> Grow
+      </p>
 
       <div className="mt-10 flex flex-col items-center gap-3">
         <Loader2 className="w-7 h-7 text-[#F08C32] animate-spin" aria-hidden />

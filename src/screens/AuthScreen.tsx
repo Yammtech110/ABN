@@ -357,10 +357,13 @@ export const AuthScreen: React.FC = () => {
               <img
                 src="/abn-logo-login-clear.png"
                 alt="ABN — Ahlebait Network"
-                className="h-[200px] w-auto max-w-[min(92vw,340px)] object-contain object-center scale-110"
+                className="h-[180px] w-auto max-w-[min(90vw,320px)] object-contain object-center"
                 draggable={false}
               />
             </motion.div>
+            <p className="mt-3 text-center text-[10px] font-semibold tracking-[0.18em] uppercase text-[#CFCFCF]">
+              Connect <span className="text-[#F08C32]">•</span> Collaborate <span className="text-[#F08C32]">•</span> Grow
+            </p>
             <h1 className="mt-4 text-center text-[22px] font-black text-white tracking-tight">
               {modeTitle[authMode]}
             </h1>
