@@ -785,16 +785,9 @@ export const HomeTab: React.FC<HomeTabProps> = ({
           <div className="flex items-start justify-between gap-4 mb-4">
             <div className="min-w-0 flex-1">
               <h3 className="text-[16px] font-extrabold text-[#FFFFFF] mb-1">Stronger Together</h3>
-              <p className="text-[11px] text-[#8E8E8E] leading-snug mb-3">
+              <p className="text-[11px] text-[#8E8E8E] leading-snug">
                 One network connecting local businesses, professionals, and community organizations.
               </p>
-              <button
-                type="button"
-                onClick={() => onSwitchTab('search')}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-[#F08C32] text-[#F08C32] text-[11px] font-extrabold bg-transparent"
-              >
-                Learn More
-              </button>
             </div>
             <div className="relative w-[132px] h-[132px] flex-shrink-0 bg-transparent" id="home-community-handshake">
               <svg viewBox="0 0 132 132" className="absolute inset-0 w-full h-full" aria-hidden>
