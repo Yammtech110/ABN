@@ -23,12 +23,12 @@ import { userFacingError } from '../utils/userFacingError';
 type AuthMode = 'signin' | 'register' | 'verify' | 'forgot' | 'reset-code' | 'reset-choice';
 
 const fieldClass =
-  'w-full pl-11 pr-11 py-3.5 rounded-2xl bg-[#171310] border border-[#2B231D] focus:border-[#F08C32] focus:ring-1 focus:ring-[#F08C32]/25 outline-none text-[15px] text-[#FFFFFF] placeholder:text-[#8E8E8E] transition-all';
+  'w-full pl-11 pr-11 py-3.5 rounded-2xl bg-[#1E1915] border border-[#2B231D] focus:border-[#F08C32] focus:ring-1 focus:ring-[#F08C32]/25 outline-none text-[15px] text-white placeholder:text-[#8E8E8E] transition-all';
 
-const labelClass = 'block text-[11px] font-semibold tracking-wide text-[#FFFFFF] mb-1.5 uppercase';
+const labelClass = 'block text-[11px] font-semibold tracking-wide text-[#CFCFCF] mb-1.5 uppercase';
 
 const primaryBtn =
-  'w-full py-3.5 mt-1 rounded-2xl bg-gradient-to-r from-[#FF9E47] to-[#D9771D] text-black font-black text-sm tracking-wide shadow-[0_10px_28px_rgba(242, 153, 74,0.28)] hover:brightness-105 active:scale-[0.985] transition-all disabled:opacity-55 flex items-center justify-center gap-2';
+  'w-full py-3.5 mt-1 rounded-2xl bg-[#FF9E47] text-black font-black text-sm tracking-wide hover:bg-[#F08C32] active:scale-[0.985] transition-all disabled:opacity-55 flex items-center justify-center gap-2';
 
 /** Premium auth gateway — Sign In / Register / OTP / Forgot password (backend-wired) */
 export const AuthScreen: React.FC = () => {
@@ -282,22 +282,18 @@ export const AuthScreen: React.FC = () => {
 
   return (
     <div
-      className="fixed inset-0 z-40 flex flex-col text-[#FFFFFF] overflow-y-auto bg-[#1E1915]"
+      className="fixed inset-0 z-40 flex flex-col text-white overflow-y-auto bg-[#0D0906]"
       id="auth-screen-root"
       style={{
         paddingTop: 'env(safe-area-inset-top)',
         paddingBottom: 'env(safe-area-inset-bottom)',
-        background:
-          'radial-gradient(120% 80% at 50% -10%, #FFEDD5 0%, #1E1915 42%, #FFE8D6 100%)',
       }}
     >
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.35]"
+        className="pointer-events-none absolute inset-0 opacity-40"
         style={{
           backgroundImage:
-            'linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(242, 153, 74,0.06) 1px, transparent 1px)',
-          backgroundSize: '28px 28px',
-          maskImage: 'radial-gradient(circle at 50% 20%, black 20%, transparent 75%)',
+            'radial-gradient(80% 50% at 50% 0%, rgba(240,140,50,0.12) 0%, transparent 55%)',
         }}
       />
 
@@ -317,12 +313,13 @@ export const AuthScreen: React.FC = () => {
               className="flex flex-col items-center"
               id="auth-logo"
             >
-              <AbnLogo
-                size="hero"
-                tone="light"
-                className="bg-transparent"
-              />
-              {/* Logo PNG already includes wordmark — keep only welcome line below */}
+              <div className="rounded-2xl border border-[#2B231D] bg-[#171310] p-3">
+                <AbnLogo
+                  size="hero"
+                  tone="light"
+                  className="bg-transparent"
+                />
+              </div>
             </motion.div>
             <motion.p
               initial={{ opacity: 0 }}
@@ -336,12 +333,12 @@ export const AuthScreen: React.FC = () => {
 
           <div
             id="auth-form-card"
-            className="rounded-[28px] border border-[#2B231D] bg-[#171310]/95 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] p-5 sm:p-6"
+            className="rounded-[28px] border border-[#2B231D] bg-[#171310] shadow-[0_20px_50px_rgba(0,0,0,0.45)] p-5 sm:p-6"
           >
             {showTabs && (
               <div
                 id="auth-tab-bar"
-                className="relative mb-5 grid grid-cols-2 gap-1 rounded-2xl bg-[#1E1915] p-1 border border-[#2B231D]"
+                className="relative mb-5 grid grid-cols-2 gap-1 rounded-2xl bg-[#0D0906] p-1 border border-[#2B231D]"
               >
                 {(['signin', 'register'] as const).map((mode) => {
                   const active = authMode === mode;
@@ -351,13 +348,13 @@ export const AuthScreen: React.FC = () => {
                       type="button"
                       onClick={() => switchMode(mode)}
                       className={`relative z-10 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-colors ${
-                        active ? 'text-black' : 'text-[#8E8E8E] hover:text-[#FFFFFF]'
+                        active ? 'text-black' : 'text-[#8E8E8E] hover:text-white'
                       }`}
                     >
                       {active && (
                         <motion.span
                           layoutId="authTabPill"
-                          className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#FF9E47] to-[#D9771D] shadow-md"
+                          className="absolute inset-0 rounded-xl bg-[#FF9E47]"
                           transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                         />
                       )}
@@ -380,12 +377,12 @@ export const AuthScreen: React.FC = () => {
                 transition={{ duration: 0.22 }}
               >
                 {error && (
-                  <p className="mb-3 text-red-700 text-xs text-center bg-red-50 border border-red-200 p-2.5 rounded-xl">
+                  <p className="mb-3 text-[#E84D4D] text-xs text-center bg-[#E84D4D]/15 border border-[#E84D4D]/40 p-2.5 rounded-xl">
                     {error}
                   </p>
                 )}
                 {regSuccess && !error && (
-                  <p className="mb-3 text-emerald-800 text-xs text-center bg-orange-50 border border-orange-200 p-2.5 rounded-xl">
+                  <p className="mb-3 text-[#F08C32] text-xs text-center bg-[#FF9E47]/10 border border-[#F08C32]/30 p-2.5 rounded-xl">
                     {regSuccess}
                   </p>
                 )}
