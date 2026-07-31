@@ -23,7 +23,7 @@ import { userFacingError } from '../utils/userFacingError';
 type AuthMode = 'signin' | 'register' | 'verify' | 'forgot' | 'reset-code' | 'reset-choice';
 
 const fieldClass =
-  'w-full pl-[3.35rem] pr-11 py-3.5 rounded-2xl bg-[#1E1915] border border-[#2B231D] focus:border-[#F08C32] focus:ring-1 focus:ring-[#F08C32]/30 outline-none text-[15px] text-white placeholder:text-[#8E8E8E] transition-all';
+  'w-full pl-[3.35rem] pr-11 py-3.5 rounded-2xl bg-[#1E1915] border border-[#2B231D] focus:border-[#F08C32] outline-none ring-0 focus:ring-0 text-[15px] text-white placeholder:text-[#8E8E8E] transition-colors';
 
 const labelClass =
   'block text-[11px] font-extrabold tracking-wide text-white mb-2 uppercase';
@@ -32,7 +32,7 @@ const primaryBtn =
   'w-full py-3.5 mt-2 rounded-2xl bg-[#FF9E47] text-white font-black text-sm tracking-wide hover:bg-[#F08C32] active:scale-[0.985] transition-all disabled:opacity-55 flex items-center justify-center gap-2 shadow-[0_10px_28px_rgba(240,140,50,0.28)]';
 
 const FieldIcon: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-xl bg-[#FF9E47]/15 border border-[#F08C32]/25 flex items-center justify-center pointer-events-none">
+  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-xl bg-[#FF9E47]/15 flex items-center justify-center pointer-events-none">
     {children}
   </span>
 );
