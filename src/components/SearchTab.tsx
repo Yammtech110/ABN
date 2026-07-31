@@ -8,7 +8,7 @@ import { isLiveDirectoryListing } from '../utils/listingAccess';
 import { listingMatchesCategory } from '../utils/categoryMatch';
 import { BusinessThumbnail } from './BusinessThumbnail';
 import { US_STATES } from '../data/usStates';
-import { citiesForState, stateCodeForCity } from '../data/usCitiesByState';
+import { allUsCities, citiesForState, stateCodeForCity } from '../data/usCitiesByState';
 import { isBusinessOpenNow } from '../utils/openNow';
 import {
   buildBusinessMapQuery,
@@ -23,22 +23,16 @@ interface SearchTabProps {
   onSwitchTab: (tabId: string) => void;
 }
 
-const FALLBACK_CITIES = [
-  'New York',
-  'Los Angeles',
-  'Chicago',
-  'Houston',
-  'Miami',
-  'Dearborn',
-  'Dallas',
-];
-
 const MIN_RATINGS = [
   { value: 0, label: 'Any rating' },
+  { value: 1, label: '1★+' },
+  { value: 2, label: '2★+' },
   { value: 3, label: '3★+' },
   { value: 4, label: '4★+' },
-  { value: 4.5, label: '4.5★+' },
+  { value: 5, label: '5★' },
 ];
+
+type OpenFilter = 'all' | 'open' | 'closed';
 
 const listingState = (biz: Business): string =>
   String(biz.state || stateCodeForCity(biz.city) || '').toUpperCase();
@@ -73,7 +67,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
   const [selectedState, setSelectedState] = useState<string>('All');
   const [selectedCity, setSelectedCity] = useState<string>('All');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [openNowOnly, setOpenNowOnly] = useState(false);
+  const [openFilter, setOpenFilter] = useState<OpenFilter>('all');
   const [minRating, setMinRating] = useState(0);
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [mapFocusId, setMapFocusId] = useState<string | null>(null);
@@ -84,10 +78,15 @@ export const SearchTab: React.FC<SearchTabProps> = ({
       .filter((b) => selectedState === 'All' || listingState(b) === selectedState)
       .map((b) => b.city)
       .filter(Boolean);
-    const stateCities = selectedState !== 'All' ? citiesForState(selectedState) : [];
+
+    const baseCities =
+      selectedState !== 'All'
+        ? citiesForState(selectedState)
+        : allUsCities();
+
     return [
       'All',
-      ...Array.from(new Set([...FALLBACK_CITIES, ...stateCities, ...fromListings])).sort((a, b) =>
+      ...Array.from(new Set([...baseCities, ...fromListings])).sort((a, b) =>
         a.localeCompare(b),
       ),
     ];
@@ -114,7 +113,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
         setSelectedCategory(matchedCat.id);
         setSearchQuery('');
         setDebouncedQuery('');
-      } else if (FALLBACK_CITIES.includes(initialQuery) || initialQuery === 'All') {
+      } else if (allUsCities().includes(initialQuery) || initialQuery === 'All') {
         setSelectedCity(initialQuery);
         setSearchQuery('');
         setDebouncedQuery('');
@@ -138,7 +137,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
     setSelectedState('All');
     setSelectedCity('All');
     setSelectedCategory('All');
-    setOpenNowOnly(false);
+    setOpenFilter('all');
     setMinRating(0);
   }, []);
 
@@ -162,7 +161,10 @@ export const SearchTab: React.FC<SearchTabProps> = ({
       const matchCity = selectedCity === 'All' || biz.city === selectedCity;
       const matchCategory = listingMatchesCategory(biz, selectedCategory, categories);
       const open = isBusinessOpenNow(biz.workingHours.en);
-      const matchOpen = !openNowOnly || open === true;
+      const matchOpen =
+        openFilter === 'all' ||
+        (openFilter === 'open' && open === true) ||
+        (openFilter === 'closed' && open === false);
       const matchRating = Number(biz.rating || 0) >= minRating;
 
       return matchQuery && matchState && matchCity && matchCategory && matchOpen && matchRating;
@@ -173,7 +175,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
     selectedState,
     selectedCity,
     selectedCategory,
-    openNowOnly,
+    openFilter,
     minRating,
     categories,
   ]);
@@ -197,7 +199,7 @@ export const SearchTab: React.FC<SearchTabProps> = ({
     selectedState !== 'All' ||
     selectedCity !== 'All' ||
     selectedCategory !== 'All' ||
-    openNowOnly ||
+    openFilter !== 'all' ||
     minRating > 0;
 
   return (
@@ -282,18 +284,16 @@ export const SearchTab: React.FC<SearchTabProps> = ({
             </option>
           ))}
         </select>
-        <button
-          type="button"
-          onClick={() => setOpenNowOnly((v) => !v)}
-          className={`px-3 py-2.5 rounded-xl text-xs font-bold border transition-all ${
-            openNowOnly
-              ? 'bg-[#FF9E47]/15 text-[#F08C32] border-[#F08C32]/50'
-              : 'bg-[#171310] text-gray-400 border-[#2B231D]'
-          }`}
-          id="search-open-now-toggle"
+        <select
+          value={openFilter}
+          onChange={(e) => setOpenFilter(e.target.value as OpenFilter)}
+          className="w-full px-3 py-2.5 rounded-xl bg-[#171310] border border-[#2B231D] text-xs text-[#FFFFFF] outline-none focus:border-[#F08C32]"
+          id="search-open-status-select"
         >
-          Open now
-        </button>
+          <option value="all">Open / Closed</option>
+          <option value="open">Open now</option>
+          <option value="closed">Closed now</option>
+        </select>
         <select
           value={minRating}
           onChange={(e) => setMinRating(Number(e.target.value))}

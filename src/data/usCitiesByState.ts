@@ -87,6 +87,13 @@ export function citiesForState(stateCode: string): string[] {
   return US_CITIES_BY_STATE[code] ? [...US_CITIES_BY_STATE[code]] : [];
 }
 
+/** Every city across all states (sorted, unique). */
+export function allUsCities(): string[] {
+  return Array.from(
+    new Set(Object.values(US_CITIES_BY_STATE).flat()),
+  ).sort((a, b) => a.localeCompare(b));
+}
+
 /** True if city belongs to the given state (or city list empty / unknown). */
 export function cityBelongsToState(city: string, stateCode: string): boolean {
   const list = citiesForState(stateCode);
