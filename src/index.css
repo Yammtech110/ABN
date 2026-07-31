@@ -1304,7 +1304,10 @@ select:focus-visible {
 }
 /* Home search uses rounded border on the box — no square focus ring */
 #home-search-input:focus-visible,
-#home-location-badge-btn:focus-visible {
+#home-location-badge-btn:focus-visible,
+#auth-screen-root input:focus-visible,
+#auth-screen-root textarea:focus-visible,
+#auth-screen-root select:focus-visible {
   outline: none;
   outline-offset: 0;
 }
