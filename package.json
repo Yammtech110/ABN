@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
-    "assets:generate": "npx @capacitor/assets generate --iconBackgroundColor \"#000000\" --iconBackgroundColorDark \"#000000\" --splashBackgroundColor \"#0D0906\" --splashBackgroundColorDark \"#0D0906\" --logoSplashScale 0.35",
+    "assets:generate": "npx @capacitor/assets generate --iconBackgroundColor \"#000000\" --iconBackgroundColorDark \"#000000\" --splashBackgroundColor \"#000000\" --splashBackgroundColorDark \"#000000\" --logoSplashScale 0.35",
     "assets:android": "npm run assets:generate -- --android",
     "assets:ios": "npm run assets:generate -- --ios"
   },
