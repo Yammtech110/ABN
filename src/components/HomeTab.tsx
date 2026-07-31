@@ -437,26 +437,26 @@ export const HomeTab: React.FC<HomeTabProps> = ({
         <HeroNetworkMap />
 
         <div className="relative z-10 flex items-start justify-between gap-2 mb-5">
-          <div className="flex items-start gap-3 min-w-0">
-            <div className="flex flex-col items-center flex-shrink-0 w-[72px]">
-              <AbnHeroMark className="w-12 h-12" />
-              <div
-                className="text-[6.5px] font-semibold tracking-[0.04em] uppercase mt-1.5 leading-tight text-center whitespace-nowrap"
-                style={{ color: HERO_ORANGE }}
-              >
-                CONNECT • COLLABORATE • GROW
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start gap-3">
+              <AbnHeroMark className="flex-shrink-0 w-12 h-12" />
+              <div className="min-w-0 pt-0.5">
+                <div
+                  className="text-[28px] font-black leading-none tracking-tight"
+                  style={{ color: HERO_ORANGE }}
+                >
+                  ABN
+                </div>
+                <div className="text-[11px] font-bold text-white tracking-[0.12em] uppercase mt-1 leading-none">
+                  AHLEBAIT NETWORK
+                </div>
               </div>
             </div>
-            <div className="min-w-0 pt-0.5">
-              <div
-                className="text-[28px] font-black leading-none tracking-tight"
-                style={{ color: HERO_ORANGE }}
-              >
-                ABN
-              </div>
-              <div className="text-[11px] font-bold text-white tracking-[0.12em] uppercase mt-1 leading-none">
-                AHLEBAIT NETWORK
-              </div>
+            <div
+              className="mt-2 text-[8px] font-semibold tracking-[0.12em] uppercase leading-none"
+              style={{ color: HERO_ORANGE }}
+            >
+              CONNECT • COLLABORATE • GROW
             </div>
           </div>
           <button
