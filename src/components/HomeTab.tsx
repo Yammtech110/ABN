@@ -9,6 +9,7 @@ import { isLiveDirectoryListing } from '../utils/listingAccess';
 import { resolveCategoryId } from '../utils/categoryMatch';
 import { resolveListingCoverUrl, resolveListingLogoUrl } from '../utils/listingImages';
 import { BusinessThumbnail } from './BusinessThumbnail';
+import { canPostJobs, getUserListing } from '../utils/listingAccess';
 import {
   Search,
   MapPin,
@@ -689,7 +690,26 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             </p>
             <button
               type="button"
-              onClick={() => onSwitchTab(currentUser ? 'job-board' : 'account')}
+              onClick={() => {
+                const myListing = getUserListing(currentUser, businesses);
+                if (canPostJobs(myListing)) {
+                  try {
+                    sessionStorage.setItem('abn-open-job-form', '1');
+                  } catch {
+                    /* ignore */
+                  }
+                  onSwitchTab('job-management');
+                  return;
+                }
+                window.alert(
+                  'FIRST REGISTER AS BUSSINESS/SERVICE PROVIDER THEN YOU POST A JOB',
+                );
+                if (!currentUser) {
+                  onSwitchTab('account');
+                } else {
+                  onSwitchTab('business');
+                }
+              }}
               className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#FF9E47] text-black text-[12px] font-extrabold"
               id="btn-post-job-cta"
             >

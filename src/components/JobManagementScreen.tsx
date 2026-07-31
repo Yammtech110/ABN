@@ -84,6 +84,18 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
     setFormEmail(''); setFormImages([]); setFormSuccess(''); setFormError(''); setView('form');
   };
 
+  useEffect(() => {
+    if (!canManageJobs) return;
+    try {
+      if (sessionStorage.getItem('abn-open-job-form') === '1') {
+        sessionStorage.removeItem('abn-open-job-form');
+        openNewForm();
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [canManageJobs]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const openEditForm = (job: Job) => {
     setEditingJob(job); setFormTitle(job.title); setFormCategory(job.category);
     setFormRequirements(job.requirements); setFormSalaryMin(String(job.salaryMin));
@@ -102,8 +114,8 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
     if (!activeBusiness || !canPostJobs(activeBusiness)) {
       setFormError(
         language === 'en'
-          ? 'Only approved business listings can post jobs.'
-          : 'يمكن فقط للأعمال التجارية المعتمدة نشر الوظائف.',
+          ? 'FIRST REGISTER AS BUSSINESS/SERVICE PROVIDER THEN YOU POST A JOB'
+          : 'يجب تسجيل نشاط تجاري أو مزود خدمة معتمد أولاً.',
       );
       return;
     }
@@ -219,15 +231,13 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
 
   if (!canManageJobs) {
     let deniedDetail =
-      'Register a business listing and get admin approval before you can post jobs.';
+      'FIRST REGISTER AS BUSSINESS/SERVICE PROVIDER THEN YOU POST A JOB';
     if (!currentUser) {
-      deniedDetail = 'Sign in first, then register an approved business listing to post jobs.';
+      deniedDetail = 'FIRST REGISTER AS BUSSINESS/SERVICE PROVIDER THEN YOU POST A JOB';
     } else if (!myListing) {
-      deniedDetail = 'You do not have a directory listing yet. Register as a business first.';
-    } else if (myListing.listingType === 'service') {
-      deniedDetail = 'Service listings cannot post jobs. Only approved business listings can hire.';
+      deniedDetail = 'FIRST REGISTER AS BUSSINESS/SERVICE PROVIDER THEN YOU POST A JOB';
     } else if (!myListing.isVerified || myListing.status === 'pending') {
-      deniedDetail = 'Your business listing is still pending admin approval. Jobs unlock after approval.';
+      deniedDetail = 'Your listing is still pending admin approval. Jobs unlock after approval.';
     } else if (myListing.status === 'suspended') {
       deniedDetail = 'Your listing is suspended. Renew membership to post jobs again.';
     }
