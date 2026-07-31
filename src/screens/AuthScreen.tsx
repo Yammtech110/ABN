@@ -23,14 +23,21 @@ import { userFacingError } from '../utils/userFacingError';
 type AuthMode = 'signin' | 'register' | 'verify' | 'forgot' | 'reset-code' | 'reset-choice';
 
 const fieldClass =
-  'w-full pl-11 pr-11 py-3.5 rounded-2xl bg-[#1E1915] border border-[#2B231D] focus:border-[#F08C32] focus:ring-1 focus:ring-[#F08C32]/25 outline-none text-[15px] text-white placeholder:text-[#8E8E8E] transition-all';
+  'w-full pl-[3.35rem] pr-11 py-3.5 rounded-2xl bg-[#1E1915] border border-[#2B231D] focus:border-[#F08C32] focus:ring-1 focus:ring-[#F08C32]/30 outline-none text-[15px] text-white placeholder:text-[#8E8E8E] transition-all';
 
-const labelClass = 'block text-[11px] font-semibold tracking-wide text-[#CFCFCF] mb-1.5 uppercase';
+const labelClass =
+  'block text-[11px] font-extrabold tracking-wide text-white mb-2 uppercase';
 
 const primaryBtn =
-  'w-full py-3.5 mt-1 rounded-2xl bg-[#FF9E47] text-black font-black text-sm tracking-wide hover:bg-[#F08C32] active:scale-[0.985] transition-all disabled:opacity-55 flex items-center justify-center gap-2';
+  'w-full py-3.5 mt-2 rounded-2xl bg-[#FF9E47] text-white font-black text-sm tracking-wide hover:bg-[#F08C32] active:scale-[0.985] transition-all disabled:opacity-55 flex items-center justify-center gap-2 shadow-[0_10px_28px_rgba(240,140,50,0.28)]';
 
-/** Premium auth gateway — Sign In / Register / OTP / Forgot password (backend-wired) */
+const FieldIcon: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-xl bg-[#FF9E47]/15 border border-[#F08C32]/25 flex items-center justify-center pointer-events-none">
+    {children}
+  </span>
+);
+
+/** Charcoal auth gateway — mockup layout, ABN theme colors */
 export const AuthScreen: React.FC = () => {
   const {
     language,
@@ -280,6 +287,15 @@ export const AuthScreen: React.FC = () => {
     'reset-choice': 'Choose password',
   };
 
+  const modeSubtitle: Record<AuthMode, string> = {
+    signin: 'Sign in to continue to your account',
+    register: 'Create your ABN account to get started',
+    verify: 'Enter the code we emailed you',
+    forgot: 'We will email a reset code to Gmail',
+    'reset-code': 'Check Inbox or Spam for your code',
+    'reset-choice': 'Update your password or keep the current one',
+  };
+
   return (
     <div
       className="fixed inset-0 z-40 flex flex-col text-white overflow-y-auto bg-[#0D0906]"
@@ -289,56 +305,75 @@ export const AuthScreen: React.FC = () => {
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}
     >
+      {/* Network pattern — charcoal + orange dots */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-40"
+        className="pointer-events-none absolute inset-0"
+        aria-hidden
         style={{
-          backgroundImage:
-            'radial-gradient(80% 50% at 50% 0%, rgba(240,140,50,0.12) 0%, transparent 55%)',
+          backgroundImage: `
+            radial-gradient(circle at 12% 8%, rgba(240,140,50,0.55) 1.5px, transparent 1.6px),
+            radial-gradient(circle at 28% 18%, rgba(240,140,50,0.4) 1.2px, transparent 1.3px),
+            radial-gradient(circle at 72% 12%, rgba(240,140,50,0.45) 1.4px, transparent 1.5px),
+            radial-gradient(circle at 88% 22%, rgba(240,140,50,0.35) 1.2px, transparent 1.3px),
+            radial-gradient(circle at 18% 32%, rgba(43,35,29,0.9) 1px, transparent 1.1px),
+            radial-gradient(circle at 82% 38%, rgba(43,35,29,0.9) 1px, transparent 1.1px),
+            radial-gradient(rgba(43,35,29,0.55) 0.8px, transparent 0.9px)
+          `,
+          backgroundSize: '100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 22px 22px',
         }}
       />
+      <svg
+        className="pointer-events-none absolute inset-0 w-full h-[55%] opacity-40"
+        viewBox="0 0 400 320"
+        fill="none"
+        aria-hidden
+        preserveAspectRatio="xMidYMin slice"
+      >
+        <path d="M40 40 L110 70 L180 45 L250 85 L320 50 L360 90" stroke="#F08C32" strokeWidth="0.8" opacity="0.35" />
+        <path d="M60 120 L140 95 L210 130 L290 100 L350 140" stroke="#F08C32" strokeWidth="0.8" opacity="0.28" />
+        <path d="M90 60 L90 150 M180 45 L180 130 M290 55 L290 140" stroke="#2B231D" strokeWidth="0.7" opacity="0.8" />
+        <circle cx="110" cy="70" r="2.2" fill="#F08C32" />
+        <circle cx="180" cy="45" r="2.2" fill="#F08C32" />
+        <circle cx="250" cy="85" r="2.2" fill="#F08C32" />
+        <circle cx="140" cy="95" r="2" fill="#F08C32" />
+        <circle cx="290" cy="100" r="2" fill="#F08C32" />
+      </svg>
 
-      <div className="relative flex-1 flex items-center justify-center p-4 sm:p-6">
+      <div className="relative flex-1 flex items-start sm:items-center justify-center px-4 pt-8 pb-8 sm:p-6">
         <motion.div
-          initial={{ opacity: 0, y: 18 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           className="w-full max-w-[420px]"
           id="auth-screen-content"
         >
-          <div className="mb-6 flex flex-col items-center">
+          {/* Logo card */}
+          <div className="mb-5 flex flex-col items-center" id="auth-logo">
             <motion.div
-              initial={{ scale: 0.92, opacity: 0 }}
+              initial={{ scale: 0.94, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.08, duration: 0.4 }}
-              className="flex flex-col items-center"
-              id="auth-logo"
+              transition={{ delay: 0.05, duration: 0.35 }}
+              className="rounded-[22px] border border-[#2B231D] bg-[#171310] p-4 shadow-[0_12px_40px_rgba(0,0,0,0.45)]"
             >
-              <div className="rounded-2xl border border-[#2B231D] bg-[#171310] p-3">
-                <AbnLogo
-                  size="hero"
-                  tone="light"
-                  className="bg-transparent"
-                />
-              </div>
+              <AbnLogo size="hero" tone="light" className="bg-transparent" />
             </motion.div>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="mt-4 text-center text-[13px] text-[#CFCFCF] font-medium"
-            >
+            <h1 className="mt-5 text-center text-[22px] font-black text-white tracking-tight">
               {modeTitle[authMode]}
-            </motion.p>
+            </h1>
+            <p className="mt-1.5 text-center text-[13px] text-[#8E8E8E] font-medium px-4">
+              {modeSubtitle[authMode]}
+            </p>
           </div>
 
+          {/* Form card */}
           <div
             id="auth-form-card"
-            className="rounded-[28px] border border-[#2B231D] bg-[#171310] shadow-[0_20px_50px_rgba(0,0,0,0.45)] p-5 sm:p-6"
+            className="rounded-[28px] border border-[#2B231D] bg-[#171310] shadow-[0_24px_60px_rgba(0,0,0,0.5)] p-5 sm:p-6"
           >
             {showTabs && (
               <div
                 id="auth-tab-bar"
-                className="relative mb-5 grid grid-cols-2 gap-1 rounded-2xl bg-[#0D0906] p-1 border border-[#2B231D]"
+                className="relative mb-4 grid grid-cols-2 gap-2"
               >
                 {(['signin', 'register'] as const).map((mode) => {
                   const active = authMode === mode;
@@ -347,21 +382,14 @@ export const AuthScreen: React.FC = () => {
                       key={mode}
                       type="button"
                       onClick={() => switchMode(mode)}
-                      className={`relative z-10 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-colors ${
-                        active ? 'text-black' : 'text-[#8E8E8E] hover:text-white'
+                      className={`relative flex items-center justify-center gap-1.5 py-3 rounded-2xl text-[11px] font-black uppercase tracking-wider transition-colors ${
+                        active
+                          ? 'bg-[#FF9E47] text-white shadow-[0_8px_20px_rgba(240,140,50,0.35)]'
+                          : 'bg-[#1E1915] text-[#CFCFCF] border border-[#2B231D] hover:text-white'
                       }`}
                     >
-                      {active && (
-                        <motion.span
-                          layoutId="authTabPill"
-                          className="absolute inset-0 rounded-xl bg-[#FF9E47]"
-                          transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-                        />
-                      )}
-                      <span className="relative z-10 flex items-center gap-1.5">
-                        {mode === 'signin' ? <LogIn className="w-3.5 h-3.5" /> : <UserPlus className="w-3.5 h-3.5" />}
-                        {mode === 'signin' ? t.signIn : t.register}
-                      </span>
+                      {mode === 'signin' ? <LogIn className="w-3.5 h-3.5" /> : <UserPlus className="w-3.5 h-3.5" />}
+                      {mode === 'signin' ? t.signIn : t.register}
                     </button>
                   );
                 })}
@@ -371,10 +399,10 @@ export const AuthScreen: React.FC = () => {
             <AnimatePresence mode="wait">
               <motion.div
                 key={authMode}
-                initial={{ opacity: 0, x: 12 }}
+                initial={{ opacity: 0, x: 10 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -12 }}
-                transition={{ duration: 0.22 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.2 }}
               >
                 {error && (
                   <p className="mb-3 text-[#E84D4D] text-xs text-center bg-[#E84D4D]/15 border border-[#E84D4D]/40 p-2.5 rounded-xl">
@@ -389,12 +417,14 @@ export const AuthScreen: React.FC = () => {
 
                 {authMode === 'signin' && (
                   <>
-                    <p className="text-xs text-center text-[#CFCFCF] mb-4">{t.signInPrompt}</p>
+                    <p className="text-xs text-center text-[#8E8E8E] mb-4">{t.signInPrompt}</p>
                     <form onSubmit={handleSignIn} className="space-y-3.5">
                       <div>
                         <label className={labelClass}>{t.email} *</label>
                         <div className="relative">
-                          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E8E]" />
+                          <FieldIcon>
+                            <Mail className="w-4 h-4 text-[#F08C32]" />
+                          </FieldIcon>
                           <input
                             type="email"
                             value={email}
@@ -409,7 +439,9 @@ export const AuthScreen: React.FC = () => {
                       <div>
                         <label className={labelClass}>Password *</label>
                         <div className="relative">
-                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E8E]" />
+                          <FieldIcon>
+                            <Lock className="w-4 h-4 text-[#F08C32]" />
+                          </FieldIcon>
                           <input
                             type={showPassword ? 'text' : 'password'}
                             value={password}
@@ -454,23 +486,26 @@ export const AuthScreen: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => switchMode('register')}
-                      className="w-full mt-2.5 text-center text-xs text-[#8E8E8E] hover:text-[#FFFFFF]"
+                      className="w-full mt-3 text-center text-xs"
                     >
-                      {t.noAccountYet}
+                      <span className="text-[#8E8E8E]">New here? </span>
+                      <span className="text-[#F08C32] font-bold">Register</span>
                     </button>
                   </>
                 )}
 
                 {authMode === 'register' && (
                   <>
-                    <p className="text-xs text-center text-[#CFCFCF] mb-4">
+                    <p className="text-xs text-center text-[#8E8E8E] mb-4">
                       Create your ABN account. We will email a code to verify before you sign in.
                     </p>
                     <form onSubmit={handleRegister} className="space-y-3.5">
                       <div>
                         <label className={labelClass}>{t.name} *</label>
                         <div className="relative">
-                          <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E8E]" />
+                          <FieldIcon>
+                            <User className="w-4 h-4 text-[#F08C32]" />
+                          </FieldIcon>
                           <input
                             type="text"
                             value={name}
@@ -485,7 +520,9 @@ export const AuthScreen: React.FC = () => {
                       <div>
                         <label className={labelClass}>{t.email} *</label>
                         <div className="relative">
-                          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E8E]" />
+                          <FieldIcon>
+                            <Mail className="w-4 h-4 text-[#F08C32]" />
+                          </FieldIcon>
                           <input
                             type="email"
                             value={email}
@@ -500,7 +537,9 @@ export const AuthScreen: React.FC = () => {
                       <div>
                         <label className={labelClass}>{t.phone} *</label>
                         <div className="relative">
-                          <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E8E]" />
+                          <FieldIcon>
+                            <Phone className="w-4 h-4 text-[#F08C32]" />
+                          </FieldIcon>
                           <input
                             type="tel"
                             value={phone}
@@ -515,14 +554,16 @@ export const AuthScreen: React.FC = () => {
                       <div>
                         <label className={labelClass}>Password *</label>
                         <div className="relative">
-                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E8E]" />
+                          <FieldIcon>
+                            <Lock className="w-4 h-4 text-[#F08C32]" />
+                          </FieldIcon>
                           <input
                             type={showPassword ? 'text' : 'password'}
                             value={password}
                             onChange={(e) => { setPassword(e.target.value); setError(''); }}
                             required
                             minLength={10}
-                            placeholder="At least 6 characters"
+                            placeholder="At least 10 characters"
                             className={fieldClass}
                             autoComplete="new-password"
                           />
@@ -538,7 +579,9 @@ export const AuthScreen: React.FC = () => {
                       <div>
                         <label className={labelClass}>Confirm password *</label>
                         <div className="relative">
-                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E8E]" />
+                          <FieldIcon>
+                            <Lock className="w-4 h-4 text-[#F08C32]" />
+                          </FieldIcon>
                           <input
                             type={showConfirm ? 'text' : 'password'}
                             value={confirmPassword}
@@ -571,9 +614,10 @@ export const AuthScreen: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => switchMode('signin')}
-                      className="w-full mt-4 text-center text-xs text-[#8E8E8E] hover:text-[#FFFFFF]"
+                      className="w-full mt-4 text-center text-xs"
                     >
-                      {t.alreadyHaveAccount}
+                      <span className="text-[#8E8E8E]">Already have an account? </span>
+                      <span className="text-[#F08C32] font-bold">Sign In</span>
                     </button>
                   </>
                 )}
@@ -588,7 +632,9 @@ export const AuthScreen: React.FC = () => {
                       <div>
                         <label className={labelClass}>6-digit code *</label>
                         <div className="relative">
-                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E8E]" />
+                          <FieldIcon>
+                            <Lock className="w-4 h-4 text-[#F08C32]" />
+                          </FieldIcon>
                           <input
                             type="text"
                             inputMode="numeric"
@@ -623,7 +669,7 @@ export const AuthScreen: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => switchMode('signin')}
-                      className="w-full mt-3 flex items-center justify-center gap-1.5 text-xs text-[#8E8E8E] hover:text-[#FFFFFF]"
+                      className="w-full mt-3 flex items-center justify-center gap-1.5 text-xs text-[#8E8E8E] hover:text-white"
                     >
                       <ArrowLeft className="w-3.5 h-3.5" /> Back to Sign In
                     </button>
@@ -636,14 +682,16 @@ export const AuthScreen: React.FC = () => {
                       <KeyRound className="w-5 h-5" />
                       <span className="text-xs font-black uppercase tracking-wider">Forgot Password</span>
                     </div>
-                    <p className="text-xs text-center text-[#CFCFCF] mb-4">
+                    <p className="text-xs text-center text-[#8E8E8E] mb-4">
                       Enter your account email. We will send a 6-digit code to Gmail.
                     </p>
                     <form onSubmit={handleForgotRequest} className="space-y-3.5" id="form-forgot-password">
                       <div>
                         <label className={labelClass}>{t.email} *</label>
                         <div className="relative">
-                          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E8E]" />
+                          <FieldIcon>
+                            <Mail className="w-4 h-4 text-[#F08C32]" />
+                          </FieldIcon>
                           <input
                             type="email"
                             value={email}
@@ -662,7 +710,7 @@ export const AuthScreen: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => switchMode('signin')}
-                      className="w-full mt-4 flex items-center justify-center gap-1.5 text-xs text-[#8E8E8E] hover:text-[#FFFFFF]"
+                      className="w-full mt-4 flex items-center justify-center gap-1.5 text-xs text-[#8E8E8E] hover:text-white"
                     >
                       <ArrowLeft className="w-3.5 h-3.5" /> Back to Sign In
                     </button>
@@ -679,7 +727,9 @@ export const AuthScreen: React.FC = () => {
                       <div>
                         <label className={labelClass}>6-digit code *</label>
                         <div className="relative">
-                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E8E]" />
+                          <FieldIcon>
+                            <Lock className="w-4 h-4 text-[#F08C32]" />
+                          </FieldIcon>
                           <input
                             type="text"
                             inputMode="numeric"
@@ -719,7 +769,7 @@ export const AuthScreen: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => switchMode('signin')}
-                      className="w-full mt-3 text-xs text-[#8E8E8E] hover:text-[#FFFFFF]"
+                      className="w-full mt-3 text-xs text-[#8E8E8E] hover:text-white"
                     >
                       Back to Sign In
                     </button>
@@ -728,14 +778,14 @@ export const AuthScreen: React.FC = () => {
 
                 {authMode === 'reset-choice' && (
                   <>
-                    <p className="text-xs text-center text-[#CFCFCF] mb-4">
+                    <p className="text-xs text-center text-[#8E8E8E] mb-4">
                       Change your password, or keep the current one and sign in.
                     </p>
                     <button
                       type="button"
                       disabled={isLoading}
                       onClick={handleKeepPassword}
-                      className="w-full py-3 mb-3 rounded-2xl border border-[#2B231D] text-sm font-bold text-[#FFFFFF] hover:border-[#F08C32]/50 bg-[#171310] disabled:opacity-55"
+                      className="w-full py-3 mb-3 rounded-2xl border border-[#2B231D] text-sm font-bold text-white hover:border-[#F08C32]/50 bg-[#1E1915] disabled:opacity-55"
                     >
                       {isLoading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Keep current password'}
                     </button>
@@ -743,14 +793,16 @@ export const AuthScreen: React.FC = () => {
                       <div>
                         <label className={labelClass}>New password *</label>
                         <div className="relative">
-                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E8E]" />
+                          <FieldIcon>
+                            <Lock className="w-4 h-4 text-[#F08C32]" />
+                          </FieldIcon>
                           <input
                             type={showPassword ? 'text' : 'password'}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
                             minLength={10}
-                            placeholder="At least 6 characters"
+                            placeholder="At least 10 characters"
                             className={fieldClass}
                             autoComplete="new-password"
                           />
@@ -759,7 +811,9 @@ export const AuthScreen: React.FC = () => {
                       <div>
                         <label className={labelClass}>Confirm new password *</label>
                         <div className="relative">
-                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8E8E8E]" />
+                          <FieldIcon>
+                            <Lock className="w-4 h-4 text-[#F08C32]" />
+                          </FieldIcon>
                           <input
                             type={showConfirm ? 'text' : 'password'}
                             value={confirmPassword}
@@ -779,7 +833,7 @@ export const AuthScreen: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => switchMode('signin')}
-                      className="w-full mt-4 text-xs text-[#8E8E8E] hover:text-[#FFFFFF]"
+                      className="w-full mt-4 text-xs text-[#8E8E8E] hover:text-white"
                     >
                       Back to Sign In
                     </button>
