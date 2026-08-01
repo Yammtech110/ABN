@@ -177,21 +177,31 @@ app.use('/api/devices', require('./routes/devices'));
 // ── Health check ───────────────────────────────────────────────────────────
 
 app.get('/api/health', async (_req, res) => {
+  const meta = storageMeta();
   let supabaseOk = false;
+  let supabaseError = null;
   try {
     const { error } = await supabaseAdmin
       .from('profiles_directory')
       .select('id')
       .limit(1);
     supabaseOk = !error;
-  } catch {
+    if (error) supabaseError = error.message;
+  } catch (err) {
     supabaseOk = false;
+    supabaseError = err.message || String(err);
   }
 
   res.json({
-    status: supabaseOk ? 'ok' : 'degraded',
+    status: meta.mode === 'memory' ? 'ok' : (supabaseOk ? 'ok' : 'degraded'),
     service: 'ABN Community API',
     timestamp: new Date().toISOString(),
+    storageMode: meta.mode,
+    database: {
+      connected: meta.mode === 'memory' ? true : supabaseOk,
+      provider: meta.mode === 'supabase' ? 'supabase' : 'memory',
+      error: supabaseOk ? null : supabaseError,
+    },
   });
 });
 
