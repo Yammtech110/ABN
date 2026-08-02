@@ -8,8 +8,16 @@ export const getUserListing = (
   listings: Business[],
 ): Business | null => {
   if (!user) return null;
+  const email = String(user.email || '').trim().toLowerCase();
+  const id = String(user.id || '').trim();
   return (
-    listings.find((b) => b.ownerId === user.id || b.ownerId === user.email) ?? null
+    listings.find((b) => {
+      const owner = String(b.ownerId || '').trim();
+      if (!owner) return false;
+      if (id && owner === id) return true;
+      if (email && owner.toLowerCase() === email) return true;
+      return false;
+    }) ?? null
   );
 };
 

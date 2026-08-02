@@ -19,7 +19,7 @@ import {
   CreditCard,
 } from 'lucide-react';
 import { EditProfileModal } from './EditProfileModal';
-import { canManageListing, canPostJobs, getUserListing, listingKind } from '../utils/listingAccess';
+import { canManageListing, canPostJobs, getUserListing, isPendingSubmission, listingKind } from '../utils/listingAccess';
 import { isNativeApp } from '../lib/oauth';
 import { LegalDocId, SUPPORT_EMAIL, SUPPORT_MAILTO } from '../data/legalContent';
 
@@ -49,6 +49,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
 
   const myListing = getUserListing(currentUser, businesses);
   const canManage = canManageListing(myListing);
+  const listingPending = Boolean(myListing && isPendingSubmission(myListing));
   const kind = listingKind(myListing);
   const isAdmin = currentUser?.role === 'admin';
   const canUseJobs = canPostJobs(myListing);
@@ -185,6 +186,21 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
             <ChevronRight className="w-4 h-4 text-[#8E8E8E]" />
           </button>
         )}
+
+        {myListing && listingPending && (
+          <div
+            className="p-3.5 rounded-2xl bg-amber-950/30 border border-amber-700/40"
+            id="account-listing-pending-banner"
+          >
+            <p className="text-[11px] font-bold text-amber-200 mb-1">
+              {kind === 'service' ? 'Service listing pending approval' : 'Business listing pending approval'}
+            </p>
+            <p className="text-[10px] text-amber-100/80 leading-relaxed">
+              Your submission is with admin for review. It will not appear in public search until approved.
+              After approval, Manage Jobs unlocks here.
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="py-2.5 rounded-3xl bg-[#171310] border border-[#2B231D] divide-y divide-[#2B231D]/40" id="account-options-list">
@@ -217,18 +233,29 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
           </div>
         </div>
 
-        {canManage && (
+        {myListing && (
           <button
             type="button"
             onClick={() => onSwitchTab('portal-management')}
             className="w-full flex items-center justify-between p-4 hover:bg-[#1E1915] transition-colors group"
             id="row-manage-listing"
           >
-            <span className="flex items-center gap-3 text-xs text-white font-semibold">
-              {kind === 'service' ? <Zap className="w-4.5 h-4.5 text-orange-400" /> : <Briefcase className="w-4.5 h-4.5 text-[#F08C32]" />}
-              {kind === 'service' ? 'Manage Service' : 'Manage Business'}
+            <span className="flex items-center gap-3 text-xs text-white font-semibold min-w-0">
+              {kind === 'service' ? (
+                <Zap className="w-4.5 h-4.5 text-orange-400 shrink-0" />
+              ) : (
+                <Briefcase className="w-4.5 h-4.5 text-[#F08C32] shrink-0" />
+              )}
+              <span className="flex flex-col items-start gap-0.5 min-w-0">
+                <span>{kind === 'service' ? 'Manage Service' : 'Manage Business'}</span>
+                {listingPending ? (
+                  <span className="text-[9px] font-medium text-amber-300">Awaiting admin approval</span>
+                ) : (
+                  <span className="text-[9px] font-medium text-[#8E8E8E] truncate max-w-[14rem]">{myListing.name}</span>
+                )}
+              </span>
             </span>
-            <ChevronRight className="w-4 h-4 text-[#8E8E8E] group-hover:text-white" />
+            <ChevronRight className="w-4 h-4 text-[#8E8E8E] group-hover:text-white shrink-0" />
           </button>
         )}
 
@@ -274,6 +301,24 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
               <ChevronRight className="w-4 h-4 text-[#8E8E8E] group-hover:text-white" />
             </button>
           </>
+        )}
+
+        {myListing && !canUseJobs && (
+          <div
+            className="w-full flex items-center justify-between p-4 opacity-80"
+            id="row-manage-jobs-locked"
+          >
+            <span className="flex items-center gap-3 text-xs text-[#8E8E8E] font-semibold min-w-0">
+              <Briefcase className="w-4.5 h-4.5 text-[#8E8E8E] shrink-0" />
+              <span className="flex flex-col items-start gap-0.5">
+                <span>Manage Jobs</span>
+                <span className="text-[9px] font-medium text-amber-300/90">
+                  Unlocks after admin approves your listing
+                </span>
+              </span>
+            </span>
+            <Lock className="w-4 h-4 text-[#8E8E8E] shrink-0" />
+          </div>
         )}
 
         {(
