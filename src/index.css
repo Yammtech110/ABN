@@ -52,132 +52,156 @@
   --radius-pill:  999px;
 }
 
-/* ─── Design Tokens — Light (default consumer look) ─────────── */
+/* ─── Design Tokens — Light ─────────────────────────────────── */
 html.light {
   --color-primary:        #F08C32;
+  --color-primary-light:  #FF9E47;
   --color-primary-dark:   #D9771D;
   --color-primary-hover:  #ECB88A;
-  --color-navy:           #7C2D12;
-  --color-navy-soft:      #9A3412;
+  --color-orange-light:   #ECB88A;
+  --color-navy:           #9A3412;
+  --color-navy-soft:      #C2410C;
 
-  /* Backgrounds */
-  --color-bg:             #F4F7FB;
+  /* Backgrounds — soft warm gray, not cream newspaper */
+  --color-bg:             #F3F0EC;
+  --color-bg-secondary:   #EBE7E2;
   --color-surface:        #FFFFFF;
+  --color-surface-2:      #FAFAF8;
+  --color-elevated:       #FFFFFF;
   --color-card:           #FFFFFF;
-  --color-card-hover:     #F8FAFC;
+  --color-card-hover:     #F7F4F0;
 
   /* Borders */
-  --color-border:         #D7E0EA;
-  --color-border-subtle:  #E8EEF4;
+  --color-border:         #DDD6CE;
+  --color-border-subtle:  #E8E2DA;
+  --color-divider:        #E8E2DA;
 
   /* Text */
-  --color-text:           #7C2D12;
-  --color-text-secondary: #475569;
-  --color-text-muted:     #94A3B8;
+  --color-text:           #1C1410;
+  --color-text-secondary: #4A4038;
+  --color-text-muted:     #7A7068;
+  --color-text-disabled:  #A39A90;
 
   /* Shadows */
-  --shadow-card:          0 8px 24px rgba(124, 45, 18, 0.08), 0 1px 3px rgba(124, 45, 18, 0.04);
-  --shadow-sm:            0 2px 8px  rgba(124, 45, 18, 0.06);
+  --shadow-card:          0 8px 24px rgba(28, 20, 16, 0.08), 0 1px 3px rgba(28, 20, 16, 0.04);
+  --shadow-sm:            0 2px 8px  rgba(28, 20, 16, 0.06);
 }
 
-/* ─── Light-mode structural overrides ──────────────────────── */
-
-/* Page scaffold */
+/* ─── Light-mode: remap charcoal hardcodes used across the app ─ */
 html.light body {
   background-color: var(--color-bg);
   color: var(--color-text);
 }
 
-/* Simulator chrome & nav bars that use hardcoded dark hex values */
 html.light #app-root,
-html.light #app-root-web {
-  background-color: #E8ECF0 !important;
+html.light #app-root-web,
+html.light #app-root-mobile {
+  background-color: var(--color-bg) !important;
   color: var(--color-text) !important;
 }
+
 html.light header {
-  background-color: rgba(255,255,255,0.92) !important;
+  background-color: rgba(255, 255, 255, 0.94) !important;
   border-color: var(--color-border) !important;
   backdrop-filter: blur(12px);
 }
-html.light footer {
-  background-color: #FFFFFF !important;
+
+html.light footer,
+html.light nav[id*="bottom"],
+html.light #app-root .backdrop-blur-xl,
+html.light #app-root-mobile .backdrop-blur-xl,
+html.light #app-root-web > header {
+  background-color: rgba(255, 255, 255, 0.96) !important;
   border-color: var(--color-border) !important;
   color: var(--color-text-muted) !important;
 }
 
-/* Phone simulator bezel */
-html.light .rounded-\[52px\] {
-  background-color: #F1F3F5 !important;
-  border-color: #CBD5E1 !important;
-  box-shadow: 0 32px 80px -16px rgba(0,0,0,0.18) !important;
+/* Page / panel charcoal backgrounds → light surfaces */
+html.light .bg-\[\#0D0906\],
+html.light .bg-\[\#0D0906\]\/80,
+html.light .bg-\[\#0D0906\]\/90,
+html.light .bg-\[\#110E0B\],
+html.light .bg-\[\#1A1612\],
+html.light .bg-\[\#1C1914\] {
+  background-color: var(--color-bg) !important;
 }
 
-/* Inner scrollable app content area */
-html.light .bg-gradient-to-b {
-  background: linear-gradient(to bottom, #FFFFFF, #F4F5F7) !important;
-}
-
-/* Bottom nav bar inside simulator — not auth */
-html.light #app-root .backdrop-blur-xl,
-html.light #app-root-mobile .backdrop-blur-xl,
-html.light #app-root-web > header {
-  background-color: rgba(255,255,255,0.92) !important;
-  border-color: var(--color-border) !important;
-}
-
-/* ── Cards, surfaces, panels ─────────────────────────────── */
+html.light .bg-\[\#171310\],
 html.light .bg-\[\#1E1915\],
 html.light .bg-\[\#1E1915\]\/95,
 html.light .bg-\[\#1E1915\]\/90,
-html.light .bg-\[\#171310\],
-html.light .bg-\[\#1E1915\],
-html.light .bg-\[\#1A1612\],
 html.light .bg-\[\#201B15\],
-html.light .bg-\[\#1C1914\],
-html.light .bg-\[\#0D0906\]\/80,
-html.light .bg-\[\#0D0906\]\/90 {
-  background-color: #FFFFFF !important;
-  box-shadow: var(--shadow-card) !important;
+html.light .bg-\[\#322820\] {
+  background-color: var(--color-surface) !important;
+  box-shadow: var(--shadow-sm);
 }
 
-html.light .bg-\[\#110E0B\] {
-  background-color: #FAFAFA !important;
-}
-
-/* Right-side sandbox panel cards */
-html.light .rounded-3xl {
-  background-color: #FFFFFF;
-  box-shadow: var(--shadow-card);
-}
-
-/* ── Borders ─────────────────────────────────────────────── */
+/* Borders */
+html.light .border-\[\#2B231D\],
+html.light .border-\[\#2B231D\]\/40,
+html.light .border-\[\#2B231D\]\/60,
 html.light .border-\[\#2D2319\],
-html.light .border-\[\#3A2E22\],
-html.light .border-\[\#2E2419\],
 html.light .border-\[\#2D2319\]\/40,
 html.light .border-\[\#2D2319\]\/60,
-html.light .border-\[\#3A2E22\]\/60 {
+html.light .border-\[\#3A2E22\],
+html.light .border-\[\#3A2E22\]\/60,
+html.light .border-\[\#2E2419\],
+html.light .border-\[\#3A3A3A\] {
   border-color: var(--color-border) !important;
 }
 
+html.light .divide-\[\#2B231D\]\/40 > * + *,
 html.light .divide-\[\#2D2319\]\/40 > * + * {
   border-color: var(--color-border-subtle) !important;
 }
 
-/* ── Typography overrides ────────────────────────────────── */
-html.light .text-\[\#F4E3D7\],
+/* Muted charcoal text → readable slate */
+html.light .text-\[\#CFCFCF\],
+html.light .text-\[\#F4E3D7\] {
+  color: var(--color-text-secondary) !important;
+}
+html.light .text-\[\#8E8E8E\],
+html.light .text-\[\#626262\] {
+  color: var(--color-text-muted) !important;
+}
+
+/* Default white text on light surfaces → dark (NOT on orange CTAs / dark banners) */
 html.light .text-white {
-  color: #0F172A !important;
+  color: var(--color-text) !important;
+}
+html.light .bg-\[\#FF9E47\] .text-white,
+html.light .bg-\[\#FF9E47\].text-white,
+html.light .bg-\[\#F08C32\] .text-white,
+html.light .bg-\[\#F08C32\].text-white,
+html.light #home-jobs-banner .text-white,
+html.light #home-jobs-banner .text-white\/85,
+html.light #home-jobs-banner .text-white\/70,
+html.light #home-jobs-banner svg,
+html.light #btn-see-all-jobs,
+html.light #btn-see-all-jobs *,
+html.light #home-community-handshake,
+html.light #home-community-handshake * {
+  color: #FFFFFF !important;
+}
+html.light #btn-register-banner,
+html.light #btn-register-banner h2,
+html.light #btn-register-banner p,
+html.light #btn-register-banner svg,
+html.light button.bg-\[\#FF9E47\],
+html.light button.bg-\[\#FF9E47\] *,
+html.light .bg-\[\#FF9E47\].text-black,
+html.light .bg-\[\#FF9E47\] .text-black,
+html.light .text-black {
+  color: #0A0A0A !important;
 }
 
 html.light .text-gray-300,
 html.light .text-gray-400 {
-  color: #475569 !important;
+  color: #4A4038 !important;
 }
-
 html.light .text-gray-500,
 html.light .text-gray-600 {
-  color: #64748B !important;
+  color: #7A7068 !important;
 }
 
 /* Home-tab section headings — dark banners keep light text */
@@ -782,7 +806,7 @@ html.light #account-tab-container .text-white {
   color: #0F172A !important;
 }
 
-/* ─── Auth screen — light navy / emerald (matches app theme) ─ */
+/* ─── Auth screen — light ─────────────────────────────────── */
 html.light #auth-logo,
 html.light #auth-logo img,
 html.light #auth-screen-content #auth-logo {
@@ -791,14 +815,18 @@ html.light #auth-screen-content #auth-logo {
   border: none !important;
 }
 html.light #auth-logo img {
-  mix-blend-mode: multiply;
-  filter: hue-rotate(155deg) saturate(1.35) brightness(1.12) !important;
+  mix-blend-mode: normal;
+  filter: none !important;
 }
 html.light #auth-form-card {
   background-color: rgba(255, 255, 255, 0.96) !important;
-  border-color: #D7E0EA !important;
-  box-shadow: 0 20px 50px rgba(11, 37, 69, 0.1) !important;
+  border-color: var(--color-border) !important;
+  box-shadow: var(--shadow-card) !important;
   backdrop-filter: blur(16px);
+}
+html.light #auth-screen-root {
+  background-color: var(--color-bg) !important;
+  color: var(--color-text) !important;
 }
 html.light #auth-screen-root input,
 html.light #auth-screen-root select,

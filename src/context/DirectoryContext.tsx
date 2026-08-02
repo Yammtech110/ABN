@@ -283,11 +283,8 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // ── Persisted preferences ────────────────────────────────────────────────
   const language = 'en' as const;
   const [theme, setThemeState] = useState<'light' | 'dark'>(() => {
-    // Brand palette is warm charcoal + burnt orange — prefer dark canvas.
     const saved = safeGetItem('shia_dir_theme');
-    if (saved === 'light') {
-      safeSetItem('shia_dir_theme', 'dark');
-    }
+    if (saved === 'light' || saved === 'dark') return saved;
     return 'dark';
   });
 
@@ -341,11 +338,16 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   useEffect(() => { safeSetItem('shia_dir_token', apiToken || ''); }, [apiToken]);
   useEffect(() => { safeSetItem('shia_dir_theme', theme); }, [theme]);
 
-  // ── Theme effect ─────────────────────────────────────────────────────────
+  // ── Theme effect — keep html class in sync (light | dark) ────────────────
   useEffect(() => {
     const root = window.document.documentElement;
     root.classList.remove('light', 'dark');
     root.classList.add(theme);
+    root.style.colorScheme = theme;
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) {
+      meta.setAttribute('content', theme === 'dark' ? '#0D0906' : '#F4F7FB');
+    }
   }, [theme]);
 
   // ── Live API fetch — source of truth (starts empty until you add listings) ──
