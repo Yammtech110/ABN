@@ -17,10 +17,10 @@ import {
   ScrollText,
   BookOpen,
   CreditCard,
+  Ban,
 } from 'lucide-react';
 import { EditProfileModal } from './EditProfileModal';
 import { canManageListing, canPostJobs, getUserListing, isPendingSubmission, listingKind } from '../utils/listingAccess';
-import { isNativeApp } from '../lib/oauth';
 import { LegalDocId, SUPPORT_EMAIL, SUPPORT_MAILTO } from '../data/legalContent';
 
 interface AccountTabProps {
@@ -40,12 +40,15 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
     businesses,
     hiringActive,
     setHiringActive,
+    blockedUsers,
+    unblockListingOwner,
   } = useDirectory();
   const t = TRANSLATIONS[language];
 
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [deleteListingBusy, setDeleteListingBusy] = useState(false);
+  const [unblockBusyId, setUnblockBusyId] = useState<string | null>(null);
 
   const myListing = getUserListing(currentUser, businesses);
   const canManage = canManageListing(myListing);
@@ -164,14 +167,6 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
           </div>
         </div>
 
-        {isAdmin && isNativeApp() && (
-          <div className="p-3.5 rounded-2xl bg-[#FF9E47]/10 border border-[#F08C32]/30" id="admin-web-only-note">
-            <p className="text-[10px] text-[#CFCFCF] leading-relaxed">
-              Admin tools are available on the web app only. Changes you make there sync to Android and iOS automatically.
-            </p>
-          </div>
-        )}
-
         {!isAdmin && (
           <button
             type="button"
@@ -193,11 +188,10 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
             id="account-listing-pending-banner"
           >
             <p className="text-[11px] font-bold text-amber-200 mb-1">
-              {kind === 'service' ? 'Service listing pending approval' : 'Business listing pending approval'}
+              {kind === 'service' ? 'Service listing pending public listing' : 'Business listing pending public listing'}
             </p>
             <p className="text-[10px] text-amber-100/80 leading-relaxed">
-              Your submission is with admin for review. It will not appear in public search until approved.
-              After approval, Manage Jobs unlocks here.
+              Admin still needs to approve before your listing appears in public search. You can already manage your listing, photos, hiring, and jobs from Profile.
             </p>
           </div>
         )}
@@ -249,7 +243,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
               <span className="flex flex-col items-start gap-0.5 min-w-0">
                 <span>{kind === 'service' ? 'Manage Service' : 'Manage Business'}</span>
                 {listingPending ? (
-                  <span className="text-[9px] font-medium text-amber-300">Awaiting admin approval</span>
+                  <span className="text-[9px] font-medium text-amber-300">Pending public approval</span>
                 ) : (
                   <span className="text-[9px] font-medium text-[#8E8E8E] truncate max-w-[14rem]">{myListing.name}</span>
                 )}
@@ -303,24 +297,6 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
           </>
         )}
 
-        {myListing && !canUseJobs && (
-          <div
-            className="w-full flex items-center justify-between p-4 opacity-80"
-            id="row-manage-jobs-locked"
-          >
-            <span className="flex items-center gap-3 text-xs text-[#8E8E8E] font-semibold min-w-0">
-              <Briefcase className="w-4.5 h-4.5 text-[#8E8E8E] shrink-0" />
-              <span className="flex flex-col items-start gap-0.5">
-                <span>Manage Jobs</span>
-                <span className="text-[9px] font-medium text-amber-300/90">
-                  Unlocks after admin approves your listing
-                </span>
-              </span>
-            </span>
-            <Lock className="w-4 h-4 text-[#8E8E8E] shrink-0" />
-          </div>
-        )}
-
         {(
           [
             { id: 'privacy' as const, label: 'Privacy Policy', Icon: Lock },
@@ -361,6 +337,56 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
           <ChevronRight className="w-4 h-4 text-[#8E8E8E] group-hover:text-white shrink-0" />
         </a>
       </div>
+
+      {blockedUsers.length > 0 && (
+        <div
+          className="p-4 rounded-3xl bg-[#171310] border border-[#2B231D] space-y-3"
+          id="account-blocked-owners"
+        >
+          <div className="flex items-center gap-2">
+            <Ban className="w-4 h-4 text-[#F08C32]" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#F08C32]">
+              Blocked owners
+            </h3>
+          </div>
+          <p className="text-[10px] text-[#8E8E8E] leading-relaxed">
+            Their listings stay hidden from your directory until you unblock them.
+          </p>
+          <ul className="space-y-2">
+            {blockedUsers.map((u) => (
+              <li
+                key={u.id}
+                className="flex items-center justify-between gap-3 p-3 rounded-xl bg-[#1E1915] border border-[#2B231D]"
+              >
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-white truncate">
+                    {u.name || u.email || 'Blocked user'}
+                  </p>
+                  {u.email && u.name ? (
+                    <p className="text-[10px] text-[#8E8E8E] truncate">{u.email}</p>
+                  ) : null}
+                </div>
+                <button
+                  type="button"
+                  disabled={unblockBusyId === u.id}
+                  onClick={async () => {
+                    setUnblockBusyId(u.id);
+                    const result = await unblockListingOwner(u.id);
+                    setUnblockBusyId(null);
+                    if (!result.success) {
+                      alert(result.error || 'Could not unblock.');
+                    }
+                  }}
+                  className="shrink-0 px-3 py-1.5 rounded-lg text-[10px] font-bold text-[#F08C32] border border-[#F08C32]/35 hover:bg-[#FF9E47]/10 disabled:opacity-50"
+                  id={`btn-unblock-${u.id}`}
+                >
+                  {unblockBusyId === u.id ? '…' : 'Unblock'}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <button
           onClick={handleSignOut}

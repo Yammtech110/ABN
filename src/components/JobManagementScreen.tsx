@@ -236,8 +236,6 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
       deniedDetail = 'FIRST REGISTER AS BUSSINESS/SERVICE PROVIDER THEN YOU POST A JOB';
     } else if (!myListing) {
       deniedDetail = 'FIRST REGISTER AS BUSSINESS/SERVICE PROVIDER THEN YOU POST A JOB';
-    } else if (!myListing.isVerified || myListing.status === 'pending') {
-      deniedDetail = 'Your listing is still pending admin approval. Jobs unlock after approval.';
     } else if (myListing.status === 'suspended') {
       deniedDetail = 'Your listing is suspended. Renew membership to post jobs again.';
     }

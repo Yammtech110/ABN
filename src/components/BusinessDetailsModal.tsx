@@ -18,6 +18,7 @@ import {
   Send,
   AlertTriangle,
   ImageIcon,
+  Ban,
 } from 'lucide-react';
 import { apiFetch } from '../lib/api';
 import {
@@ -72,6 +73,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
   const {
     language, reviews, currentUser, favorites, toggleFavorite,
     fetchReviewsForBusiness, submitReview, replyToReview, apiToken, isAuthenticated,
+    blockListingOwner,
   } = useDirectory();
   const t = TRANSLATIONS[language];
 
@@ -91,6 +93,8 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
   const [reportError, setReportError] = useState('');
   const [reportSuccess, setReportSuccess] = useState('');
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+  const [blockBusy, setBlockBusy] = useState(false);
+  const [blockError, setBlockError] = useState('');
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const photoUrls = useMemo(() => businessPhotoUrls(business), [business]);
@@ -115,6 +119,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
     !!currentUser &&
     (currentUser.email === business.ownerId || currentUser.id === business.ownerId);
   const canReportListing = isAuthenticated && !isListingOwner && currentUser?.role !== 'admin';
+  const canBlockOwner = canReportListing && Boolean(business.ownerId);
   const canReplyToReviews = isListingOwner || currentUser?.role === 'admin';
 
   const handleOwnerReply = async (reviewId: string) => {
@@ -209,6 +214,29 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
     } finally {
       setIsSubmittingReport(false);
     }
+  };
+
+  const handleBlockOwner = async () => {
+    setBlockError('');
+    if (!business.ownerId) {
+      setBlockError('This listing has no owner account to block.');
+      return;
+    }
+    const ok = window.confirm(
+      language === 'en'
+        ? `Block ${business.name}? Their listings will be hidden from your directory. You can unblock later in Profile.`
+        : `حظر ${business.name}؟ سيتم إخفاء إدراجاتهم من دليلك. يمكنك إلغاء الحظر لاحقاً من الملف الشخصي.`,
+    );
+    if (!ok) return;
+
+    setBlockBusy(true);
+    const result = await blockListingOwner(business.ownerId);
+    setBlockBusy(false);
+    if (!result.success) {
+      setBlockError(userFacingError(result.error || 'Could not block owner.', { context: 'generic' }));
+      return;
+    }
+    onClose();
   };
 
   const mapQuery = useMemo(() => buildBusinessMapQuery(business), [business]);
@@ -685,6 +713,28 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                       ? (language === 'en' ? 'Submitting...' : 'جاري الإرسال...')
                       : (language === 'en' ? 'Submit Report to Admin' : 'إرسال البلاغ للإدارة')}
                   </button>
+                  {canBlockOwner && (
+                    <div className="pt-1 space-y-2">
+                      <button
+                        type="button"
+                        disabled={blockBusy}
+                        onClick={() => void handleBlockOwner()}
+                        className="w-full py-2.5 rounded-xl text-xs font-bold bg-[#1E1915] text-[#F08C32] border border-[#F08C32]/35 hover:bg-[#201B15] disabled:opacity-50 flex items-center justify-center gap-2"
+                        id="btn-block-listing-owner"
+                      >
+                        <Ban className="w-3.5 h-3.5" />
+                        {blockBusy
+                          ? (language === 'en' ? 'Blocking…' : 'جارٍ الحظر…')
+                          : (language === 'en' ? 'Block this owner' : 'حظر صاحب الإدراج')}
+                      </button>
+                      <p className="text-[9px] text-[#8E8E8E] leading-relaxed">
+                        {language === 'en'
+                          ? 'Hides their listings from your search and home feed only. Does not report them to admin.'
+                          : 'يخفي إدراجاتهم من بحثك وصفحتك فقط. لا يرسل بلاغاً للإدارة.'}
+                      </p>
+                      {blockError && <p className="text-[10px] text-red-400">{blockError}</p>}
+                    </div>
+                  )}
                 </form>
               )}
             </div>

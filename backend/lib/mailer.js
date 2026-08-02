@@ -66,6 +66,13 @@ async function sendOtpEmail({ to, code, purpose = 'verify' }) {
     </div>`;
 
   if (!smtpConfigured()) {
+    // Local/dev without Brevo: deliver OTP to server console so register/verify/forgot work.
+    // Production must have real SMTP (Render env) — never fake-send there.
+    const isProd = process.env.NODE_ENV === 'production';
+    if (!isProd) {
+      console.log(`[mail:dev] SMTP unset — OTP for ${to} (${purpose}): ${code}`);
+      return { sent: true, reason: 'dev_console' };
+    }
     console.error(`[mail] SMTP not configured — cannot email OTP to ${to}`);
     return { sent: false, reason: 'smtp_not_configured' };
   }

@@ -21,9 +21,9 @@ export const getUserListing = (
   );
 };
 
-/** Approved, active listing — unlocks Manage Business / Manage Service */
+/** Owner can open Manage Business/Service unless listing is suspended */
 export const canManageListing = (listing: Business | null | undefined): boolean =>
-  Boolean(listing && listing.isVerified && listing.status === 'active');
+  Boolean(listing && listing.status !== 'suspended');
 
 /** Visible in public directory search and home feeds */
 export const isLiveDirectoryListing = (listing: Business): boolean =>
@@ -40,10 +40,10 @@ export const listingKind = (listing: Business | null | undefined): ListingKind =
 export const isJobEligibleListing = (listing: Business | null | undefined): boolean =>
   Boolean(listing && (listing.listingType === 'business' || listing.listingType === 'service'));
 
+/** Jobs / hiring unlock as soon as the owner has a non-suspended listing */
 export const canPostJobs = (listing: Business | null | undefined): boolean =>
   Boolean(
     listing &&
-    listing.isVerified &&
-    listing.status === 'active' &&
+    listing.status !== 'suspended' &&
     isJobEligibleListing(listing),
   );

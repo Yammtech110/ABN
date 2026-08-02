@@ -34,7 +34,6 @@ import {
   listingNeedsPayment,
 } from '../utils/platformStats';
 import { isPendingSubmission } from '../utils/listingAccess';
-import { isNativeApp } from '../lib/oauth';
 
 export const AdminPanelTab: React.FC = () => {
   const {
@@ -707,18 +706,6 @@ export const AdminPanelTab: React.FC = () => {
     });
   }, [businesses, vendorSearch, bizFilter, payments]);
 
-  if (isNativeApp()) {
-    return (
-      <div className="p-8 text-center rounded-3xl bg-[#171310] border border-[#2B231D] text-[#8E8E8E]" id="admin-web-only-state">
-        <ShieldAlert className="w-12 h-12 text-[#F08C32] mx-auto mb-3" />
-        <h3 className="text-sm font-black text-[#F08C32] uppercase tracking-widest">{t.adminPanel}</h3>
-        <p className="text-xs text-[#8E8E8E] mt-2 max-w-sm mx-auto leading-relaxed">
-          The admin panel is available only on the web app. Approvals and changes you make there appear automatically in the Android and iOS apps.
-        </p>
-      </div>
-    );
-  }
-
   if (!isAdmin) {
     return (
       <div className="p-8 text-center rounded-3xl bg-[#171310] border border-red-950/40 text-[#8E8E8E]" id="admin-forbidden-state">
@@ -728,7 +715,7 @@ export const AdminPanelTab: React.FC = () => {
           Administrative controls, business vetting approvals, and category management are restricted to platform administrators only.
         </p>
         <p className="text-[10px] text-[#8E8E8E] font-mono mt-4">
-          👉 Sign in with an admin account (e.g. admin@shiadirectory.com) to access this panel.
+          👉 Sign in with an admin account to access this panel.
         </p>
       </div>
     );

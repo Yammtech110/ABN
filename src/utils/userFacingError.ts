@@ -113,12 +113,12 @@ export function userFacingError(
     return 'Email delivery is temporarily unavailable. Please try again later.';
   }
 
-  // ── Listing / registration / change requests ────────────────────────────
+  // ── Listing / registration ──────────────────────────────────────────────
   if (lower.includes('change_request_required') || lower.includes('cannot be changed directly')) {
-    return 'Name and photos are locked. Submit a change request for admin approval.';
+    return 'Could not update name or photos. Please try again from Manage listing.';
   }
   if (lower.includes('pending name/photo') || lower.includes('pending') && lower.includes('change request')) {
-    return 'You already have a pending name/photo change request. Wait for admin review.';
+    return 'Could not update listing details. Please try again.';
   }
   if (lower.includes('must be approved before requesting')) {
     return 'Your listing must be approved by an admin before you can request name or photo changes.';

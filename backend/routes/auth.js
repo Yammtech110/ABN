@@ -14,7 +14,7 @@ const { userOwnsDirectoryProfile, findProfileForUser, findProfileByEmail } = req
 const { authenticate, requireRole } = require('../middleware/authMiddleware');
 const { createCode, verifyCode, clearCode, shouldExposeOtp } = require('../lib/emailVerify');
 const { sendOtpEmail } = require('../lib/mailer');
-const { listBlockedUserIds, blockUser, unblockUser } = require('../lib/blockStore');
+const { listBlockedUsers, blockUser, unblockUser } = require('../lib/blockStore');
 
 const router         = express.Router();
 const { JWT_SECRET } = require('../config/security');
@@ -526,8 +526,11 @@ router.patch('/users/:id/block', authenticate, requireRole('admin'), async (req,
 // ── Peer block list ───────────────────────────────────────────────────────
 router.get('/blocks', authenticate, async (req, res, next) => {
   try {
-    const ids = await listBlockedUserIds(req.user.id);
-    res.json({ blockedUserIds: ids });
+    const blockedUsers = await listBlockedUsers(req.user.id);
+    res.json({
+      blockedUserIds: blockedUsers.map((u) => u.id),
+      blockedUsers,
+    });
   } catch (err) {
     next(err);
   }
@@ -537,16 +540,25 @@ router.post('/blocks', authenticate, async (req, res, next) => {
   try {
     const { userId, email } = req.body || {};
     let targetId = typeof userId === 'string' ? userId : '';
+    let targetUser = null;
     if (!targetId && typeof email === 'string' && email.trim()) {
-      const u = await findByEmail(email.trim().toLowerCase());
-      if (!u) return res.status(404).json({ error: 'User not found for that listing owner.' });
-      targetId = u.id;
+      targetUser = await findByEmail(email.trim().toLowerCase());
+      if (!targetUser) return res.status(404).json({ error: 'User not found for that listing owner.' });
+      targetId = targetUser.id;
     }
     if (!targetId) {
       return res.status(400).json({ error: 'userId or email is required.' });
     }
+    if (!targetUser) targetUser = await findById(targetId);
     const ids = await blockUser(req.user.id, targetId);
-    res.status(201).json({ blockedUserIds: ids, blockedUserId: targetId });
+    const blockedUsers = await listBlockedUsers(req.user.id);
+    res.status(201).json({
+      blockedUserIds: ids,
+      blockedUserId: targetId,
+      blockedEmail: targetUser?.email || (typeof email === 'string' ? email.trim().toLowerCase() : ''),
+      blockedName: targetUser?.name || '',
+      blockedUsers,
+    });
   } catch (err) {
     if (err.status) return res.status(err.status).json({ error: err.message });
     next(err);
@@ -556,7 +568,8 @@ router.post('/blocks', authenticate, async (req, res, next) => {
 router.delete('/blocks/:userId', authenticate, async (req, res, next) => {
   try {
     const ids = await unblockUser(req.user.id, req.params.userId);
-    res.json({ blockedUserIds: ids });
+    const blockedUsers = await listBlockedUsers(req.user.id);
+    res.json({ blockedUserIds: ids, blockedUsers });
   } catch (err) {
     next(err);
   }

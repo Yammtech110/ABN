@@ -211,7 +211,11 @@ interface DirectoryContextType {
     newPassword?: string;
   }) => Promise<{ success: boolean; error?: string }>;
   deleteAccount:    () => Promise<{ success: boolean; error?: string }>;
+  /** Peer-block a listing owner (hides their directory listings for this user). */
   blockListingOwner: (ownerEmailOrId: string) => Promise<{ success: boolean; error?: string }>;
+  unblockListingOwner: (blockedUserId: string) => Promise<{ success: boolean; error?: string }>;
+  refreshBlocks: () => Promise<void>;
+  blockedUsers: { id: string; email: string; name: string }[];
   signOut:          () => Promise<void>;
   updateUserProfile: (updates: Partial<Pick<UserProfile, 'name' | 'phone' | 'preferredLanguage'>>) => Promise<{ success: boolean; error?: string }>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
@@ -328,6 +332,9 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [jobs, setJobs] = useState<Job[]>(INITIAL_JOBS);
 
   const [hiringActive, setHiringActiveState] = useState<Record<string, boolean>>(INITIAL_HIRING_ACTIVE);
+  const [blockedUsers, setBlockedUsers] = useState<{ id: string; email: string; name: string }[]>([]);
+  const blockedEmailsRef = useRef<Set<string>>(new Set());
+  const blockedBusinessIdsRef = useRef<Set<string>>(new Set());
 
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
@@ -410,11 +417,62 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         }
       }
 
-      setJobs(Array.from(byId.values()));
+      setJobs(Array.from(byId.values()).filter((j) => !blockedBusinessIdsRef.current.has(j.businessId)));
     } catch {
       console.warn('[ABN Directory] Could not load jobs from API — keeping previous jobs.');
     }
   }, [apiToken]);
+
+  const syncBlockedState = useCallback((rows: { id: string; email: string; name: string }[]) => {
+    const normalized = rows.map((r) => ({
+      id: r.id,
+      email: String(r.email || '').trim().toLowerCase(),
+      name: String(r.name || ''),
+    }));
+    setBlockedUsers(normalized);
+    blockedEmailsRef.current = new Set(normalized.map((r) => r.email).filter(Boolean));
+  }, []);
+
+  const filterListingsByBlocks = useCallback((listings: Business[], rawRows?: Record<string, unknown>[]) => {
+    const emails = blockedEmailsRef.current;
+    if (rawRows && emails.size) {
+      blockedBusinessIdsRef.current = new Set(
+        rawRows
+          .filter((p) => emails.has(String(p.email || '').trim().toLowerCase()))
+          .map((p) => String(p.id || ''))
+          .filter(Boolean),
+      );
+    } else if (!emails.size) {
+      blockedBusinessIdsRef.current = new Set();
+    }
+    if (!emails.size) return listings;
+    return listings.filter((b) => !emails.has(String(b.ownerId || '').trim().toLowerCase()));
+  }, []);
+
+  const refreshBlocks = useCallback(async (): Promise<void> => {
+    if (!apiToken) {
+      syncBlockedState([]);
+      blockedBusinessIdsRef.current = new Set();
+      return;
+    }
+    try {
+      const res = await apiFetch('/api/auth/blocks', {
+        headers: { Authorization: `Bearer ${apiToken}` },
+      });
+      if (!res.ok) return;
+      const data = await res.json().catch(() => ({}));
+      const rows = Array.isArray(data.blockedUsers) ? data.blockedUsers : [];
+      syncBlockedState(
+        rows.map((r: { id?: string; email?: string; name?: string }) => ({
+          id: String(r.id || ''),
+          email: String(r.email || ''),
+          name: String(r.name || ''),
+        })).filter((r: { id: string }) => r.id),
+      );
+    } catch {
+      console.warn('[ABN Directory] Could not load blocked users.');
+    }
+  }, [apiToken, syncBlockedState]);
 
   const refreshDirectory = async (actingUser?: UserProfile | null): Promise<void> => {
     try {
@@ -461,6 +519,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         }
       }
 
+      listings = filterListingsByBlocks(listings, rawDirData);
       setBusinesses(listings);
       const hiring: Record<string, boolean> = {};
       rawDirData.forEach((p) => {
@@ -566,6 +625,9 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const clearAuthState = useCallback(() => {
     setCurrentUser(null);
     setApiToken(null);
+    setBlockedUsers([]);
+    blockedEmailsRef.current = new Set();
+    blockedBusinessIdsRef.current = new Set();
     safeRemoveItem('shia_dir_token');
     safeRemoveItem('shia_dir_user');
     safeRemoveItem(AUTH_SOURCE_KEY);
@@ -770,11 +832,16 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     lastHydratedKeyRef.current = hydrateKey;
 
     if (isAuthenticated && currentUser) {
-      refreshDirectory(currentUser);
-      refreshPayments(apiToken, currentUser.role);
-      refreshFavorites(apiToken);
-      refreshNotifications(apiToken);
+      void (async () => {
+        await refreshBlocks();
+        await refreshDirectory(currentUser);
+        refreshPayments(apiToken, currentUser.role);
+        refreshFavorites(apiToken);
+        refreshNotifications(apiToken);
+      })();
     } else {
+      syncBlockedState([]);
+      blockedBusinessIdsRef.current = new Set();
       void refreshDirectory(null);
       void refreshJobs(null);
     }
@@ -1222,8 +1289,10 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const blockListingOwner = async (ownerEmailOrId: string): Promise<{ success: boolean; error?: string }> => {
     if (!apiToken) return { success: false, error: 'Sign in to block.' };
+    const key = String(ownerEmailOrId || '').trim();
+    if (!key) return { success: false, error: 'Missing listing owner.' };
     try {
-      const looksLikeEmail = ownerEmailOrId.includes('@');
+      const looksLikeEmail = key.includes('@');
       const res = await apiFetch('/api/auth/blocks', {
         method: 'POST',
         headers: {
@@ -1231,15 +1300,77 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(
-          looksLikeEmail ? { email: ownerEmailOrId } : { userId: ownerEmailOrId },
+          looksLikeEmail ? { email: key.toLowerCase() } : { userId: key },
         ),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) return { success: false, error: data.error || 'Could not block.' };
-      // Hide their listings locally
-      setBusinesses((prev) =>
-        prev.filter((b) => b.ownerId !== ownerEmailOrId && b.ownerId !== data.blockedUserId),
+
+      const rows = Array.isArray(data.blockedUsers)
+        ? data.blockedUsers
+        : [];
+      if (rows.length) {
+        syncBlockedState(
+          rows.map((r: { id?: string; email?: string; name?: string }) => ({
+            id: String(r.id || ''),
+            email: String(r.email || ''),
+            name: String(r.name || ''),
+          })).filter((r: { id: string }) => r.id),
+        );
+      } else {
+        const email = String(data.blockedEmail || (looksLikeEmail ? key : '')).toLowerCase();
+        const id = String(data.blockedUserId || '');
+        syncBlockedState([
+          ...blockedUsers.filter((u) => u.id !== id),
+          ...(id ? [{ id, email, name: String(data.blockedName || '') }] : []),
+        ]);
+      }
+
+      const blockedEmail = String(data.blockedEmail || (looksLikeEmail ? key : '')).toLowerCase();
+      setBusinesses((prev) => {
+        const next = prev.filter((b) => {
+          const owner = String(b.ownerId || '').trim().toLowerCase();
+          if (blockedEmail && owner === blockedEmail) {
+            blockedBusinessIdsRef.current.add(b.id);
+            return false;
+          }
+          if (owner === key.toLowerCase()) {
+            blockedBusinessIdsRef.current.add(b.id);
+            return false;
+          }
+          return true;
+        });
+        return next;
+      });
+      setJobs((prev) => prev.filter((j) => !blockedBusinessIdsRef.current.has(j.businessId)));
+      return { success: true };
+    } catch {
+      return { success: false, error: 'Cannot reach server.' };
+    }
+  };
+
+  const unblockListingOwner = async (blockedUserId: string): Promise<{ success: boolean; error?: string }> => {
+    if (!apiToken) return { success: false, error: 'Sign in to unblock.' };
+    const id = String(blockedUserId || '').trim();
+    if (!id) return { success: false, error: 'Missing blocked user.' };
+    try {
+      const res = await apiFetch(`/api/auth/blocks/${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${apiToken}` },
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) return { success: false, error: data.error || 'Could not unblock.' };
+
+      const rows = Array.isArray(data.blockedUsers) ? data.blockedUsers : [];
+      syncBlockedState(
+        rows.map((r: { id?: string; email?: string; name?: string }) => ({
+          id: String(r.id || ''),
+          email: String(r.email || ''),
+          name: String(r.name || ''),
+        })).filter((r: { id: string }) => r.id),
       );
+      blockedBusinessIdsRef.current = new Set();
+      await refreshDirectory(currentUser);
       return { success: true };
     } catch {
       return { success: false, error: 'Cannot reach server.' };
@@ -1875,7 +2006,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // ── Provider ──────────────────────────────────────────────────────────────
   return (
     <DirectoryContext.Provider value={{
-      authReady, isAuthenticated, currentUser, apiToken, apiLogin, signInWithGoogle, signInWithApple, oauthAvailable: isSupabaseConfigured, registerAccount, verifyEmailCode, resendVerificationCode, requestPasswordReset, verifyResetCode, completePasswordReset, deleteAccount, blockListingOwner, signOut, updateUserProfile, changePassword,
+      authReady, isAuthenticated, currentUser, apiToken, apiLogin, signInWithGoogle, signInWithApple, oauthAvailable: isSupabaseConfigured, registerAccount, verifyEmailCode, resendVerificationCode, requestPasswordReset, verifyResetCode, completePasswordReset, deleteAccount, blockListingOwner, unblockListingOwner, refreshBlocks, blockedUsers, signOut, updateUserProfile, changePassword,
       language, theme, setTheme,
       categories, addCategory, removeCategory, refreshCategories,
       businesses, addBusiness, updateBusiness, removeBusiness, deleteMyListing, refreshDirectory,

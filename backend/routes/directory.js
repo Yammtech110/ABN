@@ -402,33 +402,20 @@ router.put('/:id', authenticate, async (req, res, next) => {
     } = req.body;
 
     const isAdmin = req.user.role === 'admin';
-    // Owners cannot change name/logo/cover directly — use /api/change-requests
-    if (!isAdmin) {
-      const wantsName =
-        businessName !== undefined &&
-        String(businessName).trim() !== String(existing.businessName || '').trim();
-      const wantsLogo = imageUrl !== undefined && typeof imageUrl === 'string' && imageUrl.startsWith('data:image/');
-      const wantsCover = coverUrl !== undefined && typeof coverUrl === 'string' && coverUrl.startsWith('data:image/');
-      const wantsGallery =
-        gallery !== undefined &&
-        Array.isArray(gallery) &&
-        gallery.some((u) => typeof u === 'string' && u.startsWith('data:image/'));
-      if (wantsName || wantsLogo || wantsCover || wantsGallery) {
-        return res.status(403).json({
-          error:
-            'Name and photos cannot be changed directly. Submit a change request for admin approval.',
-          code: 'CHANGE_REQUEST_REQUIRED',
-        });
-      }
-    }
 
     let updated = { ...existing };
-    if (businessName !== undefined && isAdmin) updated.businessName = businessName;
+    if (businessName !== undefined) updated.businessName = businessName;
     if (category           !== undefined) updated.category           = category;
     if (description        !== undefined) updated.description        = description;
-    if (imageUrl !== undefined && isAdmin) updated.imageUrl = normalizeIncomingImage(imageUrl, existing.imageUrl);
-    if (coverUrl !== undefined && isAdmin) updated.coverUrl = normalizeIncomingImage(coverUrl, existing.coverUrl);
-    if (gallery !== undefined && isAdmin) updated.gallery = normalizeIncomingGallery(gallery);
+    if (imageUrl !== undefined) {
+      updated.imageUrl = normalizeIncomingImage(imageUrl, existing.imageUrl);
+    }
+    if (coverUrl !== undefined) {
+      updated.coverUrl = normalizeIncomingImage(coverUrl, existing.coverUrl);
+    }
+    if (gallery !== undefined) {
+      updated.gallery = normalizeIncomingGallery(gallery);
+    }
     if (address            !== undefined) updated.address            = address;
     if (area               !== undefined) updated.area               = area;
     if (city               !== undefined) updated.city               = city;
@@ -465,7 +452,7 @@ router.put('/:id', authenticate, async (req, res, next) => {
       // Never accidentally write gallery_urls on routine updates (approve/suspend/etc.)
       // unless admin explicitly sent a gallery payload.
       const dbPatch = mapProfileToDb(updated, {
-        includeGallery: gallery !== undefined && isAdmin,
+        includeGallery: gallery !== undefined,
       });
       let { data, error } = await supabaseAdmin
         .from('profiles_directory')
@@ -639,8 +626,8 @@ router.put('/:id/hiring', authenticate, requireRole('customer', 'business', 'ser
     if (profile.listingType !== 'business' && profile.listingType !== 'service' && req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Hiring is only available for registered business or service listings.' });
     }
-    if (!profile.isVerified && req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Your listing must be approved before enabling hiring.' });
+    if (profile.subscriptionStatus === 'suspended' && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Your listing is suspended. Renew membership to enable hiring.' });
     }
 
     if (!isSupabaseStorage()) {

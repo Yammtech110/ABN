@@ -424,7 +424,7 @@ function DirectoryAppContent() {
     document.documentElement.setAttribute('lang', 'en');
   }, []);
 
-  // Job management is only for approved business listings
+  // Job management is for any non-suspended business/service listing
   useEffect(() => {
     if (activeTab === 'job-management' && !canPostJobs(myListing)) {
       setActiveTab('account');

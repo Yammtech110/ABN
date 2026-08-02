@@ -38,13 +38,6 @@ const assertJobPostingAllowed = (profile, userRole) => {
     };
   }
 
-  if (!profile.isVerified) {
-    return {
-      status: 403,
-      error: 'Your listing must be approved by an admin before posting jobs.',
-    };
-  }
-
   if (profile.subscriptionStatus === 'suspended') {
     return {
       status: 403,

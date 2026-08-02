@@ -24,9 +24,19 @@ function generateOtp() {
   return String(crypto.randomInt(100000, 1000000));
 }
 
+function smtpMissing() {
+  const host = (process.env.SMTP_HOST || '').trim();
+  const pass = (process.env.SMTP_PASS || '').trim();
+  if (!host) return true;
+  if (!pass || /^replace/i.test(pass) || pass === 'REPLACE_BREVO_SMTP_KEY') return true;
+  return false;
+}
+
 function shouldExposeOtp() {
-  // Explicit QA flag only — never in production even if mis-set
-  return process.env.EXPOSE_VERIFY_CODE === 'true' && process.env.NODE_ENV !== 'production';
+  // Never expose in production even if mis-set
+  if (process.env.NODE_ENV === 'production') return false;
+  // Explicit QA flag, or auto when SMTP is missing so local UI can show the code
+  return process.env.EXPOSE_VERIFY_CODE === 'true' || smtpMissing();
 }
 
 function getAdmin() {

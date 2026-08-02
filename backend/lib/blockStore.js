@@ -31,6 +31,30 @@ async function listBlockedUserIds(blockerId) {
   }
 }
 
+/** Resolve blocked user ids to { id, email, name } for client filtering / UI */
+async function listBlockedUsers(blockerId) {
+  const ids = await listBlockedUserIds(blockerId);
+  if (!ids.length) return [];
+
+  const { findById } = require('./userStore');
+  const rows = await Promise.all(
+    ids.map(async (id) => {
+      try {
+        const user = await findById(id);
+        if (!user) return { id, email: '', name: '' };
+        return {
+          id: user.id,
+          email: String(user.email || '').toLowerCase(),
+          name: String(user.name || ''),
+        };
+      } catch {
+        return { id, email: '', name: '' };
+      }
+    }),
+  );
+  return rows;
+}
+
 async function blockUser(blockerId, blockedUserId) {
   if (blockerId === blockedUserId) {
     const err = new Error('You cannot block yourself.');
@@ -79,4 +103,4 @@ async function unblockUser(blockerId, blockedUserId) {
   return listBlockedUserIds(blockerId);
 }
 
-module.exports = { listBlockedUserIds, blockUser, unblockUser };
+module.exports = { listBlockedUserIds, listBlockedUsers, blockUser, unblockUser };
