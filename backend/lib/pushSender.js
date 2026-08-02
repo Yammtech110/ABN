@@ -4,7 +4,8 @@
  * FCM push sender via Firebase Admin SDK.
  *
  * Env (pick one):
- *   FIREBASE_SERVICE_ACCOUNT_JSON  — full service-account JSON as a single-line string
+ *   FIREBASE_SERVICE_ACCOUNT_JSON  — full service-account JSON as a single-line string (Render)
+ *   FIREBASE_SERVICE_ACCOUNT_PATH / GOOGLE_APPLICATION_CREDENTIALS — path to JSON file (local)
  *   or FIREBASE_PROJECT_ID + FIREBASE_CLIENT_EMAIL + FIREBASE_PRIVATE_KEY
  *
  * Without credentials, createNotification still saves in-app rows; push is skipped.
@@ -15,6 +16,25 @@ const { listTokensForNotification, removeDeviceToken } = require('./deviceTokens
 let messaging = null;
 let initAttempted = false;
 
+function makeCredential(admin, parsed) {
+  if (parsed.private_key) {
+    parsed.private_key = String(parsed.private_key).replace(/\\n/g, '\n');
+  }
+  // firebase-admin v14+: admin.cert(); older: admin.credential.cert()
+  if (typeof admin.cert === 'function') return admin.cert(parsed);
+  return admin.credential.cert(parsed);
+}
+
+function getMessagingInstance(admin) {
+  try {
+    // eslint-disable-next-line global-require
+    const { getMessaging } = require('firebase-admin/messaging');
+    return getMessaging();
+  } catch {
+    return admin.messaging();
+  }
+}
+
 function initFirebase() {
   if (initAttempted) return messaging;
   initAttempted = true;
@@ -22,28 +42,38 @@ function initFirebase() {
   try {
     // eslint-disable-next-line global-require
     const admin = require('firebase-admin');
-    if (admin.apps.length) {
-      messaging = admin.messaging();
+    const existing =
+      typeof admin.getApps === 'function' ? admin.getApps() : admin.apps || [];
+    if (existing.length) {
+      messaging = getMessagingInstance(admin);
       return messaging;
     }
 
     let credential;
     const rawJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+    const saPath =
+      (process.env.FIREBASE_SERVICE_ACCOUNT_PATH || '').trim() ||
+      (process.env.GOOGLE_APPLICATION_CREDENTIALS || '').trim();
+
     if (rawJson && rawJson.trim()) {
-      const parsed = JSON.parse(rawJson);
-      if (parsed.private_key) {
-        parsed.private_key = String(parsed.private_key).replace(/\\n/g, '\n');
-      }
-      credential = admin.credential.cert(parsed);
+      credential = makeCredential(admin, JSON.parse(rawJson));
+    } else if (saPath) {
+      // Local/dev: path to downloaded service-account JSON (never commit the file)
+      // eslint-disable-next-line global-require
+      const fs = require('fs');
+      // eslint-disable-next-line global-require
+      const path = require('path');
+      const resolved = path.isAbsolute(saPath) ? saPath : path.resolve(process.cwd(), saPath);
+      credential = makeCredential(admin, JSON.parse(fs.readFileSync(resolved, 'utf8')));
     } else if (
       process.env.FIREBASE_PROJECT_ID &&
       process.env.FIREBASE_CLIENT_EMAIL &&
       process.env.FIREBASE_PRIVATE_KEY
     ) {
-      credential = admin.credential.cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: String(process.env.FIREBASE_PRIVATE_KEY).replace(/\\n/g, '\n'),
+      credential = makeCredential(admin, {
+        project_id: process.env.FIREBASE_PROJECT_ID,
+        client_email: process.env.FIREBASE_CLIENT_EMAIL,
+        private_key: String(process.env.FIREBASE_PRIVATE_KEY).replace(/\\n/g, '\n'),
       });
     } else {
       console.warn('[push] Firebase credentials not set — device push disabled (in-app notifications still work).');
@@ -51,7 +81,7 @@ function initFirebase() {
     }
 
     admin.initializeApp({ credential });
-    messaging = admin.messaging();
+    messaging = getMessagingInstance(admin);
     console.log('[push] Firebase Admin initialized — FCM ready.');
     return messaging;
   } catch (err) {

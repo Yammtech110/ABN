@@ -1267,8 +1267,6 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
               )}
             </div>
 
-            </div>
-
             <div>
               <label className="block text-xs text-gray-400 mb-1">{t.description}*</label>
               <textarea

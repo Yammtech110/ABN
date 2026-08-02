@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "000000000000",
-    "project_id": "abn-community-placeholder",
-    "storage_bucket": "abn-community-placeholder.appspot.com"
+    "project_number": "875249479925",
+    "project_id": "abn-community-app",
+    "storage_bucket": "abn-community-app.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:000000000000:android:abn000000000000000000",
+        "mobilesdk_app_id": "1:875249479925:android:b0884172cd56ba965955bc",
         "android_client_info": {
           "package_name": "com.example.shiabusinessdirectory"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAbnPlaceholderKeyForStartupOnly000000"
+          "current_key": "AIzaSyCHZozDUcyyus_KN51Ivku-DZInWNDMgm0"
         }
       ],
       "services": {

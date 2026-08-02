@@ -10,3 +10,9 @@ backend/.env
 .env.local
 .env.production
 test-results/
+
+# Firebase Admin SDK private keys — never commit
+backend/firebase-service-account.json
+backend/firebase-service-account.oneline.txt
+**/firebase-service-account*.json
+**/serviceAccount*.json
