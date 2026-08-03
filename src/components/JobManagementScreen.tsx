@@ -236,7 +236,10 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
     if (!businessForHiring) return;
     setHiringBusy(true);
     try {
-      await setHiringActive(businessForHiring.id, !isHiring);
+      const result = await setHiringActive(businessForHiring.id, !isHiring);
+      if (!result.success) {
+        alert(result.error || 'Could not update hiring status.');
+      }
     } finally {
       setHiringBusy(false);
     }

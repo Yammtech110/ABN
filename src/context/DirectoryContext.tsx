@@ -243,7 +243,7 @@ interface DirectoryContextType {
 
   reviews:        Review[];
   addReview:      (review: Review) => void;
-  fetchReviewsForBusiness: (businessId: string) => Promise<void>;
+  fetchReviewsForBusiness: (businessId: string) => Promise<{ success: boolean; error?: string }>;
   submitReview:   (businessId: string, rating: number, comment?: string) => Promise<{ success: boolean; error?: string }>;
   updateReview:   (reviewId: string, rating: number, comment?: string) => Promise<{ success: boolean; error?: string }>;
   replyToReview:  (reviewId: string, reply: string) => Promise<{ success: boolean; error?: string }>;
@@ -277,7 +277,7 @@ interface DirectoryContextType {
   refreshJobs:    (token?: string | null) => Promise<void>;
 
   hiringActive:   Record<string, boolean>;
-  setHiringActive:(businessId: string, active: boolean) => Promise<void>;
+  setHiringActive:(businessId: string, active: boolean) => Promise<{ success: boolean; error?: string }>;
   ensureBusinessListing: () => Promise<Business | null>;
 }
 
@@ -1586,18 +1586,30 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     ));
   };
 
-  const fetchReviewsForBusiness = useCallback(async (businessId: string): Promise<void> => {
+  const fetchReviewsForBusiness = useCallback(async (businessId: string): Promise<{ success: boolean; error?: string }> => {
     try {
       const res = await apiFetch(`/api/reviews?businessId=${encodeURIComponent(businessId)}`);
-      if (!res.ok) return;
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        return {
+          success: false,
+          error: userFacingError(data.error || 'Could not load reviews.', {
+            status: res.status,
+            context: 'review',
+          }),
+        };
+      }
       const data: Review[] = await res.json();
-      if (!Array.isArray(data)) return;
+      if (!Array.isArray(data)) {
+        return { success: false, error: 'Could not load reviews.' };
+      }
       setReviews((prev) => {
         const others = prev.filter((r) => r.businessId !== businessId);
         return [...data, ...others];
       });
+      return { success: true };
     } catch {
-      console.warn('[ABN Directory] Could not load reviews from API.');
+      return { success: false, error: networkErrorMessage() };
     }
   }, []);
 
@@ -1978,7 +1990,10 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return null;
   };
 
-  const setHiringActive = async (businessId: string, active: boolean): Promise<void> => {
+  const setHiringActive = async (
+    businessId: string,
+    active: boolean,
+  ): Promise<{ success: boolean; error?: string }> => {
     const prevHiring = hiringActive[businessId];
     const prevJobs = jobs;
     setHiringActiveState((p) => ({ ...p, [businessId]: active }));
@@ -1990,7 +2005,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     if (!apiToken) {
       setHiringActiveState((p) => ({ ...p, [businessId]: prevHiring }));
       setJobs(prevJobs);
-      return;
+      return { success: false, error: 'Sign in to update hiring status.' };
     }
 
     try {
@@ -2004,15 +2019,22 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       });
       if (res.ok) {
         await refreshDirectory();
-        return;
+        return { success: true };
       }
+      const data = await res.json().catch(() => ({}));
       setHiringActiveState((p) => ({ ...p, [businessId]: prevHiring }));
       setJobs(prevJobs);
-      console.warn('[ABN Directory] Hiring toggle rejected by server.');
+      return {
+        success: false,
+        error: userFacingError(data.error || 'Could not update hiring status.', {
+          status: res.status,
+          context: 'listing',
+        }),
+      };
     } catch {
       setHiringActiveState((p) => ({ ...p, [businessId]: prevHiring }));
       setJobs(prevJobs);
-      console.warn('[ABN Directory] Could not sync hiring toggle to server.');
+      return { success: false, error: networkErrorMessage() };
     }
   };
 

@@ -239,8 +239,11 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
                 disabled={hiringBusy}
                 onClick={async () => {
                   setHiringBusy(true);
-                  await setHiringActive(myListing.id, !hiringEnabled);
+                  const result = await setHiringActive(myListing.id, !hiringEnabled);
                   setHiringBusy(false);
+                  if (!result.success) {
+                    alert(result.error || 'Could not update hiring status.');
+                  }
                 }}
                 className={`app-toggle relative w-11 h-6 rounded-full transition-colors disabled:opacity-50 ${
                   hiringEnabled ? 'app-toggle-on' : 'app-toggle-off'

@@ -106,7 +106,13 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
       : '';
 
   useEffect(() => {
-    fetchReviewsForBusiness(business.id);
+    let cancelled = false;
+    setReviewError('');
+    void fetchReviewsForBusiness(business.id).then((result) => {
+      if (cancelled || result.success) return;
+      setReviewError(result.error || 'Could not load reviews.');
+    });
+    return () => { cancelled = true; };
   }, [business.id, fetchReviewsForBusiness]);
 
   useEffect(() => {
