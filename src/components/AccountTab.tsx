@@ -31,8 +31,6 @@ interface AccountTabProps {
 export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal }) => {
   const {
     language,
-    theme,
-    setTheme,
     currentUser,
     signOut,
     deleteAccount,
@@ -198,35 +196,6 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
       </div>
 
       <div className="py-2.5 rounded-3xl bg-[#171310] border border-[#2B231D] divide-y divide-[#2B231D]/40" id="account-options-list">
-        <div className="flex items-center justify-between p-4" id="row-theme-switch">
-          <span className="flex items-center gap-3 text-xs text-white font-semibold">
-            <Eye className="w-4.5 h-4.5 text-[#F08C32]" />
-            Theme
-          </span>
-          <div className="flex rounded-xl bg-[#1E1915] border border-[#2B231D] p-0.5" role="group" aria-label="Theme">
-            <button
-              type="button"
-              onClick={() => setTheme('light')}
-              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-colors ${
-                theme === 'light' ? 'bg-[#FF9E47] text-black' : 'text-[#8E8E8E] hover:text-white'
-              }`}
-              id="btn-theme-light"
-            >
-              Light
-            </button>
-            <button
-              type="button"
-              onClick={() => setTheme('dark')}
-              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-colors ${
-                theme === 'dark' ? 'bg-[#FF9E47] text-black' : 'text-[#8E8E8E] hover:text-white'
-              }`}
-              id="btn-theme-dark"
-            >
-              Dark
-            </button>
-          </div>
-        </div>
-
         {myListing && (
           <button
             type="button"
