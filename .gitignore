@@ -8,11 +8,12 @@ android/.gradle/
 backend/.env
 .env
 .env.local
-.env.production
+# .env.production is committed (public VITE_* only) so Render/APK builds stay on the right Supabase + API
 test-results/
 
 # Firebase Admin SDK private keys — never commit
 backend/firebase-service-account.json
 backend/firebase-service-account.oneline.txt
+backend/render-firebase-paste.txt
 **/firebase-service-account*.json
 **/serviceAccount*.json

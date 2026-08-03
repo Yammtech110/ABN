@@ -192,6 +192,20 @@ app.get('/api/health', async (_req, res) => {
     supabaseError = err.message || String(err);
   }
 
+  // Config readiness (no secrets) — OTP/push fail loudly in ops if these are false in prod.
+  const { smtpConfigured } = require('./lib/mailer');
+  const firebaseConfigured = Boolean(
+    (process.env.FIREBASE_SERVICE_ACCOUNT_JSON || '').trim() ||
+    (process.env.FIREBASE_SERVICE_ACCOUNT_PATH || '').trim() ||
+    (process.env.GOOGLE_APPLICATION_CREDENTIALS || '').trim() ||
+    (
+      (process.env.FIREBASE_PROJECT_ID || '').trim() &&
+      (process.env.FIREBASE_CLIENT_EMAIL || '').trim() &&
+      (process.env.FIREBASE_PRIVATE_KEY || '').trim()
+    ),
+  );
+  const exposeVerifyCode = process.env.EXPOSE_VERIFY_CODE === 'true';
+
   res.json({
     status: meta.mode === 'memory' ? 'ok' : (supabaseOk ? 'ok' : 'degraded'),
     service: 'ABN Community API',
@@ -201,6 +215,15 @@ app.get('/api/health', async (_req, res) => {
       connected: meta.mode === 'memory' ? true : supabaseOk,
       provider: meta.mode === 'supabase' ? 'supabase' : 'memory',
       error: supabaseOk ? null : supabaseError,
+    },
+    email: {
+      smtpConfigured: smtpConfigured(),
+      exposeVerifyCode: isProduction ? false : exposeVerifyCode,
+      // In production EXPOSE_VERIFY_CODE is ignored by mailer/OTP logic; flag if mis-set.
+      exposeVerifyCodeEnvSet: exposeVerifyCode,
+    },
+    push: {
+      firebaseConfigured,
     },
   });
 });
@@ -317,6 +340,32 @@ const LAN_HOST = process.env.LAN_HOST || '192.168.100.13';
     console.log(`    Storage mode       →  ${STORAGE_MODE}`);
     console.log(`    Health check       →  ${publicUrl}/api/health`);
     console.log(`    Environment        →  ${process.env.NODE_ENV || 'development'}\n`);
+
+    if (isProduction) {
+      const { smtpConfigured } = require('./lib/mailer');
+      if (!smtpConfigured()) {
+        console.warn('[config] SMTP not set — OTP/reset emails will fail. Set SMTP_HOST/SMTP_USER/SMTP_PASS (Brevo) on Render.');
+      } else {
+        console.log('[config] SMTP configured — OTP email ready.');
+      }
+      const firebaseConfigured = Boolean(
+        (process.env.FIREBASE_SERVICE_ACCOUNT_JSON || '').trim() ||
+        (process.env.FIREBASE_SERVICE_ACCOUNT_PATH || '').trim() ||
+        (
+          (process.env.FIREBASE_PROJECT_ID || '').trim() &&
+          (process.env.FIREBASE_CLIENT_EMAIL || '').trim() &&
+          (process.env.FIREBASE_PRIVATE_KEY || '').trim()
+        ),
+      );
+      if (!firebaseConfigured) {
+        console.warn('[config] FIREBASE_SERVICE_ACCOUNT_JSON missing — device push disabled.');
+      } else {
+        console.log('[config] Firebase credentials present — FCM can initialize on first push.');
+      }
+      if (process.env.EXPOSE_VERIFY_CODE === 'true') {
+        console.warn('[config] EXPOSE_VERIFY_CODE=true is set — remove it in production (OTP must stay email-only).');
+      }
+    }
   });
 
   server.on('error', (err) => {

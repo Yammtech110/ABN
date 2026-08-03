@@ -31,14 +31,9 @@ function resolveApiBaseUrl(): string {
     return '';
   }
 
-  if (import.meta.env.PROD && !Capacitor.isNativePlatform()) {
-    return '';
-  }
-
-  if (Capacitor.isNativePlatform()) {
-    console.error(
-      '[api] Missing VITE_API_BASE_URL. Rebuild APK with .env.production pointing to your live server.',
-    );
+  // Production fallback — abn-1 static + APK must hit the API host, not same-origin.
+  if (import.meta.env.PROD || Capacitor.isNativePlatform()) {
+    return 'https://abn-my4f.onrender.com';
   }
 
   return '';
