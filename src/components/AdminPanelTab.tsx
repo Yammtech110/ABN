@@ -1137,18 +1137,17 @@ export const AdminPanelTab: React.FC = () => {
               const awaitingApproval = isPendingSubmission(biz);
               const descPreview = (biz.description?.en || '').trim();
               return (
-                <div key={biz.id} className="p-4 rounded-3xl bg-[#171310] border border-[#2B231D] space-y-3.5">
-                  <AdminListingPhotos business={biz} language={language} />
-
+                <div key={biz.id} className="p-3 rounded-2xl bg-[#171310] border border-[#2B231D] space-y-2">
                   <div className="flex justify-between items-start gap-2">
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0 flex-1 space-y-1.5">
+                        <AdminListingPhotos business={biz} language={language} />
                         <div className="flex flex-wrap items-center gap-2">
                           <h4 className="text-xs font-black text-white truncate">{biz.name}</h4>
                           <span className="px-1.5 py-0.5 rounded text-[7px] font-bold uppercase bg-[#1E1915] text-[#8E8E8E]">
                             {biz.listingType === 'service' ? 'Service' : 'Business'}
                           </span>
                         </div>
-                        <span className="text-[9px] text-[#8E8E8E] block uppercase tracking-wider mt-0.5">
+                        <span className="text-[9px] text-[#8E8E8E] block uppercase tracking-wider">
                           {biz.city} • {biz.subcategory.en}
                         </span>
                         <span className="text-[8px] text-[#8E8E8E] block truncate">{biz.ownerId}</span>
@@ -1159,10 +1158,10 @@ export const AdminPanelTab: React.FC = () => {
                           <span className="text-[8px] text-[#8E8E8E] block truncate">{biz.address}{biz.area ? `, ${biz.area}` : ''}</span>
                         )}
                         {descPreview && (
-                          <p className="text-[9px] text-[#8E8E8E] mt-1.5 line-clamp-2 leading-relaxed">{descPreview}</p>
+                          <p className="text-[9px] text-[#8E8E8E] line-clamp-1 leading-relaxed">{descPreview}</p>
                         )}
                         {biz.registeredAt && (
-                          <span className="text-[7px] text-[#8E8E8E] block mt-1">Registered: {biz.registeredAt}</span>
+                          <span className="text-[7px] text-[#8E8E8E] block">Registered: {biz.registeredAt}</span>
                         )}
                     </div>
 

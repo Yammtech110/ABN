@@ -22,6 +22,7 @@ type PhotoTileProps = {
   onExpand: () => void;
 };
 
+/** Compact square thumb — keeps the admin list scrollable with many listings */
 const PhotoTile: React.FC<PhotoTileProps> = ({ url, fallback, label, onExpand }) => {
   const [src, setSrc] = useState(url || fallback);
 
@@ -33,22 +34,22 @@ const PhotoTile: React.FC<PhotoTileProps> = ({ url, fallback, label, onExpand })
     <button
       type="button"
       onClick={onExpand}
-      className="group relative aspect-[4/3] rounded-xl overflow-hidden border border-[#2B231D] bg-[#1E1915] text-left"
+      className="group relative w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden border border-[#2B231D] bg-[#1E1915] text-left shrink-0"
       title={label}
     >
       <img
         src={src}
         alt={label}
-        loading="eager"
+        loading="lazy"
         decoding="async"
-        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+        className="w-full h-full object-cover"
         onError={() => setSrc(fallback)}
       />
-      <span className="absolute bottom-0 inset-x-0 px-2 py-1 text-[8px] font-bold uppercase tracking-wider bg-black/70 text-[#CFCFCF]">
+      <span className="absolute bottom-0 inset-x-0 px-0.5 py-0.5 text-[7px] font-bold uppercase tracking-wider bg-black/75 text-[#CFCFCF] truncate">
         {label}
       </span>
-      <span className="absolute top-1.5 right-1.5 p-1 rounded-md bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
-        <ZoomIn className="w-3 h-3" />
+      <span className="absolute top-0.5 right-0.5 p-0.5 rounded bg-black/55 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+        <ZoomIn className="w-2.5 h-2.5" />
       </span>
     </button>
   );
@@ -56,7 +57,8 @@ const PhotoTile: React.FC<PhotoTileProps> = ({ url, fallback, label, onExpand })
 
 export const AdminListingPhotos: React.FC<AdminListingPhotosProps> = ({ business, language }) => {
   const { apiToken } = useDirectory();
-  const [expanded, setExpanded] = useState(true);
+  // Collapsed by default so many listings fit on one screen
+  const [expanded, setExpanded] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [resolvedPhotos, setResolvedPhotos] = useState<string[]>([]);
 
@@ -110,64 +112,52 @@ export const AdminListingPhotos: React.FC<AdminListingPhotosProps> = ({ business
 
   const photos = resolvedPhotos.length > 0 ? resolvedPhotos : rawPhotos;
   const logoUrl = photos[0] || fallbackLogo;
-  const coverUrl = photos[1] || photos[0] || fallbackCover;
-  const [coverSrc, setCoverSrc] = useState(coverUrl);
   const [logoSrc, setLogoSrc] = useState(logoUrl);
 
   useEffect(() => {
-    setCoverSrc(coverUrl || fallbackCover);
     setLogoSrc(logoUrl || fallbackLogo);
-  }, [coverUrl, logoUrl, fallbackCover, fallbackLogo]);
+  }, [logoUrl, fallbackLogo]);
 
   const lightboxSrc =
     lightboxIndex !== null ? photos[lightboxIndex] || fallbackLogo : fallbackLogo;
 
   return (
-    <div className="space-y-2" id={`admin-photos-${business.id}`}>
-      <div className="relative h-24 rounded-xl overflow-hidden border border-[#2B231D] bg-[#1E1915]">
-        <img
-          src={coverSrc}
-          alt={`${business.name} cover`}
-          loading="eager"
-          decoding="async"
-          className="w-full h-full object-cover"
-          onError={() => setCoverSrc(fallbackCover)}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-        <div className="absolute bottom-2 left-2 flex items-end gap-2">
-          <div className="w-12 h-12 rounded-lg overflow-hidden border-2 border-[#F08C32]/60 bg-[#171310] shrink-0">
-            <img
-              src={logoSrc}
-              alt={`${business.name} logo`}
-              loading="eager"
-              decoding="async"
-              className="w-full h-full object-cover"
-              onError={() => setLogoSrc(fallbackLogo)}
-            />
-          </div>
-          <span className="text-[8px] font-bold uppercase tracking-wider text-[#CFCFCF] pb-0.5">
-            {language === 'en' ? 'Business photos' : 'صور النشاط'}
-          </span>
-        </div>
+    <div className="space-y-1.5" id={`admin-photos-${business.id}`}>
+      {/* Compact strip: small logo + photo count toggle (no huge cover banner) */}
+      <div className="flex items-center gap-2.5">
+        <button
+          type="button"
+          onClick={() => setLightboxIndex(0)}
+          className="w-10 h-10 rounded-lg overflow-hidden border border-[#F08C32]/40 bg-[#1E1915] shrink-0"
+          title={language === 'en' ? 'Open logo' : 'فتح الشعار'}
+        >
+          <img
+            src={logoSrc}
+            alt={`${business.name} logo`}
+            loading="lazy"
+            decoding="async"
+            className="w-full h-full object-cover"
+            onError={() => setLogoSrc(fallbackLogo)}
+          />
+        </button>
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="flex items-center gap-1.5 text-[9px] font-bold text-[#F08C32] hover:underline"
+        >
+          <ImageIcon className="w-3.5 h-3.5" />
+          {expanded
+            ? language === 'en'
+              ? 'Hide photos'
+              : 'إخفاء الصور'
+            : language === 'en'
+              ? `Photos (${photos.length})`
+              : `صور (${photos.length})`}
+        </button>
       </div>
 
-      <button
-        type="button"
-        onClick={() => setExpanded((v) => !v)}
-        className="flex items-center gap-1.5 text-[9px] font-bold text-[#F08C32] hover:underline"
-      >
-        <ImageIcon className="w-3.5 h-3.5" />
-        {expanded
-          ? language === 'en'
-            ? 'Hide photos'
-            : 'إخفاء الصور'
-          : language === 'en'
-            ? `View photos (${photos.length})`
-            : `عرض الصور (${photos.length})`}
-      </button>
-
       {expanded && (
-        <div className="grid grid-cols-2 gap-2">
+        <div className="flex flex-wrap gap-1.5 pt-0.5">
           {photos.map((url, i) => {
             const isLogo = i === 0;
             const isCover = i === 1;
@@ -180,8 +170,8 @@ export const AdminListingPhotos: React.FC<AdminListingPhotosProps> = ({ business
                   ? 'Cover'
                   : 'الغلاف'
                 : language === 'en'
-                  ? `Photo ${i + 1}`
-                  : `صورة ${i + 1}`;
+                  ? `P${i + 1}`
+                  : `${i + 1}`;
             return (
               <PhotoTile
                 key={`${business.id}-photo-${i}`}
