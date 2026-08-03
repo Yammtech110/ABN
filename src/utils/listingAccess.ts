@@ -21,6 +21,19 @@ export const getUserListing = (
   );
 };
 
+/** True when the signed-in user owns this listing (email or id match). */
+export const isOwnedListing = (
+  user: UserProfile | null | undefined,
+  listing: Business | null | undefined,
+): boolean => {
+  if (!user || !listing) return false;
+  const owner = String(listing.ownerId || '').trim().toLowerCase();
+  if (!owner) return false;
+  const email = String(user.email || '').trim().toLowerCase();
+  const id = String(user.id || '').trim().toLowerCase();
+  return Boolean((email && owner === email) || (id && owner === id));
+};
+
 /** Owner can open Manage Business/Service unless listing is suspended */
 export const canManageListing = (listing: Business | null | undefined): boolean =>
   Boolean(listing && listing.status !== 'suspended');

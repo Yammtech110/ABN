@@ -60,6 +60,9 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
   const roleBadgeLabel = () => {
     if (!currentUser) return '';
     if (currentUser.role === 'admin') return 'Admin';
+    if (myListing) return kind === 'service' ? 'Service Provider' : 'Business Owner';
+    if (currentUser.role === 'business') return 'Business Owner';
+    if (currentUser.role === 'service_provider') return 'Service Provider';
     return t.roleUser || 'User';
   };
 
@@ -150,9 +153,11 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
               <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border account-role-badge ${
                 isAdmin
                   ? 'account-role-badge-admin bg-[#FF9E47]/15 text-[#F08C32] border-[#F08C32]/30'
-                  : kind === 'service'
+                  : myListing && kind === 'service'
                     ? 'account-role-badge-service bg-orange-900/40 text-orange-300 border-orange-700/40'
-                    : 'account-role-badge-user bg-[#1E1915] text-[#8E8E8E] border-[#2B231D]'
+                    : myListing
+                      ? 'account-role-badge-business bg-[#FF9E47]/15 text-[#F08C32] border-[#F08C32]/30'
+                      : 'account-role-badge-user bg-[#1E1915] text-[#8E8E8E] border-[#2B231D]'
               }`}>
                 {roleBadgeLabel()}
               </span>

@@ -366,12 +366,10 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       const profile: Record<string, unknown> | null = await res.json();
       if (!profile?.id) return;
       const mapped = mapDirectoryProfile(profile, categories);
+      // Guarantee owner match even if API email field was missing
+      if (!mapped.ownerId && userEmail) mapped.ownerId = userEmail;
       setBusinesses((prev) => {
-        const rest = prev.filter((b) =>
-          b.ownerId !== mapped.ownerId &&
-          b.ownerId !== userEmail &&
-          b.id !== mapped.id
-        );
+        const rest = prev.filter((b) => b.id !== mapped.id);
         return [...rest, mapped];
       });
       if (profile.hiringActive !== undefined) {
@@ -505,12 +503,17 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         return;
       }
 
-      // Keep the signed-in user's pending profile visible even when not public yet
+      // Always prefer /mine for the signed-in owner — public /directory strips email (PII),
+      // which left ownerId empty and hid Manage Business / Jobs on Profile.
       if (mineRes?.ok) {
         const mineData: Record<string, unknown> | null = await mineRes.json();
         if (mineData?.id) {
           const mineListing = mapDirectoryProfile(mineData, categories);
-          if (!listings.some((b) => b.id === mineListing.id)) {
+          const idx = listings.findIndex((b) => b.id === mineListing.id);
+          if (idx >= 0) {
+            listings = listings.slice();
+            listings[idx] = { ...listings[idx], ...mineListing, ownerId: mineListing.ownerId };
+          } else {
             listings = [...listings, mineListing];
           }
         }
