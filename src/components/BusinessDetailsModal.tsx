@@ -19,6 +19,7 @@ import {
   AlertTriangle,
   ImageIcon,
   Ban,
+  Pencil,
 } from 'lucide-react';
 import { apiFetch } from '../lib/api';
 import {
@@ -72,7 +73,7 @@ function isBusinessOpenNow(workingHours: string): boolean | null {
 export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ business, onClose }) => {
   const {
     language, reviews, currentUser, favorites, toggleFavorite,
-    fetchReviewsForBusiness, submitReview, replyToReview, apiToken, isAuthenticated,
+    fetchReviewsForBusiness, submitReview, updateReview, replyToReview, apiToken, isAuthenticated,
     blockListingOwner,
   } = useDirectory();
   const t = TRANSLATIONS[language];
@@ -85,6 +86,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
   const [reviewError, setReviewError] = useState('');
   const [reviewSuccess, setReviewSuccess] = useState('');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
   const [replyBusyId, setReplyBusyId] = useState<string | null>(null);
   const [replyError, setReplyError] = useState('');
@@ -113,7 +115,16 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
 
   // Filter reviews matching current business id
   const businessReviews = reviews.filter((r) => r.businessId === business.id);
-
+  const myReview = useMemo(() => {
+    if (!currentUser) return null;
+    return (
+      businessReviews.find(
+        (r) =>
+          (r.userId && r.userId === currentUser.id) ||
+          (!!r.userName && r.userName === currentUser.name),
+      ) || null
+    );
+  }, [businessReviews, currentUser]);
   const isFav = favorites.includes(business.id);
   const isListingOwner =
     !!currentUser &&
@@ -121,6 +132,32 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
   const canReportListing = isAuthenticated && !isListingOwner && currentUser?.role !== 'admin';
   const canBlockOwner = canReportListing && Boolean(business.ownerId);
   const canReplyToReviews = isListingOwner || currentUser?.role === 'admin';
+
+  useEffect(() => {
+    setEditingReviewId(null);
+    setRating(5);
+    setComment('');
+    setReviewError('');
+    setReviewSuccess('');
+  }, [business.id, currentUser?.id]);
+
+  useEffect(() => {
+    if (!myReview || editingReviewId) return;
+    // Prefill so returning visitors can tweak stars/comment without hunting for Edit.
+    setRating(Math.max(1, Math.min(5, Math.round(Number(myReview.rating) || 5))));
+    setComment(myReview.comment || '');
+  }, [myReview?.id, myReview?.rating, myReview?.comment, editingReviewId]);
+
+  const beginEditMyReview = (reviewId: string) => {
+    const target = businessReviews.find((r) => r.id === reviewId);
+    if (!target) return;
+    setEditingReviewId(target.id);
+    setRating(Math.max(1, Math.min(5, Math.round(Number(target.rating) || 5))));
+    setComment(target.comment || '');
+    setReviewError('');
+    setReviewSuccess('');
+    document.getElementById('details-rate-business')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  };
 
   const handleOwnerReply = async (reviewId: string) => {
     const text = String(replyDrafts[reviewId] || '').trim();
@@ -156,8 +193,11 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
       return;
     }
 
+    const editingExisting = Boolean(myReview);
     setIsSubmittingReview(true);
-    const result = await submitReview(business.id, rating, comment);
+    const result = editingExisting
+      ? await updateReview(myReview!.id, rating, comment)
+      : await submitReview(business.id, rating, comment);
     setIsSubmittingReview(false);
 
     if (!result.success) {
@@ -165,12 +205,11 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
       return;
     }
 
-    setComment('');
-    setRating(5);
+    setEditingReviewId(null);
     setReviewSuccess(
       language === 'en'
-        ? 'Review posted! Thanks for sharing your feedback.'
-        : 'تم نشر المراجعة! شكراً لمشاركتك.',
+        ? (editingExisting ? 'Review updated.' : 'Review posted! Thanks for sharing your feedback.')
+        : (editingExisting ? 'تم تحديث المراجعة.' : 'تم نشر المراجعة! شكراً لمشاركتك.'),
     );
     setTimeout(() => setReviewSuccess(''), 4000);
   };
@@ -391,11 +430,13 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
               </div>
             </div>
 
-            {/* ── Rate This Business (interactive 5-star + POST /api/reviews) ── */}
+            {/* ── Rate / edit review (POST create or PATCH update) ── */}
             <div className="p-5 rounded-2xl bg-[#171310] border border-[#F08C32]/25 space-y-4" id="details-rate-business">
               <div className="flex items-center justify-between gap-2">
                 <h3 className="text-sm font-extrabold tracking-wider text-[#F08C32]">
-                  {language === 'en' ? '⭐ Rate This Business' : '⭐ قيّم هذا النشاط'}
+                  {myReview
+                    ? (language === 'en' ? '✏️ Edit Your Review' : '✏️ عدّل مراجعتك')
+                    : (language === 'en' ? '⭐ Rate This Business' : '⭐ قيّم هذا النشاط')}
                 </h3>
                 <span className="text-[10px] text-[#8E8E8E]">
                   {business.rating} ★ · {businessReviews.length} {language === 'en' ? 'reviews' : 'تقييم'}
@@ -407,6 +448,14 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                   {language === 'en'
                     ? 'Please sign in to leave a star rating and review.'
                     : 'يرجى تسجيل الدخول لترك تقييم ومراجعة.'}
+                </p>
+              )}
+
+              {currentUser && myReview && (
+                <p className="text-[11px] text-[#8E8E8E]">
+                  {language === 'en'
+                    ? 'You already reviewed this listing. Change your stars or comment and save.'
+                    : 'لقد قيّمت هذا الإدراج من قبل. عدّل النجوم أو التعليق ثم احفظ.'}
                 </p>
               )}
 
@@ -468,10 +517,12 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                   className="w-full py-3 rounded-xl bg-[#FF9E47] hover:bg-opacity-95 text-white font-extrabold text-xs transition-all shadow-md disabled:opacity-40 flex items-center justify-center gap-2"
                   id="details-btn-submit-rating"
                 >
-                  <Send className="w-4 h-4" />
+                  {myReview ? <Pencil className="w-4 h-4" /> : <Send className="w-4 h-4" />}
                   {isSubmittingReview
-                    ? (language === 'en' ? 'Submitting…' : 'جارٍ الإرسال…')
-                    : (language === 'en' ? 'Submit Rating' : 'إرسال التقييم')}
+                    ? (language === 'en' ? 'Saving…' : 'جارٍ الحفظ…')
+                    : myReview
+                      ? (language === 'en' ? 'Save Changes' : 'حفظ التغييرات')
+                      : (language === 'en' ? 'Submit Rating' : 'إرسال التقييم')}
                 </button>
               </form>
             </div>
@@ -609,21 +660,46 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                     {language === 'en' ? 'No community feedback yet. Be the first to review!' : 'لا توجد تقييمات من المجتمع حالياً. كن أول من يكتب تجربته!'}
                   </p>
                 ) : (
-                  businessReviews.map((rev) => (
+                  businessReviews.map((rev) => {
+                    const isMine =
+                      !!currentUser &&
+                      ((rev.userId && rev.userId === currentUser.id) ||
+                        (!!rev.userName && rev.userName === currentUser.name));
+                    return (
                     <div key={rev.id} className="p-3.5 rounded-xl bg-[#1E1915] border border-[#2B231D]/40 space-y-2">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-xs font-bold text-[#FFFFFF]">{rev.userName}</span>
-                        <div className="flex gap-0.5">
-                          {Array.from({ length: 5 }).map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`w-3 h-3 ${
-                                i < Math.floor(rev.rating)
-                                  ? 'text-[#F08C32] fill-[#F08C32]'
-                                  : 'text-[#8E8E8E]'
-                              }`}
-                            />
-                          ))}
+                      <div className="flex items-center justify-between mb-1.5 gap-2">
+                        <span className="text-xs font-bold text-[#FFFFFF] min-w-0 truncate">
+                          {rev.userName}
+                          {isMine ? (
+                            <span className="ml-1.5 text-[9px] font-semibold text-[#F08C32]">
+                              {language === 'en' ? '(You)' : '(أنت)'}
+                            </span>
+                          ) : null}
+                        </span>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <div className="flex gap-0.5">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`w-3 h-3 ${
+                                  i < Math.floor(rev.rating)
+                                    ? 'text-[#F08C32] fill-[#F08C32]'
+                                    : 'text-[#8E8E8E]'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          {isMine && (
+                            <button
+                              type="button"
+                              onClick={() => beginEditMyReview(rev.id)}
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold text-[#F08C32] bg-[#FF9E47]/10 border border-[#F08C32]/30 hover:bg-[#FF9E47]/20"
+                              id={`btn-edit-review-${rev.id}`}
+                            >
+                              <Pencil className="w-3 h-3" />
+                              {language === 'en' ? 'Edit' : 'تعديل'}
+                            </button>
+                          )}
                         </div>
                       </div>
                       <p className="text-xs text-[#CFCFCF] leading-relaxed font-sans">{rev.comment}</p>
@@ -659,12 +735,11 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                         </div>
                       ) : null}
                     </div>
-                  ))
+                    );
+                  })
                 )}
                 {replyError && <p className="text-[10px] text-red-400">{replyError}</p>}
               </div>
-
-              {/* Past reviews list only — submit form is above under "Rate This Business" */}
             </div>
 
             {/* Report listing — real submissions stored in backend */}

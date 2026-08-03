@@ -167,6 +167,83 @@ router.post('/', authenticate, async (req, res, next) => {
   }
 });
 
+// ── PATCH /api/reviews/:id — author edits their own rating/comment ────────
+router.patch('/:id', authenticate, async (req, res, next) => {
+  try {
+    const review = await findReviewById(req.params.id);
+    if (!review) return res.status(404).json({ error: 'Review not found.' });
+
+    const isAuthor = review.userId && review.userId === req.user.id;
+    const isAdmin = req.user.role === 'admin';
+    if (!isAuthor && !isAdmin) {
+      return res.status(403).json({ error: 'You can only edit your own review.' });
+    }
+
+    const hasRating = req.body?.rating !== undefined && req.body?.rating !== null && req.body?.rating !== '';
+    const hasComment = Object.prototype.hasOwnProperty.call(req.body || {}, 'comment');
+    if (!hasRating && !hasComment) {
+      return res.status(400).json({ error: 'rating or comment is required.' });
+    }
+
+    let ratingScore = review.rating ?? review.ratingScore;
+    if (hasRating) {
+      ratingScore = Number(req.body.rating);
+      if (!Number.isInteger(ratingScore) || ratingScore < 1 || ratingScore > 5) {
+        return res.status(400).json({ error: 'rating must be an integer between 1 and 5.' });
+      }
+    }
+
+    const comment = hasComment
+      ? String(req.body.comment || '').trim().slice(0, 2000)
+      : String(review.comment || '');
+
+    if (!isSupabaseStorage()) {
+      const idx = reviews.findIndex((r) => r.id === review.id);
+      if (idx < 0) return res.status(404).json({ error: 'Review not found.' });
+      reviews[idx] = {
+        ...reviews[idx],
+        ratingScore,
+        rating: ratingScore,
+        comment,
+      };
+      const stats = aggregateForBusiness(reviews, review.businessId);
+      const profile = directoryProfiles.find((p) => p.id === review.businessId);
+      if (profile) {
+        profile.rating = stats.avg;
+        profile.reviewsCount = stats.count;
+      }
+      return res.json({ review: mapReview(reviews[idx]), aggregate: stats });
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('business_reviews')
+      .update({
+        rating_score: ratingScore,
+        comment,
+      })
+      .eq('id', review.id)
+      .select('*')
+      .single();
+
+    if (error) return res.status(500).json({ error: 'Failed to update review. Please try again.' });
+
+    const all = await fetchReviewsForBusiness(review.businessId);
+    const stats = aggregateForBusiness(all, review.businessId);
+
+    await supabaseAdmin
+      .from('profiles_directory')
+      .update({ rating: stats.avg, reviews_count: stats.count })
+      .eq('id', review.businessId);
+
+    res.json({
+      review: mapReview(mapReviewFromDb(data)),
+      aggregate: stats,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // ── POST /api/reviews/:id/reply — listing owner replies ───────────────────
 router.post('/:id/reply', authenticate, async (req, res, next) => {
   try {

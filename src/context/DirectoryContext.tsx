@@ -243,6 +243,7 @@ interface DirectoryContextType {
   addReview:      (review: Review) => void;
   fetchReviewsForBusiness: (businessId: string) => Promise<void>;
   submitReview:   (businessId: string, rating: number, comment?: string) => Promise<{ success: boolean; error?: string }>;
+  updateReview:   (reviewId: string, rating: number, comment?: string) => Promise<{ success: boolean; error?: string }>;
   replyToReview:  (reviewId: string, reply: string) => Promise<{ success: boolean; error?: string }>;
 
   favorites:      string[];
@@ -1606,6 +1607,44 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return { success: false, error: 'Sign in to submit a review.' };
   };
 
+  const updateReview = async (
+    reviewId: string,
+    rating: number,
+    comment = '',
+  ): Promise<{ success: boolean; error?: string }> => {
+    if (!apiToken) {
+      return { success: false, error: 'Sign in to edit your review.' };
+    }
+    try {
+      const res = await apiFetch(`/api/reviews/${encodeURIComponent(reviewId)}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiToken}`,
+        },
+        body: JSON.stringify({ rating, comment: comment.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        return {
+          success: false,
+          error: userFacingError(data.error || 'Could not update review.', {
+            status: res.status,
+            context: 'review',
+          }),
+        };
+      }
+      const updated = data.review as Review;
+      setReviews((prev) => prev.map((r) => (r.id === updated.id ? { ...r, ...updated } : r)));
+      if (data.aggregate && updated.businessId) {
+        applyBusinessAggregate(updated.businessId, data.aggregate.avg, data.aggregate.count);
+      }
+      return { success: true };
+    } catch {
+      return { success: false, error: networkErrorMessage() };
+    }
+  };
+
   const replyToReview = async (
     reviewId: string,
     reply: string,
@@ -2004,7 +2043,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       language, theme, setTheme,
       categories, addCategory, removeCategory, refreshCategories,
       businesses, addBusiness, updateBusiness, removeBusiness, deleteMyListing, refreshDirectory,
-      reviews, addReview, fetchReviewsForBusiness, submitReview, replyToReview,
+      reviews, addReview, fetchReviewsForBusiness, submitReview, updateReview, replyToReview,
       favorites, favoritesLoading, favoritesError, refreshFavorites, toggleFavorite,
       payments, refreshPayments, renewMembership,
       notifications, notificationsLoading, notificationsError,
