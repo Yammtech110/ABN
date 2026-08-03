@@ -732,13 +732,32 @@ export const AdminPanelTab: React.FC = () => {
   };
 
   const handleToggleStatus = async (biz: Business) => {
-    const nextStatus = biz.status === 'active' ? 'suspended' : 'active';
+    // Suspending is always allowed.
+    if (biz.status === 'active') {
+      const ok = await patchListing(
+        biz,
+        { subscriptionStatus: 'suspended' },
+        { status: 'suspended' },
+      );
+      if (ok) showAdminToast(`${biz.name} is now SUSPENDED.`);
+      return;
+    }
+
+    // Re-activate: if membership already expired, Mark as Paid (extends expiry).
+    // Bare active without renew gets re-suspended by syncExpiredMemberships.
+    const expiry = new Date(biz.membershipExpiryDate);
+    const expiryPast = !Number.isNaN(expiry.getTime()) && expiry < new Date();
+    if (expiryPast) {
+      await handleMarkAsPaid(biz);
+      return;
+    }
+
     const ok = await patchListing(
       biz,
-      { subscriptionStatus: nextStatus },
-      { status: nextStatus },
+      { subscriptionStatus: 'active' },
+      { status: 'active' },
     );
-    if (ok) showAdminToast(`${biz.name} is now ${nextStatus.toUpperCase()}.`);
+    if (ok) showAdminToast(`${biz.name} is now ACTIVE.`);
   };
 
   const handleMarkAsPaid = async (biz: Business) => {
@@ -1212,7 +1231,7 @@ export const AdminPanelTab: React.FC = () => {
                         </div>
                       )}
                       
-                      {bizFilter === 'pending' && !awaitingApproval && (
+                      {(bizFilter === 'pending' || bizFilter === 'expired') && !awaitingApproval && (
                         <button
                           onClick={() => handleMarkAsPaid(biz)}
                           disabled={isBusy}
@@ -1232,7 +1251,11 @@ export const AdminPanelTab: React.FC = () => {
                               : 'bg-red-950/40 text-red-400 border border-red-900/40 hover:bg-red-950/80'
                           }`}
                         >
-                          {isBusy ? 'Updating…' : isSuspended ? '🔓 Re-Activate Listing' : '🔒 Suspend Listing'}
+                          {isBusy
+                            ? 'Updating…'
+                            : isSuspended
+                              ? (bizFilter === 'expired' ? '🔓 Mark Paid & Activate' : '🔓 Re-Activate Listing')
+                              : '🔒 Suspend Listing'}
                         </button>
                       )}
 

@@ -15,6 +15,7 @@ import { resolveCategoryId } from '../utils/categoryMatch';
 import { listingMediaUrl, resolveListingCoverUrl, resolveListingLogoUrl, resolveJobImageUrl } from '../utils/listingImages';
 import { isValidUSPhone, toE164USPhone } from '../utils/businessRegistrationValidation';
 import { networkErrorMessage, userFacingError } from '../utils/userFacingError';
+import { getUserListing } from '../utils/listingAccess';
 
 // ── Safe storage helpers ────────────────────────────────────────────────────
 // localStorage can throw (private browsing, quota exceeded, storage disabled).
@@ -1109,6 +1110,19 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       });
       const data = await res.json();
 
+      // Account may be created even when SMTP fails (201) or legacy 503 + flag.
+      if (data.needsEmailVerification) {
+        return {
+          success: true,
+          needsEmailVerification: true,
+          email: data.email || trimmedEmail,
+          verificationCode: data.verificationCode,
+          error: data.mailDeliveryFailed
+            ? (data.message || 'Account created — use Resend code after SMTP is fixed.')
+            : undefined,
+        };
+      }
+
       if (!res.ok) {
         return {
           success: false,
@@ -1116,15 +1130,6 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             status: res.status,
             context: 'register',
           }),
-        };
-      }
-
-      if (data.needsEmailVerification) {
-        return {
-          success: true,
-          needsEmailVerification: true,
-          email: data.email || trimmedEmail,
-          verificationCode: data.verificationCode,
         };
       }
 
@@ -1927,13 +1932,12 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const updateJob = (updated: Job) => setJobs((p) => p.map((j) => (j.id === updated.id ? updated : j)));
   const deleteJob = (id: string) => setJobs((p) => p.filter((j) => j.id !== id));
 
-  /** Auto-provision a minimal directory listing for business users who have none yet. */
+  /** Auto-provision a minimal directory listing when the signed-in user has none yet. */
   const ensureBusinessListing = async (): Promise<Business | null> => {
-    if (!currentUser || currentUser.role !== 'business') return null;
+    // Customers can register a business later; role is not always 'business' at signup.
+    if (!currentUser || currentUser.role === 'admin') return null;
 
-    const existing = businesses.find(
-      (b) => b.ownerId === currentUser.id || b.ownerId === currentUser.email,
-    );
+    const existing = getUserListing(currentUser, businesses);
     if (existing) return existing;
 
     const payload = {

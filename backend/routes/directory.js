@@ -120,38 +120,44 @@ const sortProfiles = (list) =>
     return (b.rating || 0) - (a.rating || 0);
   });
 
-async function syncExpiredMemberships(profiles) {
+/** Suspend a single active listing when membershipExpiry is past. */
+async function syncProfileExpiryIfNeeded(profile) {
+  if (!profile) return profile;
   const today = new Date().toISOString().slice(0, 10);
+  if (!profile.membershipExpiry || profile.subscriptionStatus !== 'active') return profile;
+  if (String(profile.membershipExpiry).slice(0, 10) >= today) return profile;
 
-  for (const p of profiles) {
-    if (!p.membershipExpiry || p.subscriptionStatus !== 'active') continue;
-    if (String(p.membershipExpiry).slice(0, 10) >= today) continue;
+  profile.subscriptionStatus = 'suspended';
 
-    p.subscriptionStatus = 'suspended';
-
-    if (!isSupabaseStorage()) {
-      const idx = directoryProfiles.findIndex((row) => row.id === p.id);
-      if (idx >= 0) directoryProfiles[idx].subscriptionStatus = 'suspended';
-    } else {
-      await supabaseAdmin
-        .from('profiles_directory')
-        .update({ subscription_status: 'suspended' })
-        .eq('id', p.id);
-    }
-
-    try {
-      const owner = await findUserByEmail(p.email);
-      await createNotification({
-        userId: owner?.id || null,
-        receiverRole: 'customer',
-        title: 'Subscription Expired',
-        message: `${p.businessName || 'Your listing'} membership expired on ${String(p.membershipExpiry).slice(0, 10)}. Renew to restore visibility.`,
-      });
-    } catch {
-      // non-fatal
-    }
+  if (!isSupabaseStorage()) {
+    const idx = directoryProfiles.findIndex((row) => row.id === profile.id);
+    if (idx >= 0) directoryProfiles[idx].subscriptionStatus = 'suspended';
+  } else {
+    await supabaseAdmin
+      .from('profiles_directory')
+      .update({ subscription_status: 'suspended' })
+      .eq('id', profile.id);
   }
 
+  try {
+    const owner = await findUserByEmail(profile.email);
+    await createNotification({
+      userId: owner?.id || null,
+      receiverRole: 'customer',
+      title: 'Subscription Expired',
+      message: `${profile.businessName || 'Your listing'} membership expired on ${String(profile.membershipExpiry).slice(0, 10)}. Renew to restore visibility.`,
+    });
+  } catch {
+    // non-fatal
+  }
+
+  return profile;
+}
+
+async function syncExpiredMemberships(profiles) {
+  for (const p of profiles) {
+    await syncProfileExpiryIfNeeded(p);
+  }
   return profiles;
 }
 
@@ -210,8 +216,9 @@ router.get('/all', authenticate, requireRole('admin'), async (req, res, next) =>
 // ── GET /api/directory/mine ───────────────────────────────────────────────
 router.get('/mine', authenticate, async (req, res, next) => {
   try {
-    const profile = await findProfileByEmail(req.user.email);
+    let profile = await findProfileByEmail(req.user.email);
     if (!profile) return res.json(null);
+    profile = await syncProfileExpiryIfNeeded(profile);
     const withOwner = await withOwnerUserId(profile);
     res.json(mapProfile(mapProfileForList(withOwner, { includeEmail: true })));
   } catch (err) {
@@ -625,6 +632,15 @@ router.delete('/:id', authenticate, async (req, res, next) => {
       return res.status(204).end();
     }
 
+    // Cascade: remove jobs tied to this listing before deleting the profile
+    const { error: jobsErr } = await supabaseAdmin
+      .from('jobs_board')
+      .delete()
+      .eq('business_id', req.params.id);
+    if (jobsErr) {
+      return res.status(500).json({ error: 'Failed to remove related jobs. Please try again.' });
+    }
+
     const { error } = await supabaseAdmin
       .from('profiles_directory')
       .delete()
@@ -645,8 +661,9 @@ router.put('/:id/hiring', authenticate, requireRole('customer', 'business', 'ser
       return res.status(400).json({ error: 'isActive (boolean) is required.' });
     }
 
-    const profile = await findProfileById(req.params.id);
+    let profile = await findProfileById(req.params.id);
     if (!profile) return res.status(404).json({ error: 'Profile not found.' });
+    profile = await syncProfileExpiryIfNeeded(profile);
     if (profile.email !== req.user.email && req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Forbidden.' });
     }

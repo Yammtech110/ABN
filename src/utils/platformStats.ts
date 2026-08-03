@@ -60,7 +60,7 @@ export const listingNeedsPayment = (
   paymentsForListing: { status: string }[],
 ): boolean =>
   listing.isVerified &&
-  listing.status === 'active' &&
+  (listing.status === 'active' || listing.status === 'suspended') &&
   !paymentsForListing.some((p) => p.status === 'success') &&
   !isListingOnFreeTrial(listing, paymentsForListing);
 

@@ -104,6 +104,16 @@ router.post('/', authenticate, async (req, res, next) => {
       return res.status(400).json({ error: 'rating must be an integer between 1 and 5.' });
     }
 
+    const listing = await findListingById(businessId);
+    if (!listing || !listing.isVerified || listing.subscriptionStatus === 'pending' || listing.subscriptionStatus === 'suspended') {
+      return res.status(404).json({ error: 'Listing not found.' });
+    }
+    const ownerEmail = String(listing.email || '').toLowerCase().trim();
+    const reviewerEmail = String(req.user.email || '').toLowerCase().trim();
+    if (ownerEmail && reviewerEmail && ownerEmail === reviewerEmail) {
+      return res.status(403).json({ error: 'You cannot review your own listing.' });
+    }
+
     const userId = req.user.id;
     const existingList = await fetchReviewsForBusiness(businessId);
     if (existingList.some((r) => r.userId === userId)) {
@@ -153,10 +163,14 @@ router.post('/', authenticate, async (req, res, next) => {
     const all = await fetchReviewsForBusiness(businessId);
     const stats = aggregateForBusiness(all, businessId);
 
-    await supabaseAdmin
+    const { error: aggErr } = await supabaseAdmin
       .from('profiles_directory')
       .update({ rating: stats.avg, reviews_count: stats.count })
       .eq('id', businessId);
+    if (aggErr) {
+      console.error('[reviews] failed to update listing rating aggregate:', aggErr.message);
+      return res.status(500).json({ error: 'Review saved but rating update failed. Please try again.' });
+    }
 
     res.status(201).json({
       review: mapReview(mapReviewFromDb(data)),

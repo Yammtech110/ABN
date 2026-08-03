@@ -14,6 +14,7 @@ const { supabaseAdmin } = require('../supabase');
 const { isSupabaseStorage } = require('../config/storage');
 const { createNotification } = require('../lib/notificationStore');
 const { findProfileByEmail } = require('../lib/profileStore');
+const { findByEmail: findUserByEmail } = require('../lib/userStore');
 const { authenticate, requireRole } = require('../middleware/authMiddleware');
 const { evaluateOwnerPurchase } = require('../lib/iapVerify');
 
@@ -255,9 +256,12 @@ router.post('/renew', authenticate, requireRole('customer', 'business', 'service
     const activated = await activateListing(profile, parsedAmount);
 
     try {
+      // Notify listing owner (admin Mark as Paid should not notify the admin alone).
+      const ownerEmail = String(profile.email || '').toLowerCase().trim();
+      const owner = ownerEmail ? await findUserByEmail(ownerEmail) : null;
       await createNotification({
-        userId: req.user.id,
-        receiverRole: req.user.role,
+        userId: owner?.id || (profile.email === req.user.email ? req.user.id : null),
+        receiverRole: owner?.role || 'customer',
         title: 'Subscription Renewed ✓',
         message: `Membership for ${profile.businessName || 'your listing'} renewed for $${parsedAmount}/month. Ref ${refNo}. Active until ${activated.membershipExpiry}.`,
       });

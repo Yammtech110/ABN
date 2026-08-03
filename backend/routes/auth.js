@@ -139,20 +139,18 @@ router.post('/register', async (req, res, next) => {
     const demoCode = await createCode(key, 'verify');
     const mail = await sendOtpEmail({ to: key, code: demoCode, purpose: 'verify' });
 
-    if (!mail.sent) {
-      return res.status(503).json({
-        error: `Could not send verification email (${mail.reason || 'smtp'}). Check SMTP settings / Brevo, then try Resend.`,
-        needsEmailVerification: true,
-        email: key,
-      });
-    }
-
-    // Code is emailed only — do not create in-app OTP notifications
+    // Always 201 after user create so client opens OTP/resend (retry must not 409).
     const payload = {
       needsEmailVerification: true,
       email: key,
-      message: `We sent a 6-digit code to ${key}. Check Gmail inbox and Spam. Contact ${SUPPORT_EMAIL} if needed.`,
+      message: mail.sent
+        ? `We sent a 6-digit code to ${key}. Check Gmail inbox and Spam. Contact ${SUPPORT_EMAIL} if needed.`
+        : `Account created but verification email could not be sent (${mail.reason || 'smtp'}). Use Resend code after fixing SMTP.`,
     };
+    if (!mail.sent) {
+      console.error('[register] SMTP failed after user create:', mail.reason || 'smtp');
+      payload.mailDeliveryFailed = true;
+    }
     if (shouldExposeOtp()) {
       payload.verificationCode = demoCode;
     }
@@ -357,8 +355,16 @@ router.post('/forgot-password', async (req, res, next) => {
     if (user && !user.isBlocked) {
       const code = await createCode(key, 'reset');
       const mail = await sendOtpEmail({ to: key, code, purpose: 'reset' });
-      // Reset code is emailed only — skip in-app notification
-      if (shouldExposeOtp() && mail.sent) {
+      if (!mail.sent) {
+        console.error('[forgot-password] SMTP failed for', key, mail.reason || 'smtp');
+        // Non-prod: surface failure so QA can fix SMTP. Prod stays enumeration-safe.
+        if (process.env.NODE_ENV !== 'production') {
+          return res.status(503).json({
+            error: `Could not send reset email (${mail.reason || 'smtp'}). Fix SMTP / Brevo and try again.`,
+            email: key,
+          });
+        }
+      } else if (shouldExposeOtp()) {
         payload.resetCode = code;
       }
     }

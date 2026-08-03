@@ -13,6 +13,8 @@ export const getUserListing = (
   return (
     listings.find((b) => {
       const owner = String(b.ownerId || '').trim();
+      const ownerUserId = String(b.ownerUserId || '').trim();
+      if (id && ownerUserId && ownerUserId === id) return true;
       if (!owner) return false;
       if (id && owner === id) return true;
       if (email && owner.toLowerCase() === email) return true;

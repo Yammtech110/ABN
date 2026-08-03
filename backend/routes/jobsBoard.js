@@ -122,6 +122,40 @@ async function findProfileByEmail(email) {
   return data ? mapProfileFromDb(data) : null;
 }
 
+async function findJobProfileById(id) {
+  if (!id) return null;
+  if (!isSupabaseStorage()) return directoryProfiles.find((p) => p.id === id) || null;
+
+  const { data, error } = await supabaseAdmin
+    .from('profiles_directory')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data ? mapProfileFromDb(data) : null;
+}
+
+/** Mirror directory expiry sync so job routes don't bypass past-due membership. */
+async function applyExpiryGate(profile) {
+  if (!profile) return profile;
+  const today = new Date().toISOString().slice(0, 10);
+  if (!profile.membershipExpiry || profile.subscriptionStatus !== 'active') return profile;
+  if (String(profile.membershipExpiry).slice(0, 10) >= today) return profile;
+
+  profile.subscriptionStatus = 'suspended';
+  if (!isSupabaseStorage()) {
+    const idx = directoryProfiles.findIndex((row) => row.id === profile.id);
+    if (idx >= 0) directoryProfiles[idx].subscriptionStatus = 'suspended';
+  } else {
+    await supabaseAdmin
+      .from('profiles_directory')
+      .update({ subscription_status: 'suspended' })
+      .eq('id', profile.id);
+  }
+  return profile;
+}
+
 /** Public job board: listing must be hiring + verified + active (not pending/suspended). */
 const isBusinessHiring = async (businessId) => {
   if (!isSupabaseStorage()) {
@@ -266,7 +300,23 @@ router.post('/', authenticate, requireRole(...JOB_OWNER_ROLES), async (req, res,
       return res.status(400).json({ error: 'salaryMax must be greater than salaryMin.' });
     }
 
-    const profile = await findProfileByEmail(req.user.email);
+    let profile = await findProfileByEmail(req.user.email);
+
+    // Admin may post for another listing via businessId (they often have no own profile).
+    if (!profile && req.user.role === 'admin' && req.body.businessId) {
+      profile = await findJobProfileById(String(req.body.businessId).trim());
+    }
+
+    if (!profile) {
+      return res.status(400).json({
+        error: req.user.role === 'admin'
+          ? 'Admin must provide businessId of an existing listing to post a job.'
+          : 'Register as a business before posting jobs.',
+      });
+    }
+
+    // Enforce expiry so suspended-by-date listings cannot keep posting.
+    profile = await applyExpiryGate(profile);
     const denied = assertJobPostingAllowed(profile, req.user.role);
     if (denied) {
       return res.status(denied.status).json({ error: denied.error });

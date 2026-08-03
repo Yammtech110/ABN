@@ -128,7 +128,9 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
   const isFav = favorites.includes(business.id);
   const isListingOwner =
     !!currentUser &&
-    (currentUser.email === business.ownerId || currentUser.id === business.ownerId);
+    (currentUser.email === business.ownerId ||
+      currentUser.id === business.ownerId ||
+      (!!business.ownerUserId && currentUser.id === business.ownerUserId));
   const canReportListing = isAuthenticated && !isListingOwner && currentUser?.role !== 'admin';
   const canBlockOwner = canReportListing && Boolean(business.id);
   const canReplyToReviews = isListingOwner || currentUser?.role === 'admin';
@@ -190,6 +192,10 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
 
     if (!currentUser) {
       setReviewError('Sign in to submit a review.');
+      return;
+    }
+    if (isListingOwner) {
+      setReviewError('You cannot review your own listing.');
       return;
     }
 
@@ -435,16 +441,26 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
             <div className="p-5 rounded-2xl bg-[#171310] border border-[#F08C32]/25 space-y-4" id="details-rate-business">
               <div className="flex items-center justify-between gap-2">
                 <h3 className="text-sm font-extrabold tracking-wider text-[#F08C32]">
-                  {myReview
-                    ? (language === 'en' ? '✏️ Edit Your Review' : '✏️ عدّل مراجعتك')
-                    : (language === 'en' ? '⭐ Rate This Business' : '⭐ قيّم هذا النشاط')}
+                  {isListingOwner
+                    ? (language === 'en' ? '⭐ Reviews' : '⭐ التقييمات')
+                    : myReview
+                      ? (language === 'en' ? '✏️ Edit Your Review' : '✏️ عدّل مراجعتك')
+                      : (language === 'en' ? '⭐ Rate This Business' : '⭐ قيّم هذا النشاط')}
                 </h3>
                 <span className="text-[10px] text-[#8E8E8E]">
                   {business.rating} ★ · {businessReviews.length} {language === 'en' ? 'reviews' : 'تقييم'}
                 </span>
               </div>
 
-              {!currentUser && (
+              {isListingOwner && (
+                <p className="text-xs text-[#8E8E8E] bg-[#1E1915] border border-[#2B231D] rounded-xl p-3">
+                  {language === 'en'
+                    ? 'You own this listing — customers leave reviews here. You can reply to them below.'
+                    : 'أنت مالك هذا الإدراج — العملاء يتركون التقييمات هنا. يمكنك الرد أدناه.'}
+                </p>
+              )}
+
+              {!currentUser && !isListingOwner && (
                 <p className="text-xs text-[#8E8E8E] bg-[#1E1915] border border-[#2B231D] rounded-xl p-3">
                   {language === 'en'
                     ? 'Please sign in to leave a star rating and review.'
@@ -452,7 +468,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                 </p>
               )}
 
-              {currentUser && myReview && (
+              {currentUser && !isListingOwner && myReview && (
                 <p className="text-[11px] text-[#8E8E8E]">
                   {language === 'en'
                     ? 'You already reviewed this listing. Change your stars or comment and save.'
@@ -460,13 +476,14 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                 </p>
               )}
 
-              {reviewError && (
+              {!isListingOwner && reviewError && (
                 <p className="text-red-400 text-xs bg-red-950/30 border border-red-900/50 rounded-xl p-2.5">{reviewError}</p>
               )}
-              {reviewSuccess && (
+              {!isListingOwner && reviewSuccess && (
                 <p className="text-green-400 text-xs bg-green-950/30 border border-green-900/50 rounded-xl p-2.5">{reviewSuccess}</p>
               )}
 
+              {currentUser && !isListingOwner && (
               <form onSubmit={handleCreateReview} className="space-y-4">
                 <div>
                   <p className="text-xs text-[#8E8E8E] mb-2">{t.ratingLabel}</p>
@@ -477,7 +494,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                         <button
                           key={star}
                           type="button"
-                          disabled={!currentUser || isSubmittingReview}
+                          disabled={isSubmittingReview}
                           onMouseEnter={() => setHoverRating(star)}
                           onClick={() => setRating(star)}
                           className="p-1 rounded-lg focus:outline-none disabled:opacity-40 transition-transform hover:scale-110"
@@ -506,7 +523,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                     rows={3}
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
-                    disabled={!currentUser || isSubmittingReview}
+                    disabled={isSubmittingReview}
                     placeholder={language === 'en' ? 'Share your experience with this business…' : 'شارك تجربتك مع هذا النشاط…'}
                     className="w-full p-3 rounded-xl bg-[#1E1915] border border-[#2B231D] focus:border-[#F08C32] text-xs outline-none text-[#FFFFFF] transition-all disabled:opacity-50 resize-none"
                   />
@@ -514,7 +531,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
 
                 <button
                   type="submit"
-                  disabled={!currentUser || isSubmittingReview}
+                  disabled={isSubmittingReview}
                   className="w-full py-3 rounded-xl bg-[#FF9E47] hover:bg-opacity-95 text-white font-extrabold text-xs transition-all shadow-md disabled:opacity-40 flex items-center justify-center gap-2"
                   id="details-btn-submit-rating"
                 >
@@ -526,6 +543,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
                       : (language === 'en' ? 'Submit Rating' : 'إرسال التقييم')}
                 </button>
               </form>
+              )}
             </div>
 
             {/* Gallery — logo, cover, and extra business photos */}
