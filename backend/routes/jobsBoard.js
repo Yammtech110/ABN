@@ -231,10 +231,14 @@ router.post('/', authenticate, requireRole(...JOB_OWNER_ROLES), async (req, res,
       return res.status(400).json({ error: `category must be one of: ${VALID_CATEGORIES.join(', ')}` });
     }
 
-    const min = parseFloat(salaryMin);
-    const max = parseFloat(salaryMax);
-    if (isNaN(min) || isNaN(max) || min < 0 || max < min) {
-      return res.status(400).json({ error: 'salaryMin and salaryMax must be valid (min ≤ max).' });
+    const min = Number(salaryMin);
+    const max = Number(salaryMax);
+    // No fixed salary band — only require finite numbers and max > min.
+    if (!Number.isFinite(min) || !Number.isFinite(max) || min < 0 || max < 0) {
+      return res.status(400).json({ error: 'salaryMin and salaryMax must be valid numbers (0 or more).' });
+    }
+    if (max <= min) {
+      return res.status(400).json({ error: 'salaryMax must be greater than salaryMin.' });
     }
 
     const profile = await findProfileByEmail(req.user.email);
@@ -324,8 +328,18 @@ router.put('/:id', authenticate, requireRole(...JOB_OWNER_ROLES), async (req, re
     if (category     !== undefined) updated.category     = category;
     if (requirements !== undefined) updated.requirements = requirements;
     if (hiringEmail  !== undefined) updated.hiringEmail  = hiringEmail;
-    if (salaryMin    !== undefined) updated.salaryMin    = parseFloat(salaryMin);
-    if (salaryMax    !== undefined) updated.salaryMax    = parseFloat(salaryMax);
+    if (salaryMin !== undefined) updated.salaryMin = Number(salaryMin);
+    if (salaryMax !== undefined) updated.salaryMax = Number(salaryMax);
+    if (salaryMin !== undefined || salaryMax !== undefined) {
+      const min = Number(updated.salaryMin);
+      const max = Number(updated.salaryMax);
+      if (!Number.isFinite(min) || !Number.isFinite(max) || min < 0 || max < 0) {
+        return res.status(400).json({ error: 'salaryMin and salaryMax must be valid numbers (0 or more).' });
+      }
+      if (max <= min) {
+        return res.status(400).json({ error: 'salaryMax must be greater than salaryMin.' });
+      }
+    }
     if (imageUrl     !== undefined) {
       const next = String(imageUrl ?? '').trim();
       // Empty string clears the poster; API media paths keep the stored blob

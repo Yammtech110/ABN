@@ -127,10 +127,23 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
     }
     if (!formTitle.trim()) { setFormError('Job title is required.'); return; }
     if (!formEmail.trim() || !formEmail.includes('@')) { setFormError('A valid hiring email is required.'); return; }
-    const min = parseInt(formSalaryMin, 10);
-    const max = parseInt(formSalaryMax, 10);
-    if (isNaN(min) || isNaN(max) || min <= 0 || max < min) {
-      setFormError('Please enter a valid salary range (min ≤ max).');
+    const min = Number(formSalaryMin);
+    const max = Number(formSalaryMax);
+    // No fixed band — only rule: both numbers, and max must be greater than min.
+    if (!Number.isFinite(min) || !Number.isFinite(max) || min < 0 || max < 0) {
+      setFormError(
+        language === 'en'
+          ? 'Enter valid salary numbers (0 or more).'
+          : 'أدخل أرقاماً صحيحة للراتب.',
+      );
+      return;
+    }
+    if (max <= min) {
+      setFormError(
+        language === 'en'
+          ? 'Max salary must be greater than min salary.'
+          : 'الحد الأقصى يجب أن يكون أكبر من الحد الأدنى.',
+      );
       return;
     }
 
@@ -357,8 +370,10 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
                   type="number"
                   value={formSalaryMin}
                   onChange={(e) => setFormSalaryMin(e.target.value)}
-                  placeholder={language === 'en' ? 'Min — e.g. 1500' : 'الأدنى'}
+                  placeholder={language === 'en' ? 'Min' : 'الأدنى'}
                   min="0"
+                  step="1"
+                  inputMode="numeric"
                   required
                   className="w-full p-2.5 rounded-xl bg-[#1E1915] border border-[#2B231D] text-xs text-[#FFFFFF] outline-none focus:border-[#F08C32]/40"
                 />
@@ -368,13 +383,20 @@ export const JobManagementScreen: React.FC<JobManagementScreenProps> = ({ embedd
                   type="number"
                   value={formSalaryMax}
                   onChange={(e) => setFormSalaryMax(e.target.value)}
-                  placeholder={language === 'en' ? 'Max — e.g. 3500' : 'الأقصى'}
+                  placeholder={language === 'en' ? 'Max' : 'الأقصى'}
                   min="0"
+                  step="1"
+                  inputMode="numeric"
                   required
                   className="w-full p-2.5 rounded-xl bg-[#1E1915] border border-[#2B231D] text-xs text-[#FFFFFF] outline-none focus:border-[#F08C32]/40"
                 />
               </div>
             </div>
+            <p className="mt-1.5 text-[10px] text-[#8E8E8E]">
+              {language === 'en'
+                ? 'Any amounts are fine — Max must be greater than Min.'
+                : 'أي مبلغ مقبول — الحد الأقصى يجب أن يكون أكبر من الأدنى.'}
+            </p>
           </div>
 
           <div>
