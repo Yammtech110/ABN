@@ -30,6 +30,24 @@ const TRIAL_DAYS = 60;
 
 const mapProfile = (row) => ({ ...row });
 
+/** Attach non-PII ownerUserId so clients can block/filter without exposing email. */
+async function withOwnerUserId(profile) {
+  if (!profile) return profile;
+  if (profile.ownerUserId) return profile;
+  const email = String(profile.email || '').toLowerCase().trim();
+  if (!email) return { ...profile, ownerUserId: '' };
+  try {
+    const user = await findUserByEmail(email);
+    return { ...profile, ownerUserId: user?.id || '' };
+  } catch {
+    return { ...profile, ownerUserId: '' };
+  }
+}
+
+async function withOwnerUserIds(profiles) {
+  return Promise.all((profiles || []).map((p) => withOwnerUserId(p)));
+}
+
 const supabaseErrorText = (error) =>
   String(error?.message || error?.details || error?.hint || error?.code || '');
 
@@ -169,7 +187,8 @@ router.get('/', async (req, res, next) => {
     const results = sortProfiles(
       filterProfiles(await fetchAllProfiles(), { city, category, search, role, publicOnly: true }),
     );
-    res.json(results.map((row) => mapProfile(mapProfileForList(row))));
+    const withOwners = await withOwnerUserIds(results);
+    res.json(withOwners.map((row) => mapProfile(mapProfileForList(row))));
   } catch (err) {
     next(err);
   }
@@ -181,7 +200,8 @@ router.get('/all', authenticate, requireRole('admin'), async (req, res, next) =>
     const results = sortProfiles(
       filterProfiles(await fetchAllProfiles(), { adminIncludeAll: true }),
     );
-    res.json(results.map((row) => mapProfile(mapProfileForList(row, { includeEmail: true }))));
+    const withOwners = await withOwnerUserIds(results);
+    res.json(withOwners.map((row) => mapProfile(mapProfileForList(row, { includeEmail: true }))));
   } catch (err) {
     next(err);
   }
@@ -191,7 +211,9 @@ router.get('/all', authenticate, requireRole('admin'), async (req, res, next) =>
 router.get('/mine', authenticate, async (req, res, next) => {
   try {
     const profile = await findProfileByEmail(req.user.email);
-    res.json(profile ? mapProfile(mapProfileForList(profile, { includeEmail: true })) : null);
+    if (!profile) return res.json(null);
+    const withOwner = await withOwnerUserId(profile);
+    res.json(mapProfile(mapProfileForList(withOwner, { includeEmail: true })));
   } catch (err) {
     next(err);
   }
@@ -256,7 +278,12 @@ router.get('/:id', async (req, res, next) => {
     if (!profile.isVerified || profile.subscriptionStatus === 'pending') {
       return res.status(404).json({ error: 'Profile not found.' });
     }
-    res.json(mapProfile(mapProfileForList(profile)));
+    // Suspended listings should not be publicly fetchable by id
+    if (profile.subscriptionStatus === 'suspended') {
+      return res.status(404).json({ error: 'Profile not found.' });
+    }
+    const withOwner = await withOwnerUserId(profile);
+    res.json(mapProfile(mapProfileForList(withOwner)));
   } catch (err) {
     next(err);
   }
@@ -626,15 +653,26 @@ router.put('/:id/hiring', authenticate, requireRole('customer', 'business', 'ser
     if (profile.listingType !== 'business' && profile.listingType !== 'service' && req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Hiring is only available for registered business or service listings.' });
     }
+    if (!profile.isVerified && req.user.role !== 'admin') {
+      return res.status(403).json({
+        error: 'Your listing must be approved by an admin before enabling hiring.',
+      });
+    }
     if (profile.subscriptionStatus === 'suspended' && req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Your listing is suspended. Renew membership to enable hiring.' });
+    }
+    if (profile.subscriptionStatus !== 'active' && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Your listing must be active before enabling hiring.' });
     }
 
     if (!isSupabaseStorage()) {
       profile.hiringActive = isActive;
-      jobsBoard.forEach((job) => {
-        if (job.businessId === req.params.id) job.isActive = isActive;
-      });
+      // Turning hiring OFF deactivates jobs. Turning ON must NOT revive admin-blocked jobs.
+      if (!isActive) {
+        jobsBoard.forEach((job) => {
+          if (job.businessId === req.params.id) job.isActive = false;
+        });
+      }
       return res.json({ businessId: req.params.id, hiringActive: isActive });
     }
 
@@ -645,12 +683,14 @@ router.put('/:id/hiring', authenticate, requireRole('customer', 'business', 'ser
 
     if (profileErr) return res.status(500).json({ error: 'Failed to update hiring status. Please try again.' });
 
-    const { error: jobsErr } = await supabaseAdmin
-      .from('jobs_board')
-      .update({ is_active: isActive })
-      .eq('business_id', req.params.id);
+    if (!isActive) {
+      const { error: jobsErr } = await supabaseAdmin
+        .from('jobs_board')
+        .update({ is_active: false })
+        .eq('business_id', req.params.id);
 
-    if (jobsErr) return res.status(500).json({ error: 'Failed to update related jobs. Please try again.' });
+      if (jobsErr) return res.status(500).json({ error: 'Failed to update related jobs. Please try again.' });
+    }
 
     res.json({ businessId: req.params.id, hiringActive: isActive });
   } catch (err) {

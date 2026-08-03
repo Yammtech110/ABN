@@ -38,10 +38,24 @@ const assertJobPostingAllowed = (profile, userRole) => {
     };
   }
 
+  if (!profile.isVerified) {
+    return {
+      status: 403,
+      error: 'Your listing must be approved by an admin before you can post jobs.',
+    };
+  }
+
   if (profile.subscriptionStatus === 'suspended') {
     return {
       status: 403,
       error: 'Your listing is suspended. Renew membership to post jobs.',
+    };
+  }
+
+  if (profile.subscriptionStatus !== 'active') {
+    return {
+      status: 403,
+      error: 'Your listing must be active before you can post jobs.',
     };
   }
 
@@ -108,20 +122,31 @@ async function findProfileByEmail(email) {
   return data ? mapProfileFromDb(data) : null;
 }
 
+/** Public job board: listing must be hiring + verified + active (not pending/suspended). */
 const isBusinessHiring = async (businessId) => {
   if (!isSupabaseStorage()) {
     const profile = directoryProfiles.find((p) => p.id === businessId);
-    return Boolean(profile?.hiringActive && profile?.isActive !== false);
+    return Boolean(
+      profile?.hiringActive &&
+      profile?.isActive !== false &&
+      profile?.isVerified &&
+      profile?.subscriptionStatus === 'active',
+    );
   }
 
   const { data, error } = await supabaseAdmin
     .from('profiles_directory')
-    .select('hiring_active, is_active')
+    .select('hiring_active, is_active, is_verified, subscription_status')
     .eq('id', businessId)
     .maybeSingle();
 
   if (error || !data) return false;
-  return Boolean(data.hiring_active && data.is_active !== false);
+  return Boolean(
+    data.hiring_active &&
+    data.is_active !== false &&
+    data.is_verified &&
+    data.subscription_status === 'active',
+  );
 };
 
 // ── GET /api/jobsboard ────────────────────────────────────────────────────

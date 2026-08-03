@@ -61,8 +61,9 @@ const mapDirectoryProfile = (p: Record<string, unknown>, categories: Category[] 
   const rawCategory = String(p.category ?? '');
   return {
   id:                   String(p.id ?? ''),
-  // Use email as ownerId so it matches currentUser.email across auth systems
-  ownerId:              String(p.email ?? ''),
+  // Prefer email when present (/mine); fall back to ownerUserId for public listings
+  ownerId:              String(p.email ?? p.ownerUserId ?? ''),
+  ownerUserId:          String(p.ownerUserId ?? ''),
   name:                 String(p.businessName ?? ''),
   logoUrl:              resolveListingLogoUrl(String(p.imageUrl ?? ''), String(p.coverUrl ?? ''), String(p.id ?? ''), String(p.businessName ?? '')),
   coverUrl:             resolveListingCoverUrl(String(p.coverUrl ?? ''), String(p.imageUrl ?? ''), String(p.id ?? ''), String(p.businessName ?? '')),
@@ -333,6 +334,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [hiringActive, setHiringActiveState] = useState<Record<string, boolean>>(INITIAL_HIRING_ACTIVE);
   const [blockedUsers, setBlockedUsers] = useState<{ id: string; email: string; name: string }[]>([]);
   const blockedEmailsRef = useRef<Set<string>>(new Set());
+  const blockedUserIdsRef = useRef<Set<string>>(new Set());
   const blockedBusinessIdsRef = useRef<Set<string>>(new Set());
 
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
@@ -426,22 +428,36 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }));
     setBlockedUsers(normalized);
     blockedEmailsRef.current = new Set(normalized.map((r) => r.email).filter(Boolean));
+    blockedUserIdsRef.current = new Set(normalized.map((r) => r.id).filter(Boolean));
   }, []);
 
   const filterListingsByBlocks = useCallback((listings: Business[], rawRows?: Record<string, unknown>[]) => {
     const emails = blockedEmailsRef.current;
-    if (rawRows && emails.size) {
+    const userIds = blockedUserIdsRef.current;
+    const hasBlocks = emails.size > 0 || userIds.size > 0;
+    if (rawRows && hasBlocks) {
       blockedBusinessIdsRef.current = new Set(
         rawRows
-          .filter((p) => emails.has(String(p.email || '').trim().toLowerCase()))
+          .filter((p) => {
+            const email = String(p.email || '').trim().toLowerCase();
+            const ownerUserId = String(p.ownerUserId || '').trim();
+            return (email && emails.has(email)) || (ownerUserId && userIds.has(ownerUserId));
+          })
           .map((p) => String(p.id || ''))
           .filter(Boolean),
       );
-    } else if (!emails.size) {
+    } else if (!hasBlocks) {
       blockedBusinessIdsRef.current = new Set();
     }
-    if (!emails.size) return listings;
-    return listings.filter((b) => !emails.has(String(b.ownerId || '').trim().toLowerCase()));
+    if (!hasBlocks) return listings;
+    return listings.filter((b) => {
+      const ownerEmail = String(b.ownerId || '').trim().toLowerCase();
+      const ownerUserId = String(b.ownerUserId || '').trim();
+      if (ownerUserId && userIds.has(ownerUserId)) return false;
+      if (ownerEmail && emails.has(ownerEmail)) return false;
+      if (blockedBusinessIdsRef.current.has(b.id)) return false;
+      return true;
+    });
   }, []);
 
   const refreshBlocks = useCallback(async (): Promise<void> => {
@@ -1293,15 +1309,21 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     if (!key) return { success: false, error: 'Missing listing owner.' };
     try {
       const looksLikeEmail = key.includes('@');
+      // Prefer businessId (public listings strip email). Fall back to email/userId.
+      const listing = businesses.find((b) => b.id === key);
+      const body = listing
+        ? { businessId: listing.id }
+        : looksLikeEmail
+          ? { email: key.toLowerCase() }
+          : { userId: key };
+
       const res = await apiFetch('/api/auth/blocks', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${apiToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(
-          looksLikeEmail ? { email: key.toLowerCase() } : { userId: key },
-        ),
+        body: JSON.stringify(body),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) return { success: false, error: data.error || 'Could not block.' };
@@ -1326,15 +1348,21 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         ]);
       }
 
-      const blockedEmail = String(data.blockedEmail || (looksLikeEmail ? key : '')).toLowerCase();
+      const blockedEmail = String(data.blockedEmail || '').toLowerCase();
+      const blockedUserId = String(data.blockedUserId || '');
+      const blockedBusinessId = String(data.blockedBusinessId || listing?.id || '');
+      if (blockedBusinessId) blockedBusinessIdsRef.current.add(blockedBusinessId);
+
       setBusinesses((prev) => {
         const next = prev.filter((b) => {
-          const owner = String(b.ownerId || '').trim().toLowerCase();
-          if (blockedEmail && owner === blockedEmail) {
+          const ownerEmail = String(b.ownerId || '').trim().toLowerCase();
+          const ownerUserId = String(b.ownerUserId || '').trim();
+          if (blockedBusinessId && b.id === blockedBusinessId) return false;
+          if (blockedUserId && ownerUserId === blockedUserId) {
             blockedBusinessIdsRef.current.add(b.id);
             return false;
           }
-          if (owner === key.toLowerCase()) {
+          if (blockedEmail && ownerEmail === blockedEmail) {
             blockedBusinessIdsRef.current.add(b.id);
             return false;
           }
@@ -1406,10 +1434,11 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         if (!res.ok) {
           return { success: false, error: data.error || 'Failed to update profile.' };
         }
+        const updated = data.user || data;
         setCurrentUser({
           ...currentUser,
-          name:              data.name              ?? currentUser.name,
-          phone:             data.phone             ?? currentUser.phone,
+          name:              updated.name              ?? currentUser.name,
+          phone:             updated.phone             ?? currentUser.phone,
           preferredLanguage: 'en',
         });
         return { success: true };
@@ -1949,7 +1978,10 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const prevHiring = hiringActive[businessId];
     const prevJobs = jobs;
     setHiringActiveState((p) => ({ ...p, [businessId]: active }));
-    setJobs((p) => p.map((j) => (j.businessId === businessId ? { ...j, isActive: active } : j)));
+    // Hiring OFF hides jobs immediately. Hiring ON must NOT revive admin-blocked jobs.
+    if (!active) {
+      setJobs((p) => p.map((j) => (j.businessId === businessId ? { ...j, isActive: false } : j)));
+    }
 
     if (!apiToken) {
       setHiringActiveState((p) => ({ ...p, [businessId]: prevHiring }));

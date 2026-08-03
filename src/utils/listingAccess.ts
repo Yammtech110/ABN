@@ -53,10 +53,11 @@ export const listingKind = (listing: Business | null | undefined): ListingKind =
 export const isJobEligibleListing = (listing: Business | null | undefined): boolean =>
   Boolean(listing && (listing.listingType === 'business' || listing.listingType === 'service'));
 
-/** Jobs / hiring unlock as soon as the owner has a non-suspended listing */
+/** Jobs / hiring only after admin approval + active non-suspended listing */
 export const canPostJobs = (listing: Business | null | undefined): boolean =>
   Boolean(
     listing &&
-    listing.status !== 'suspended' &&
+    listing.isVerified &&
+    listing.status === 'active' &&
     isJobEligibleListing(listing),
   );

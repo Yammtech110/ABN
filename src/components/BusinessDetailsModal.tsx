@@ -130,7 +130,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
     !!currentUser &&
     (currentUser.email === business.ownerId || currentUser.id === business.ownerId);
   const canReportListing = isAuthenticated && !isListingOwner && currentUser?.role !== 'admin';
-  const canBlockOwner = canReportListing && Boolean(business.ownerId);
+  const canBlockOwner = canReportListing && Boolean(business.id);
   const canReplyToReviews = isListingOwner || currentUser?.role === 'admin';
 
   useEffect(() => {
@@ -257,7 +257,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
 
   const handleBlockOwner = async () => {
     setBlockError('');
-    if (!business.ownerId) {
+    if (!business.id) {
       setBlockError('This listing has no owner account to block.');
       return;
     }
@@ -269,7 +269,8 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
     if (!ok) return;
 
     setBlockBusy(true);
-    const result = await blockListingOwner(business.ownerId);
+    // Pass listing id — server resolves owner (public directory strips email)
+    const result = await blockListingOwner(business.id);
     setBlockBusy(false);
     if (!result.success) {
       setBlockError(userFacingError(result.error || 'Could not block owner.', { context: 'generic' }));

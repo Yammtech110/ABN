@@ -253,6 +253,19 @@ router.post('/oauth-sync', authenticate, async (req, res, next) => {
         preferredLanguage: 'en',
         emailVerified: true,
       });
+    } else if (user.emailVerified === false) {
+      // OAuth proves email ownership — reclaim unverified password signup (anti-takeover).
+      // Invalidate any attacker-set password and mark verified.
+      const passwordHash = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), HASH_ROUNDS);
+      user = await updateUser(user.id, {
+        emailVerified: true,
+        passwordHash,
+        name: req.user.name || user.name,
+      });
+    }
+
+    if (user.isBlocked) {
+      return res.status(403).json({ error: `This account has been blocked. Contact ${SUPPORT_EMAIL}.` });
     }
 
     // Exchange Supabase OAuth session for an app JWT so later API calls
@@ -514,6 +527,11 @@ router.patch('/users/:id/block', authenticate, requireRole('admin'), async (req,
       return res.status(400).json({ error: 'You cannot block your own admin account.' });
     }
 
+    const target = await findById(id);
+    if (target?.role === 'admin') {
+      return res.status(403).json({ error: 'Admin accounts cannot be blocked.' });
+    }
+
     const user = await setUserBlocked(id, blocked);
     if (!user) return res.status(404).json({ error: 'User not found.' });
 
@@ -538,23 +556,44 @@ router.get('/blocks', authenticate, async (req, res, next) => {
 
 router.post('/blocks', authenticate, async (req, res, next) => {
   try {
-    const { userId, email } = req.body || {};
+    const { userId, email, businessId } = req.body || {};
     let targetId = typeof userId === 'string' ? userId : '';
     let targetUser = null;
+    let blockedBusinessId = '';
+
+    // Preferred path: resolve owner from listing id (public directory strips email).
+    if (!targetId && typeof businessId === 'string' && businessId.trim()) {
+      const { findProfileById } = require('../lib/profileStore');
+      const listing = await findProfileById(businessId.trim());
+      if (!listing?.email) {
+        return res.status(404).json({ error: 'Listing not found.' });
+      }
+      targetUser = await findByEmail(String(listing.email).toLowerCase().trim());
+      if (!targetUser) {
+        return res.status(404).json({ error: 'User not found for that listing owner.' });
+      }
+      targetId = targetUser.id;
+      blockedBusinessId = String(listing.id || businessId.trim());
+    }
+
     if (!targetId && typeof email === 'string' && email.trim()) {
       targetUser = await findByEmail(email.trim().toLowerCase());
       if (!targetUser) return res.status(404).json({ error: 'User not found for that listing owner.' });
       targetId = targetUser.id;
     }
     if (!targetId) {
-      return res.status(400).json({ error: 'userId or email is required.' });
+      return res.status(400).json({ error: 'businessId, userId, or email is required.' });
     }
     if (!targetUser) targetUser = await findById(targetId);
+    if (targetUser?.role === 'admin') {
+      return res.status(403).json({ error: 'Admin accounts cannot be blocked.' });
+    }
     const ids = await blockUser(req.user.id, targetId);
     const blockedUsers = await listBlockedUsers(req.user.id);
     res.status(201).json({
       blockedUserIds: ids,
       blockedUserId: targetId,
+      blockedBusinessId,
       blockedEmail: targetUser?.email || (typeof email === 'string' ? email.trim().toLowerCase() : ''),
       blockedName: targetUser?.name || '',
       blockedUsers,
@@ -580,7 +619,8 @@ router.get('/me', authenticate, async (req, res, next) => {
   try {
     const user = await findById(req.user.id);
     if (!user) return res.status(404).json({ error: 'User not found.' });
-    res.json(mapUser(user));
+    // Wrap as { user } so clients that expect data.user keep working
+    res.json({ user: mapUser(user) });
   } catch (err) {
     next(err);
   }
@@ -592,7 +632,7 @@ router.put('/me', authenticate, async (req, res, next) => {
     const { name, phone, preferredLanguage } = req.body;
     const user = await updateUser(req.user.id, { name, phone, preferredLanguage });
     if (!user) return res.status(404).json({ error: 'User not found.' });
-    res.json(mapUser(user));
+    res.json({ user: mapUser(user) });
   } catch (err) {
     next(err);
   }

@@ -2,13 +2,13 @@
 
 /**
  * OTP codes by purpose (verify | reset).
- * Memory cache + optional Supabase persistence so Render restarts don't lose codes.
+ * Memory cache + Supabase persistence so Render restarts don't lose codes.
  * Codes are stored hashed (SHA-256). Plaintext is returned only to the email sender.
  * Codes are NEVER returned to the client unless EXPOSE_VERIFY_CODE=true AND not production.
  */
 const crypto = require('crypto');
 
-const codes = new Map(); // `${purpose}:${email}` -> { codeHash, expiresAt }
+const codes = new Map(); // `${purpose}:${email}` -> { codeHash, expiresAt, purpose }
 
 const OTP_TTL_MS = 15 * 60 * 1000;
 
@@ -33,9 +33,7 @@ function smtpMissing() {
 }
 
 function shouldExposeOtp() {
-  // Never expose in production even if mis-set
   if (process.env.NODE_ENV === 'production') return false;
-  // Explicit QA flag, or auto when SMTP is missing so local UI can show the code
   return process.env.EXPOSE_VERIFY_CODE === 'true' || smtpMissing();
 }
 
@@ -49,24 +47,41 @@ function getAdmin() {
   }
 }
 
-async function persistVerifyOtp(email, codeHash, expiresAt) {
+/** Store as "purpose:hash" so verify + reset can share email_otp columns safely */
+function packPersisted(purpose, codeHash) {
+  return `${purpose}:${codeHash}`;
+}
+
+function unpackPersisted(raw) {
+  const value = String(raw || '');
+  const idx = value.indexOf(':');
+  if (idx <= 0) {
+    // Legacy rows were verify-only plain hashes
+    return { purpose: 'verify', codeHash: value };
+  }
+  return {
+    purpose: value.slice(0, idx),
+    codeHash: value.slice(idx + 1),
+  };
+}
+
+async function persistOtp(email, purpose, codeHash, expiresAt) {
   const admin = getAdmin();
   if (!admin) return;
   const key = String(email).toLowerCase().trim();
   const { error } = await admin
     .from('app_users')
     .update({
-      email_otp: codeHash,
+      email_otp: packPersisted(purpose, codeHash),
       email_otp_expires: new Date(expiresAt).toISOString(),
     })
     .eq('email', key);
   if (error) {
-    // Column may not exist until migration 012 — keep memory fallback
     console.warn('[otp] persist failed (run 012_email_otp.sql if needed):', error.message);
   }
 }
 
-async function clearPersistedVerifyOtp(email) {
+async function clearPersistedOtp(email) {
   const admin = getAdmin();
   if (!admin) return;
   const key = String(email).toLowerCase().trim();
@@ -78,7 +93,7 @@ async function clearPersistedVerifyOtp(email) {
     .catch(() => {});
 }
 
-async function readPersistedVerifyOtp(email) {
+async function readPersistedOtp(email, purpose) {
   const admin = getAdmin();
   if (!admin) return null;
   const key = String(email).toLowerCase().trim();
@@ -90,7 +105,10 @@ async function readPersistedVerifyOtp(email) {
   if (error || !data?.email_otp) return null;
   const expiresAt = data.email_otp_expires ? new Date(data.email_otp_expires).getTime() : 0;
   if (!expiresAt || Date.now() > expiresAt) return null;
-  return { codeHash: String(data.email_otp), expiresAt };
+  const unpacked = unpackPersisted(data.email_otp);
+  if (unpacked.purpose !== purpose) return null;
+  if (!unpacked.codeHash) return null;
+  return { codeHash: String(unpacked.codeHash), expiresAt };
 }
 
 async function createCode(email, purpose = 'verify') {
@@ -98,10 +116,9 @@ async function createCode(email, purpose = 'verify') {
   const code = generateOtp();
   const codeHash = hashOtp(code);
   const expiresAt = Date.now() + OTP_TTL_MS;
-  codes.set(key, { codeHash, expiresAt });
-  if (purpose === 'verify') {
-    await persistVerifyOtp(email, codeHash, expiresAt);
-  }
+  codes.set(key, { codeHash, expiresAt, purpose });
+  // Persist verify AND reset so Render restarts / multi-instance keep working
+  await persistOtp(email, purpose, codeHash, expiresAt);
   if (shouldExposeOtp()) {
     console.log(`[otp:${purpose}] QA code for ${email}: ${code} (valid 15m)`);
   } else {
@@ -111,7 +128,6 @@ async function createCode(email, purpose = 'verify') {
 }
 
 function peekCode() {
-  // Intentionally disabled — never return plaintext OTP from storage
   return null;
 }
 
@@ -119,15 +135,15 @@ async function verifyCode(email, code, purpose = 'verify', { consume = true } = 
   const mapKey = keyFor(purpose, email);
   let entry = codes.get(mapKey);
 
-  if ((!entry || Date.now() > entry.expiresAt) && purpose === 'verify') {
-    entry = await readPersistedVerifyOtp(email);
+  if (!entry || Date.now() > entry.expiresAt) {
+    entry = await readPersistedOtp(email, purpose);
     if (entry) codes.set(mapKey, entry);
   }
 
   if (!entry) return false;
   if (Date.now() > entry.expiresAt) {
     codes.delete(mapKey);
-    if (purpose === 'verify') await clearPersistedVerifyOtp(email);
+    await clearPersistedOtp(email);
     return false;
   }
 
@@ -135,7 +151,6 @@ async function verifyCode(email, code, purpose = 'verify', { consume = true } = 
   const stored = entry.codeHash || entry.code || '';
   let ok = false;
   if (/^\d{6}$/.test(stored)) {
-    // Legacy plaintext rows (pre-hash migration)
     ok = stored === incoming;
   } else {
     ok = stored === hashOtp(incoming);
@@ -144,14 +159,14 @@ async function verifyCode(email, code, purpose = 'verify', { consume = true } = 
 
   if (consume) {
     codes.delete(mapKey);
-    if (purpose === 'verify') await clearPersistedVerifyOtp(email);
+    await clearPersistedOtp(email);
   }
   return true;
 }
 
 async function clearCode(email, purpose = 'verify') {
   codes.delete(keyFor(purpose, email));
-  if (purpose === 'verify') await clearPersistedVerifyOtp(email);
+  await clearPersistedOtp(email);
 }
 
 module.exports = {

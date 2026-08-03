@@ -24,6 +24,8 @@ export type ListingType = 'business' | 'service';
 export interface Business {
   id: string;
   ownerId: string;
+  /** Non-PII owner account id (safe on public directory when email is stripped). */
+  ownerUserId?: string;
   name: string;
   logoUrl: string;
   coverUrl: string;
