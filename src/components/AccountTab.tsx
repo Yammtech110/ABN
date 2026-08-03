@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { EditProfileModal } from './EditProfileModal';
 import { canManageListing, canPostJobs, getUserListing, isPendingSubmission, listingKind } from '../utils/listingAccess';
-import { LegalDocId, SUPPORT_EMAIL, SUPPORT_MAILTO } from '../data/legalContent';
+import { LegalDocId, SUPPORT_MAILTO } from '../data/legalContent';
 
 interface AccountTabProps {
   onSwitchTab: (tabId: string) => void;
@@ -295,13 +295,11 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
           href={SUPPORT_MAILTO}
           className="w-full flex items-center justify-between p-4 hover:bg-[#1E1915] transition-colors group"
           id="row-contact-support"
+          aria-label="Contact Support"
         >
           <span className="flex items-center gap-3 text-xs text-white font-semibold min-w-0">
             <Mail className="w-4.5 h-4.5 text-[#F08C32] shrink-0" />
-            <span className="min-w-0 flex flex-col items-start gap-0.5">
-              <span>Contact Support</span>
-              <span className="text-[10px] font-medium text-[#F08C32] truncate">{SUPPORT_EMAIL}</span>
-            </span>
+            Contact Support
           </span>
           <ChevronRight className="w-4 h-4 text-[#8E8E8E] group-hover:text-white shrink-0" />
         </a>
