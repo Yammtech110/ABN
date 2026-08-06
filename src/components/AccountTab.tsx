@@ -51,6 +51,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
   const myListing = getUserListing(currentUser, businesses);
   const canManage = canManageListing(myListing);
   const listingPending = Boolean(myListing && isPendingSubmission(myListing));
+  const listingSuspended = Boolean(myListing && myListing.status === 'suspended');
   const kind = listingKind(myListing);
   const isAdmin = currentUser?.role === 'admin';
   const canUseJobs = canPostJobs(myListing);
@@ -198,6 +199,28 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
             </p>
           </div>
         )}
+
+        {myListing && listingSuspended && (
+          <div
+            className="p-3.5 rounded-2xl bg-red-950/30 border border-red-800/40 space-y-2.5"
+            id="account-listing-suspended-banner"
+          >
+            <p className="text-[11px] font-bold text-red-200 mb-1">
+              {kind === 'service' ? 'Service listing suspended' : 'Business listing suspended'}
+            </p>
+            <p className="text-[10px] text-red-100/80 leading-relaxed">
+              Your listing is hidden from public search. Contact support if you need it restored.
+            </p>
+            <a
+              href={SUPPORT_MAILTO}
+              className="inline-flex items-center gap-1.5 text-[10px] font-extrabold text-[#F08C32] hover:text-[#FF9E47]"
+              id="account-suspended-contact-us"
+            >
+              <Mail className="w-3.5 h-3.5" />
+              Contact Us
+            </a>
+          </div>
+        )}
       </div>
 
       <div className="py-2.5 rounded-3xl bg-[#171310] border border-[#2B231D] divide-y divide-[#2B231D]/40" id="account-options-list">
@@ -216,7 +239,9 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
               )}
               <span className="flex flex-col items-start gap-0.5 min-w-0">
                 <span>{kind === 'service' ? 'Manage Service' : 'Manage Business'}</span>
-                {listingPending ? (
+                {listingSuspended ? (
+                  <span className="text-[9px] font-medium text-red-300">Suspended</span>
+                ) : listingPending ? (
                   <span className="text-[9px] font-medium text-amber-300">Pending public approval</span>
                 ) : (
                   <span className="text-[9px] font-medium text-[#8E8E8E] truncate max-w-[14rem]">{myListing.name}</span>

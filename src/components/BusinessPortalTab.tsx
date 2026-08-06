@@ -27,6 +27,7 @@ import {
   Smartphone,
   BadgeCheck,
   Trash2,
+  Ban,
 } from 'lucide-react';
 import { Business, PaymentRecord } from '../types';
 import { US_STATES } from '../data/usStates';
@@ -48,6 +49,7 @@ import {
 import { bilingualEn, textEn } from '../utils/englishOnly';
 import { canManageListing, getUserListing, listingKind } from '../utils/listingAccess';
 import { filterNotificationsForUser } from '../utils/notifications';
+import { SUPPORT_MAILTO } from '../data/legalContent';
 import {
   IAP_PRODUCTS,
   purchaseSubscription,
@@ -954,17 +956,40 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
   }
 
   if (manageMode && myBusiness && !canManageListing(myBusiness)) {
+    const isSuspended = myBusiness.status === 'suspended';
     return (
       <>
         {approvalNoticeModal}
-      <div className="space-y-6" id="portal-manage-pending">
+      <div className="space-y-6" id={isSuspended ? 'portal-manage-suspended' : 'portal-manage-pending'}>
         {backHeader}
-        <div className="text-center py-12 px-6 rounded-3xl bg-[#171310] border border-amber-700/30">
-          <Clock className="w-10 h-10 text-amber-400 mx-auto mb-3" />
+        <div
+          className={`text-center py-12 px-6 rounded-3xl bg-[#171310] border ${
+            isSuspended ? 'border-red-800/40' : 'border-amber-700/30'
+          }`}
+        >
+          {isSuspended ? (
+            <Ban className="w-10 h-10 text-red-400 mx-auto mb-3" />
+          ) : (
+            <Clock className="w-10 h-10 text-amber-400 mx-auto mb-3" />
+          )}
           <h3 className="text-sm font-black text-[#FFFFFF] mb-2">
             {kind === 'service' ? t.manageService : t.manageBusiness}
           </h3>
-          <p className="text-xs text-amber-200/80 max-w-sm mx-auto">{t.listingPending}</p>
+          <p className={`text-xs max-w-sm mx-auto leading-relaxed ${
+            isSuspended ? 'text-red-200/90' : 'text-amber-200/80'
+          }`}>
+            {isSuspended ? t.listingSuspended : t.listingPending}
+          </p>
+          {isSuspended && (
+            <a
+              href={SUPPORT_MAILTO}
+              className="mt-5 inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#FF9E47] hover:bg-[#F08C32] text-black text-xs font-extrabold transition-colors"
+              id="btn-suspended-contact-us"
+            >
+              <Mail className="w-4 h-4" />
+              {t.contactUs}
+            </a>
+          )}
         </div>
       </div>
       </>
@@ -979,7 +1004,9 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
         <div className="text-center py-12 px-6 rounded-3xl bg-[#171310] border border-[#2B231D]">
           <AlertTriangle className="w-10 h-10 text-[#F08C32] mx-auto mb-3" />
           <p className="text-xs text-gray-300 max-w-sm mx-auto">
-            {!canManageListing(myBusiness) ? t.listingPending : t.listingExists}
+            {!canManageListing(myBusiness)
+              ? (myBusiness.status === 'suspended' ? t.listingSuspended : t.listingPending)
+              : t.listingExists}
           </p>
         </div>
       </div>
