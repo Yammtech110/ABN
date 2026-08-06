@@ -6,7 +6,7 @@ import { TRANSLATIONS } from '../data/translations';
 import { Job, JobCategory } from '../types';
 import { textEn } from '../utils/englishOnly';
 import { isLiveDirectoryListing } from '../utils/listingAccess';
-import { resolveCategoryId } from '../utils/categoryMatch';
+import { categoryDisplayName, resolveCategoryId } from '../utils/categoryMatch';
 import { listingMediaUrl, resolveListingCoverUrl, resolveListingLogoUrl } from '../utils/listingImages';
 import { BusinessThumbnail } from './BusinessThumbnail';
 import { canPostJobs, getUserListing } from '../utils/listingAccess';
@@ -273,7 +273,7 @@ export const HomeTab: React.FC<HomeTabProps> = ({
             coverUrl:             resolveListingCoverUrl(String(p.coverUrl ?? ''), String(p.imageUrl ?? ''), String(p.id ?? ''), String(p.businessName ?? '')),
             description:          { en: String(p.description ?? ''), ar: '' },
             categoryId:           resolveCategoryId(String(p.category ?? ''), categories),
-            subcategory:          { en: String(p.category ?? ''), ar: '' },
+            subcategory:          { en: categoryDisplayName(String(p.category ?? ''), categories), ar: '' },
             address:              String(p.address ?? ''),
             city:                 String(p.city ?? 'New York') as Business['city'],
             area:                 String(p.area ?? ''),

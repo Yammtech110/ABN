@@ -42,6 +42,31 @@ export function resolveCategoryId(
   return raw.startsWith('cat-') ? raw : `cat-${rawSlug || 'other'}`;
 }
 
+/** Human-readable category label — never show raw ids like "cat-carpentry". */
+export function categoryDisplayName(
+  raw: string | undefined | null,
+  categories: Category[] = [],
+): string {
+  const value = String(raw || '').trim();
+  if (!value) return 'Other';
+
+  if (categories.length) {
+    const id = resolveCategoryId(value, categories);
+    const cat = categories.find((c) => c.id === id);
+    const label = String(cat?.name?.en || '').trim();
+    if (label) return label;
+  }
+
+  return (
+    value
+      .replace(/^cat-/i, '')
+      .replace(/[-_]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .replace(/\b\w/g, (ch) => ch.toUpperCase()) || 'Other'
+  );
+}
+
 /** True when a listing belongs to the selected category chip. */
 export function listingMatchesCategory(
   listing: { categoryId?: string; subcategory?: { en?: string; ar?: string } },

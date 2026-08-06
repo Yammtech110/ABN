@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Business } from '../types';
 import { textEn } from '../utils/englishOnly';
+import { categoryDisplayName } from '../utils/categoryMatch';
 import { useDirectory } from '../context/DirectoryContext';
 import { TRANSLATIONS } from '../data/translations';
 import {
@@ -72,11 +73,15 @@ function isBusinessOpenNow(workingHours: string): boolean | null {
 
 export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ business, onClose }) => {
   const {
-    language, reviews, currentUser, favorites, toggleFavorite,
+    language, reviews, currentUser, favorites, toggleFavorite, categories,
     fetchReviewsForBusiness, submitReview, updateReview, replyToReview, apiToken, isAuthenticated,
     blockListingOwner,
   } = useDirectory();
   const t = TRANSLATIONS[language];
+  const categoryLabel = categoryDisplayName(
+    business.subcategory?.en || business.categoryId,
+    categories,
+  );
 
   const isOpen = useMemo(() => isBusinessOpenNow(business.workingHours.en), [business.workingHours.en]);
 
@@ -359,7 +364,7 @@ export const BusinessDetailsModal: React.FC<BusinessDetailsModalProps> = ({ busi
             <div className="flex-1 min-w-0 md:mb-2">
               <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider bg-[#1E1915] text-[#F08C32] border border-[#2B231D]">
-                  {textEn(business.subcategory)}
+                  {categoryLabel}
                 </span>
                 {business.isVerified && (
                   <span className="flex items-center gap-1 text-[10px] font-bold tracking-wider bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded-full">

@@ -11,7 +11,7 @@ import {
   INITIAL_BUSINESSES, INITIAL_REVIEWS,
   INITIAL_PAYMENTS, INITIAL_JOBS, INITIAL_HIRING_ACTIVE,
 } from '../data/mockData';
-import { resolveCategoryId } from '../utils/categoryMatch';
+import { categoryDisplayName, resolveCategoryId } from '../utils/categoryMatch';
 import { listingMediaUrl, resolveListingCoverUrl, resolveListingLogoUrl, resolveJobImageUrl } from '../utils/listingImages';
 import { isValidUSPhone, toE164USPhone } from '../utils/businessRegistrationValidation';
 import { networkErrorMessage, userFacingError } from '../utils/userFacingError';
@@ -60,6 +60,10 @@ if (typeof window !== 'undefined') {
 /** Map a Supabase profiles_directory row → Business shape the UI expects */
 const mapDirectoryProfile = (p: Record<string, unknown>, categories: Category[] = []): Business => {
   const rawCategory = String(p.category ?? '');
+  const categoryId = categories.length
+    ? resolveCategoryId(rawCategory, categories)
+    : rawCategory.toLowerCase().replace(/ /g, '-');
+  const categoryLabel = categoryDisplayName(rawCategory || categoryId, categories);
   return {
   id:                   String(p.id ?? ''),
   // Prefer email when present (/mine); fall back to ownerUserId for public listings
@@ -69,10 +73,8 @@ const mapDirectoryProfile = (p: Record<string, unknown>, categories: Category[] 
   logoUrl:              resolveListingLogoUrl(String(p.imageUrl ?? ''), String(p.coverUrl ?? ''), String(p.id ?? ''), String(p.businessName ?? '')),
   coverUrl:             resolveListingCoverUrl(String(p.coverUrl ?? ''), String(p.imageUrl ?? ''), String(p.id ?? ''), String(p.businessName ?? '')),
   description:          { en: String(p.description ?? ''), ar: '' },
-  categoryId:           categories.length
-    ? resolveCategoryId(rawCategory, categories)
-    : rawCategory.toLowerCase().replace(/ /g, '-'),
-  subcategory:          { en: rawCategory, ar: '' },
+  categoryId,
+  subcategory:          { en: categoryLabel, ar: '' },
   listingType:          (p.listingType === 'service' ? 'service' : 'business') as Business['listingType'],
   address:              String(p.address ?? ''),
   city:                 (String(p.city || 'New York')) as Business['city'],
@@ -581,10 +583,17 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         setCategories(cats);
         // Remap existing listings so category chips match stored names (Accountants → cat-accountant)
         setBusinesses((prev) =>
-          prev.map((b) => ({
-            ...b,
-            categoryId: resolveCategoryId(b.subcategory?.en || b.categoryId, cats),
-          })),
+          prev.map((b) => {
+            const categoryId = resolveCategoryId(b.subcategory?.en || b.categoryId, cats);
+            return {
+              ...b,
+              categoryId,
+              subcategory: {
+                en: categoryDisplayName(b.subcategory?.en || b.categoryId, cats),
+                ar: '',
+              },
+            };
+          }),
         );
       }
     } catch {
