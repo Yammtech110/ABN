@@ -24,6 +24,7 @@ import { getUserListing, canPostJobs } from './utils/listingAccess';
 import { isSensitiveAuthNotification } from './utils/notifications';
 import { useOpenNotificationsOnPush, usePushNotifications } from './hooks/usePushNotifications';
 import { OfflineGate } from './components/OfflineGate';
+import { PullToRefresh } from './components/PullToRefresh';
 import {
   Home,
   Search,
@@ -342,7 +343,18 @@ function WebTopNav({
 }
 
 function DirectoryAppContent() {
-  const { language, currentUser, businesses, authReady, isAuthenticated, apiToken, notifications } = useDirectory();
+  const {
+    language,
+    currentUser,
+    businesses,
+    authReady,
+    isAuthenticated,
+    apiToken,
+    notifications,
+    refreshDirectory,
+    refreshJobs,
+    refreshNotifications,
+  } = useDirectory();
   const t = TRANSLATIONS[language];
   const nativeApp = isNativeApp();
   const unreadCount = isAuthenticated
@@ -356,6 +368,14 @@ function DirectoryAppContent() {
   const [showSplash, setShowSplash] = useState(true);
   const [splashFading, setSplashFading] = useState(false);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+
+  const handlePullToRefresh = useCallback(async () => {
+    await Promise.all([
+      refreshDirectory(currentUser),
+      refreshJobs(),
+      currentUser ? refreshNotifications() : Promise.resolve(),
+    ]);
+  }, [refreshDirectory, refreshJobs, refreshNotifications, currentUser]);
 
   // Real FCM / APNs registration when signed in on native APK
   usePushNotifications(apiToken, Boolean(isAuthenticated && apiToken));
@@ -470,8 +490,11 @@ function DirectoryAppContent() {
         id="app-root-mobile"
         style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
-        {/* Scrollable Content Area */}
-        <div className={`flex-1 overflow-y-auto scrollbar-none pb-2 ${
+        {/* Scrollable Content Area — pull down from top to refresh */}
+        <PullToRefresh
+          onRefresh={handlePullToRefresh}
+          disabled={Boolean(selectedBusiness) || showExitConfirm}
+          className={`flex-1 overflow-y-auto scrollbar-none pb-2 ${
           activeTab === 'home' ||
           activeTab === 'legal' ||
           activeTab === 'notifications' ||
@@ -481,7 +504,8 @@ function DirectoryAppContent() {
           activeTab === 'portal-management'
             ? 'px-0 pt-0'
             : 'px-4 pt-4'
-        }`}>
+        }`}
+        >
           <TabContent
             activeTab={activeTab}
             setActiveTab={setActiveTab}
@@ -491,7 +515,7 @@ function DirectoryAppContent() {
             legalDocId={legalDocId}
             setLegalDocId={setLegalDocId}
           />
-        </div>
+        </PullToRefresh>
 
         {/* Hide bottom nav on full-page sub-screens (not main tabs) */}
         {!(

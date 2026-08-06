@@ -13,7 +13,6 @@ import { canPostJobs, getUserListing } from '../utils/listingAccess';
 import {
   Search,
   MapPin,
-  RefreshCw,
   CheckCircle,
   ArrowRight,
   Shirt,
@@ -196,8 +195,6 @@ export const HomeTab: React.FC<HomeTabProps> = ({
     businesses,
     categories,
     currentUser,
-    refreshDirectory,
-    refreshJobs,
     refreshNotifications,
     jobs,
     hiringActive,
@@ -209,24 +206,6 @@ export const HomeTab: React.FC<HomeTabProps> = ({
   useEffect(() => {
     if (currentUser) refreshNotifications();
   }, [currentUser?.id]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const handleRefreshApp = useCallback(async () => {
-    if (isRefreshing) return;
-    setIsRefreshing(true);
-    try {
-      await Promise.all([
-        refreshDirectory(currentUser),
-        refreshJobs(),
-        currentUser ? refreshNotifications() : Promise.resolve(),
-      ]);
-    } catch (err) {
-      console.warn('[ABN Home] Refresh failed:', err);
-    } finally {
-      setIsRefreshing(false);
-    }
-  }, [isRefreshing, refreshDirectory, refreshJobs, refreshNotifications, currentUser]);
 
   const [inputSearch, setInputSearch] = useState('');
   const [selectedCity, setSelectedCity] = useState<string>('all');
@@ -479,16 +458,6 @@ export const HomeTab: React.FC<HomeTabProps> = ({
               CONNECT • COLLABORATE • GROW
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => void handleRefreshApp()}
-            disabled={isRefreshing}
-            className="p-2 rounded-full border border-white/35 text-white/90 hover:bg-white/10 disabled:opacity-60 flex-shrink-0 mt-5"
-            aria-label="Refresh"
-            id="btn-home-refresh"
-          >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} strokeWidth={2} />
-          </button>
         </div>
 
         <p className="relative z-10 text-[15px] text-white font-medium mb-6 max-w-[240px] leading-[1.45]">
