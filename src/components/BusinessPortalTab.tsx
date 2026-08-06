@@ -124,7 +124,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
   // Derive plan price by listing type
   const myBusiness = getUserListing(currentUser, businesses);
   const kind = listingKind(myBusiness);
-  const planAmount = kind === 'service' ? 30 : 50;
+  const planAmount = kind === 'service' ? 15 : 25;
   const t = TRANSLATIONS[language];
 
   // Forms Toggle / Tab
@@ -595,7 +595,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
           whatsapp: formattedWhatsapp,
           website: regWeb,
           workingHours: regHours,
-          subscriptionTier: registrationType === 'service' ? 30 : 50,
+          subscriptionTier: registrationType === 'service' ? 15 : 25,
           listingType: registrationType,
           state: regState,
         }),
@@ -634,7 +634,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
         workingHours: { en: regHours, ar: regHours },
         // 2 MONTHS FREE TRIAL: Set expiry to 60 days from today for all new registrations
       membershipExpiryDate: getTrialEndDate(),
-        subscriptionTier: registrationType === 'service' ? 30 : 50,
+        subscriptionTier: registrationType === 'service' ? 15 : 25,
         gallery,
         rating: 0,
         reviewsCount: 0,
@@ -1108,7 +1108,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                     </div>
                     <div>
                       <h3 className="text-sm font-black text-[#FFFFFF]">{language === 'en' ? 'Register as a Business' : 'سجل كصاحب عمل'}</h3>
-                      <span className="text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-md mt-1 inline-block border border-green-500/20">🎁 FREE 2 Months, then $50/mo</span>
+                      <span className="text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-md mt-1 inline-block border border-green-500/20">🎁 FREE 2 Months, then $25/mo</span>
                     </div>
                   </div>
                   <ArrowRight className="w-5 h-5 text-gray-600 group-hover:text-[#F08C32] transition-colors" />
@@ -1150,7 +1150,7 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                     </div>
                     <div>
                       <h3 className="text-sm font-black text-[#FFFFFF]">{language === 'en' ? 'Register as a Service Provider' : 'سجل كمقدم خدمة'}</h3>
-                      <span className="text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-md mt-1 inline-block border border-green-500/20">🎁 FREE 2 Months, then $30/mo</span>
+                      <span className="text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-md mt-1 inline-block border border-green-500/20">🎁 FREE 2 Months, then $15/mo</span>
                     </div>
                   </div>
                   <ArrowRight className="w-5 h-5 text-gray-600 group-hover:text-orange-400 transition-colors" />
@@ -1200,8 +1200,8 @@ export const BusinessPortalTab: React.FC<BusinessPortalTabProps> = ({
                     ? 'Update your listing details, name, and photos anytime.'
                     : 'حدّث بيانات الإدراج والاسم والصور في أي وقت.')
                   : (language === 'en'
-                    ? `Reach Shia community customers directly for $${registrationType === 'business' ? '50' : '30'}/month.`
-                    : `انضم لدليل أعمال المجتمع وتواصل مع آلاف الزبائن بقيمة ${registrationType === 'business' ? '50$' : '30$'} شهرياً.`)}
+                    ? `Reach Shia community customers directly for $${registrationType === 'business' ? '25' : '15'}/month.`
+                    : `انضم لدليل أعمال المجتمع وتواصل مع آلاف الزبائن بقيمة ${registrationType === 'business' ? '25$' : '15$'} شهرياً.`)}
               </p>
             </div>
           </div>

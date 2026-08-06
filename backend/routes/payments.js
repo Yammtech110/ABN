@@ -198,8 +198,8 @@ router.post('/renew', authenticate, requireRole('customer', 'business', 'service
     }
 
     const parsedAmount = Number(amount);
-    if (![30, 50].includes(parsedAmount)) {
-      return res.status(400).json({ error: 'Invalid plan amount. Must be 30 or 50.' });
+    if (![15, 25].includes(parsedAmount)) {
+      return res.status(400).json({ error: 'Invalid plan amount. Must be 15 or 25.' });
     }
 
     const profile = await findProfileById(businessId);

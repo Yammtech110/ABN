@@ -144,7 +144,7 @@ async function main() {
       // Owner renew without tx must fail
       const renewBad = await req('POST', '/api/payments/renew', {
         token: userToken,
-        body: { businessId: 'nope', amount: 50 },
+        body: { businessId: 'nope', amount: 25 },
       });
       // 404 listing or 400/403 tx — must not be 201 free success
       if (renewBad.status === 201) {

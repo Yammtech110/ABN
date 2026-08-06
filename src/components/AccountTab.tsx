@@ -72,7 +72,7 @@ export const AccountTab: React.FC<AccountTabProps> = ({ onSwitchTab, onOpenLegal
     if (myListing.status === 'pending' || !myListing.isVerified) return 'Pending Approval';
     if (myListing.status === 'suspended') return 'Suspended';
     if (myListing.status !== 'active') return 'Pending Approval';
-    return kind === 'service' ? '$30 Service Plan' : '$50 Business Plan';
+    return kind === 'service' ? '$15 Service Plan' : '$25 Business Plan';
   };
 
   const planBadge = subscriptionLabel();

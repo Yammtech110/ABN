@@ -1282,7 +1282,7 @@ export const AdminPanelTab: React.FC = () => {
         <div className="space-y-4 animate-scale-up" id="admin-pay-section">
           <div className="flex items-center justify-between gap-2">
             <h3 className="text-xs font-black uppercase tracking-wider text-[#F08C32]">
-              {t.payments} — Membership Fees Register (2-month free trial, then $30–$50/mo)
+              {t.payments} — Membership Fees Register (2-month free trial, then $15–$25/mo)
             </h3>
             <button
               type="button"

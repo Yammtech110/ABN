@@ -4,8 +4,8 @@
 // Money flows: User pays -> Google/Apple store -> monthly payout to your linked bank account.
 
 export const IAP_PRODUCTS = {
-  BUSINESS_MONTHLY: 'abn_business_monthly',   // $50/month
-  SERVICE_MONTHLY: 'abn_service_monthly',      // $30/month
+  BUSINESS_MONTHLY: 'abn_business_monthly',   // $25/month
+  SERVICE_MONTHLY: 'abn_service_monthly',      // $15/month
 } as const;
 
 export type IAPProductId = (typeof IAP_PRODUCTS)[keyof typeof IAP_PRODUCTS];

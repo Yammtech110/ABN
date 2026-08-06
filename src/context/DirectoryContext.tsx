@@ -92,7 +92,12 @@ const mapDirectoryProfile = (p: Record<string, unknown>, categories: Category[] 
   workingHours:         { en: String(p.workingHours ?? ''), ar: '' },
   membershipExpiryDate: String(p.membershipExpiry ?? ''),
   registeredAt:         p.createdAt ? String(p.createdAt).slice(0, 10) : undefined,
-  subscriptionTier:     p.subscriptionTier === 30 ? 30 : p.subscriptionTier === 50 ? 50 : undefined,
+  subscriptionTier:     (() => {
+    const tier = Number(p.subscriptionTier);
+    if (tier === 15 || tier === 30) return 15 as const;
+    if (tier === 25 || tier === 50) return 25 as const;
+    return undefined;
+  })(),
   gallery:              Array.isArray(p.gallery)
     ? (p.gallery as unknown[])
         .map((url) => {
@@ -1969,7 +1974,7 @@ export const DirectoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       whatsapp:     currentUser.phone || '',
       city:         'New York',
       workingHours: '9:00 AM - 9:00 PM',
-      subscriptionTier: 50,
+      subscriptionTier: 25,
     };
 
     if (apiToken) {

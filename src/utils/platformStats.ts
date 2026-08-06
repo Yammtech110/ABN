@@ -1,19 +1,31 @@
 import { Business } from '../types';
 
-const MONTHLY_FEE = {
-  business: 50,
-  service: 30,
+/** Canonical monthly plan prices (USD) */
+export const MONTHLY_FEE = {
+  business: 25,
+  service: 15,
 } as const;
+
+export type PlanAmount = (typeof MONTHLY_FEE)[keyof typeof MONTHLY_FEE];
+
+export const VALID_PLAN_AMOUNTS: readonly PlanAmount[] = [
+  MONTHLY_FEE.service,
+  MONTHLY_FEE.business,
+];
 
 export const TRIAL_DAYS = 60;
 
-/** Monthly subscription fee for a directory listing */
-export const getListingMonthlyFee = (listing: Business): number => {
-  if (listing.subscriptionTier === 30 || listing.subscriptionTier === 50) {
-    return listing.subscriptionTier;
-  }
-  return listing.listingType === 'service' ? MONTHLY_FEE.service : MONTHLY_FEE.business;
+/** Normalize legacy 30/50 tiers (and raw amounts) onto the current 15/25 plans. */
+export const normalizePlanAmount = (amount: unknown, listingType?: Business['listingType']): PlanAmount => {
+  const n = Number(amount);
+  if (n === MONTHLY_FEE.service || n === 30) return MONTHLY_FEE.service;
+  if (n === MONTHLY_FEE.business || n === 50) return MONTHLY_FEE.business;
+  return listingType === 'service' ? MONTHLY_FEE.service : MONTHLY_FEE.business;
 };
+
+/** Monthly subscription fee for a directory listing */
+export const getListingMonthlyFee = (listing: Business): number =>
+  normalizePlanAmount(listing.subscriptionTier, listing.listingType);
 
 /** Verified + active listings count as approved paid subscriptions */
 export const getActivePaidListings = (listings: Business[]): Business[] =>

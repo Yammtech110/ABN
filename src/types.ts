@@ -46,7 +46,7 @@ export interface Business {
   workingHours: { en: string; ar: string };
   membershipExpiryDate: string; // ISO date string
   registeredAt?: string; // ISO date when listing was created
-  subscriptionTier?: 30 | 50;
+  subscriptionTier?: 15 | 25;
   gallery: string[];
   rating: number; // calculated from reviews or static
   reviewsCount: number;

@@ -71,7 +71,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ onClose }) =
   const [pwError, setPwError] = useState('');
   const [pwSuccess, setPwSuccess] = useState('');
 
-  const planAmount = currentUser?.role === 'service_provider' ? 30 : 50;
+  const planAmount = currentUser?.role === 'service_provider' ? 15 : 25;
 
   const handleSaveAccount = async (e: React.FormEvent) => {
     e.preventDefault();

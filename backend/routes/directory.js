@@ -320,7 +320,7 @@ router.post('/', authenticate, requireRole('customer', 'business', 'service_prov
     }
 
     // Billing fields are server-owned — ignore client membershipExpiry / subscriptionTier
-    const tier = listingType === 'service' ? 30 : 50;
+    const tier = listingType === 'service' ? 15 : 25;
     const expiry = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000)
       .toISOString()
       .split('T')[0];
