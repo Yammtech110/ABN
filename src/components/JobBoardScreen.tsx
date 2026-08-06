@@ -9,7 +9,6 @@ import {
   Mail,
   ChevronRight,
   Building2,
-  DollarSign,
 } from 'lucide-react';
 
 export const JOB_CATEGORIES: JobCategory[] = ['IT', 'Graphic Designing', 'Developer', 'Chef', 'Maid', 'Others'];
@@ -108,8 +107,7 @@ export const JobBoardScreen: React.FC<JobBoardScreenProps> = ({ onBack, initialJ
             <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${CATEGORY_COLORS[selectedJob.category]}`}>
               {selectedJob.category}
             </span>
-            <span className="text-[10px] font-extrabold text-[#F08C32] bg-[#FF9E47]/15 border border-[#F08C32]/40 px-2.5 py-1 rounded-full flex items-center gap-1">
-              <DollarSign className="w-3 h-3" />
+            <span className="text-[10px] font-extrabold text-[#F08C32] bg-[#FF9E47]/15 border border-[#F08C32]/40 px-2.5 py-1 rounded-full">
               ${selectedJob.salaryMin.toLocaleString()} – ${selectedJob.salaryMax.toLocaleString()}/mo
             </span>
             <span className="text-[9px] text-[#8E8E8E] ml-auto">
