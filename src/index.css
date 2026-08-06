@@ -1071,35 +1071,21 @@ html.light .fixed.inset-0 .bg-\[\#171310\] {
   background-color: #FFFFFF !important;
 }
 
-/* Contact action buttons — keep high contrast in both themes */
+/* Contact action buttons — one brand orange for Call / WhatsApp / Map */
 html.light #action-btn-call,
-html.dark #action-btn-call {
+html.dark #action-btn-call,
+html.light #action-btn-whatsapp,
+html.dark #action-btn-whatsapp,
+html.light #action-btn-map,
+html.dark #action-btn-map {
   background-color: #FF9E47 !important;
   border-color: #D9771D !important;
   color: #FFFFFF !important;
 }
 html.light #action-btn-call *,
-html.dark #action-btn-call * {
-  color: #FFFFFF !important;
-}
-
-html.light #action-btn-whatsapp,
-html.dark #action-btn-whatsapp {
-  background-color: #128C7E !important;
-  border-color: #0e7a6e !important;
-  color: #FFFFFF !important;
-}
+html.dark #action-btn-call *,
 html.light #action-btn-whatsapp *,
-html.dark #action-btn-whatsapp * {
-  color: #FFFFFF !important;
-}
-
-html.light #action-btn-map,
-html.dark #action-btn-map {
-  background-color: #1A73E8 !important;
-  border-color: #1557b0 !important;
-  color: #FFFFFF !important;
-}
+html.dark #action-btn-whatsapp *,
 html.light #action-btn-map *,
 html.dark #action-btn-map * {
   color: #FFFFFF !important;
